@@ -1,0 +1,27 @@
+{
+  "name": "somepre-suivi-soudure",
+  "version": "1.0.0",
+  "description": "Application de suivi des heures de soudure pour SOMEPRE",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "soudure",
+    "tracking",
+    "somepre"
+  ],
+  "author": "SOMEPRE",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
