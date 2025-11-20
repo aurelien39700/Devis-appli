@@ -611,6 +611,12 @@
 
             <!-- Onglet Heures -->
             <div id="entriesTab" class="tab-content active">
+                <!-- Affaires en cours (bulles cliquables) -->
+                <div class="card" id="quickAccessCard" style="display: none;">
+                    <h3 style="margin-bottom: 12px; color: #e94560; font-size: 1rem;">🚀 Affaires en cours</h3>
+                    <div id="quickAccessAffaires" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                </div>
+
                 <div class="total-section">
                     <div class="total-label">Total des heures</div>
                     <div class="total-hours" id="totalHours">0h</div>

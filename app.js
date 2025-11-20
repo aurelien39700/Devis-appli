@@ -183,6 +183,7 @@ async function loadClients() {
         if (response.ok) {
             const data = await response.json();
             clients = data.clients || [];
+            localStorage.setItem('affaires_clients', JSON.stringify(clients));
         }
     } catch (error) {
         console.error('Erreur de chargement des clients:', error);
@@ -197,6 +198,7 @@ async function loadAffaires() {
         if (response.ok) {
             const data = await response.json();
             affaires = data.affaires || [];
+            localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
         }
     } catch (error) {
         console.error('Erreur de chargement des affaires:', error);
@@ -211,6 +213,7 @@ async function loadPostes() {
         if (response.ok) {
             const data = await response.json();
             postes = data.postes || [];
+            localStorage.setItem('affaires_postes', JSON.stringify(postes));
         }
     } catch (error) {
         console.error('Erreur de chargement des postes:', error);
@@ -333,33 +336,45 @@ function renderEntries() {
         return;
     }
 
-    // Grouper les entrées par client/affaire/poste
+    // Grouper les entrées par client/affaire (sans le poste)
     const grouped = {};
     let totalHours = 0;
 
     entries.forEach(entry => {
         totalHours += parseFloat(entry.hours) || 0;
-        const key = `${entry.clientId}_${entry.affaireId}_${entry.posteId}`;
+        const key = `${entry.clientId}_${entry.affaireId}`;
 
         if (!grouped[key]) {
             grouped[key] = {
                 clientId: entry.clientId,
                 affaireId: entry.affaireId,
-                posteId: entry.posteId,
                 totalHours: 0,
+                posteDetails: {},
                 entries: []
             };
         }
 
         grouped[key].totalHours += parseFloat(entry.hours) || 0;
         grouped[key].entries.push(entry);
+
+        // Grouper aussi par poste pour les détails
+        const poste = postes.find(p => p.id === entry.posteId);
+        const posteName = poste ? poste.name : 'Poste inconnu';
+        if (!grouped[key].posteDetails[posteName]) {
+            grouped[key].posteDetails[posteName] = 0;
+        }
+        grouped[key].posteDetails[posteName] += parseFloat(entry.hours) || 0;
     });
 
     // Afficher les groupes
     container.innerHTML = Object.values(grouped).map(group => {
         const client = clients.find(c => c.id === group.clientId);
         const affaire = affaires.find(a => a.id === group.affaireId);
-        const poste = postes.find(p => p.id === group.posteId);
+
+        // Détails par poste
+        const postesDetailsHTML = Object.entries(group.posteDetails).map(([posteName, hours]) => {
+            return `<span style="display: inline-block; background: rgba(233, 69, 96, 0.15); padding: 3px 8px; border-radius: 12px; font-size: 0.85rem; margin-right: 5px; margin-bottom: 5px;">🔧 ${escapeHtml(posteName)}: ${hours.toFixed(1)}h</span>`;
+        }).join('');
 
         // Détails des saisies individuelles pour les admins
         const detailsHTML = isAdmin() ? `
@@ -371,10 +386,14 @@ function renderEntries() {
                         month: '2-digit',
                         year: 'numeric'
                     });
+                    const poste = postes.find(p => p.id === entry.posteId);
                     return `
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 5px 10px; background: rgba(255,255,255,0.03); border-radius: 6px;">
-                            <span style="font-size: 0.8rem; color: #999;">📅 ${date}</span>
-                            <span style="font-size: 0.8rem; color: #e94560;">${entry.hours}h</span>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 0.8rem; color: #999;">📅 ${date}</span>
+                                <span style="font-size: 0.75rem; color: #777;">🔧 ${escapeHtml(poste ? poste.name : 'Inconnu')}</span>
+                            </div>
+                            <span style="font-size: 0.8rem; color: #e94560; font-weight: 600;">${entry.hours}h</span>
                             <div style="display: flex; gap: 5px;">
                                 <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="editEntry('${entry.id}')">✏️</button>
                                 <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteEntry('${entry.id}')">🗑️</button>
@@ -392,8 +411,10 @@ function renderEntries() {
                     <span class="entry-hours">${group.totalHours.toFixed(1)}h</span>
                 </div>
                 <div class="entry-info">📁 ${escapeHtml(affaire ? affaire.name : 'Affaire inconnue')}</div>
-                <div class="entry-info">🔧 ${escapeHtml(poste ? poste.name : 'Poste inconnu')}</div>
-                <div class="entry-info" style="color: #666; font-size: 0.85rem;">
+                <div style="margin-top: 8px;">
+                    ${postesDetailsHTML}
+                </div>
+                <div class="entry-info" style="color: #666; font-size: 0.85rem; margin-top: 5px;">
                     ${group.entries.length} saisie${group.entries.length > 1 ? 's' : ''}
                 </div>
                 ${detailsHTML}
@@ -402,6 +423,60 @@ function renderEntries() {
     }).join('');
 
     totalEl.textContent = `${totalHours.toFixed(1)}h`;
+
+    // Afficher les affaires en cours (accès rapide)
+    renderQuickAccess(grouped);
+}
+
+function renderQuickAccess(grouped) {
+    const container = document.getElementById('quickAccessAffaires');
+    const card = document.getElementById('quickAccessCard');
+
+    if (Object.keys(grouped).length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+
+    card.style.display = 'block';
+
+    container.innerHTML = Object.values(grouped).map(group => {
+        const client = clients.find(c => c.id === group.clientId);
+        const affaire = affaires.find(a => a.id === group.affaireId);
+
+        return `
+            <button
+                onclick="quickSelectAffaire('${group.clientId}', '${group.affaireId}')"
+                style="
+                    padding: 10px 16px;
+                    border: 2px solid rgba(233, 69, 96, 0.3);
+                    border-radius: 20px;
+                    background: rgba(233, 69, 96, 0.1);
+                    color: #e94560;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                "
+                onmouseover="this.style.background='rgba(233, 69, 96, 0.2)'; this.style.borderColor='#e94560';"
+                onmouseout="this.style.background='rgba(233, 69, 96, 0.1)'; this.style.borderColor='rgba(233, 69, 96, 0.3)';"
+            >
+                <span>👥 ${escapeHtml(client ? client.name : 'Client inconnu')}</span>
+                <span style="opacity: 0.7;">•</span>
+                <span>📁 ${escapeHtml(affaire ? affaire.name : 'Affaire inconnue')}</span>
+                <span style="background: rgba(233, 69, 96, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">${group.totalHours.toFixed(1)}h</span>
+            </button>
+        `;
+    }).join('');
+}
+
+function quickSelectAffaire(clientId, affaireId) {
+    openModal();
+    document.getElementById('client').value = clientId;
+    updateAffairesSelect();
+    document.getElementById('affaire').value = affaireId;
 }
 
 function escapeHtml(text) {
