@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Suivi Heures Soudure</title>
-    <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Suivi%20Soudure%22%2C%22short_name%22%3A%22Soudure%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1a2e%22%2C%22theme_color%22%3A%22%230f3460%22%7D">
+    <title>Suivi d'Affaires</title>
+    <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Suivi%20d'Affaires%22%2C%22short_name%22%3A%22Affaires%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1a2e%22%2C%22theme_color%22%3A%22%230f3460%22%7D">
     <meta name="theme-color" content="#0f3460">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -90,6 +90,11 @@
             color: #666;
         }
 
+        select option {
+            background: #1a1a2e;
+            color: #ffffff;
+        }
+
         .btn {
             padding: 12px 24px;
             border: none;
@@ -169,10 +174,10 @@
             font-size: 0.9rem;
         }
 
-        .entry-affaire {
+        .entry-info {
             color: #b0b0b0;
-            font-size: 0.95rem;
-            margin-bottom: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
         }
 
         .entry-date {
@@ -263,6 +268,8 @@
             width: 100%;
             max-width: 400px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -430,13 +437,118 @@
             display: none !important;
         }
 
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #a0a0a0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #e94560, #c23152);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .management-section {
+            margin-bottom: 20px;
+        }
+
+        .items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            min-height: 40px;
+        }
+
+        .item-tag {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .item-tag .delete-btn {
+            background: rgba(220, 53, 69, 0.3);
+            border: none;
+            color: #ff6b6b;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .item-tag .delete-btn:hover {
+            background: rgba(220, 53, 69, 0.5);
+        }
+
+        .add-item-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .add-item-form input,
+        .add-item-form select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .add-item-form button {
+            padding: 12px 20px;
+        }
+
         @media (max-width: 380px) {
             header h1 {
                 font-size: 1.5rem;
             }
-            
+
             .entry-actions {
                 flex-direction: column;
+            }
+
+            .add-item-form {
+                flex-direction: column;
+            }
+
+            .add-item-form input,
+            .add-item-form select {
+                width: 100%;
             }
         }
     </style>
@@ -446,7 +558,7 @@
     <div id="loginScreen" class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <h2>🔧 Suivi Soudure</h2>
+                <h2>📋 Suivi d'Affaires</h2>
                 <p>Connectez-vous pour continuer</p>
             </div>
 
@@ -464,7 +576,7 @@
 
                 <div class="form-group">
                     <label for="accessCode">Code d'accès</label>
-                    <input type="password" id="accessCode" placeholder="Entrez votre code" required>
+                    <input type="password" id="accessCode" placeholder="Entrez votre code" required autocomplete="off">
                 </div>
 
                 <button type="submit" class="btn btn-primary">
@@ -478,8 +590,8 @@
     <div id="appScreen" class="hidden">
         <div class="container">
             <header>
-                <h1>🔧 Suivi Soudure</h1>
-                <p>Gestion des heures de soudure</p>
+                <h1>📋 Suivi d'Affaires</h1>
+                <p>Gestion des heures de travail</p>
                 <div id="syncStatus" class="sync-status"></div>
             </header>
 
@@ -491,36 +603,78 @@
                 <button class="logout-btn" onclick="logout()">Déconnexion</button>
             </div>
 
-        <div class="total-section">
-            <div class="total-label">Total des heures</div>
-            <div class="total-hours" id="totalHours">0h</div>
-        </div>
+            <!-- Onglets -->
+            <div class="tabs" id="mainTabs">
+                <button class="tab-btn active" onclick="switchTab('entries')">📊 Heures</button>
+                <button class="tab-btn" onclick="switchTab('management')" id="managementTabBtn" style="display: none;">⚙️ Gestion</button>
+            </div>
 
-        <div class="card">
-            <h3 style="margin-bottom: 15px; color: #e94560;">📋 Liste des entrées</h3>
-            <div id="entriesList" class="entries-list">
-                <div class="empty-state">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="12" y1="18" x2="12" y2="12"></line>
-                        <line x1="9" y1="15" x2="15" y2="15"></line>
-                    </svg>
-                    <p>Aucune entrée</p>
-                    <p style="font-size: 0.85rem;">Appuyez sur + pour ajouter</p>
+            <!-- Onglet Heures -->
+            <div id="entriesTab" class="tab-content active">
+                <div class="total-section">
+                    <div class="total-label">Total des heures</div>
+                    <div class="total-hours" id="totalHours">0h</div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 15px; color: #e94560;">📋 Liste des entrées</h3>
+                    <div id="entriesList" class="entries-list">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="12" y1="18" x2="12" y2="12"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
+                            </svg>
+                            <p>Aucune entrée</p>
+                            <p style="font-size: 0.85rem;">Appuyez sur + pour ajouter</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Onglet Gestion (Admin uniquement) -->
+            <div id="managementTab" class="tab-content">
+                <div class="card management-section">
+                    <h3 style="margin-bottom: 15px; color: #e94560;">👥 Clients</h3>
+                    <div class="add-item-form">
+                        <input type="text" id="newClient" placeholder="Nom du client">
+                        <button class="btn btn-primary" onclick="addClient()">Ajouter</button>
+                    </div>
+                    <div id="clientsList" class="items-list"></div>
+                </div>
+
+                <div class="card management-section">
+                    <h3 style="margin-bottom: 15px; color: #e94560;">📁 Affaires</h3>
+                    <div class="add-item-form">
+                        <select id="newAffaireClient">
+                            <option value="">Sélectionner un client</option>
+                        </select>
+                        <input type="text" id="newAffaire" placeholder="Nom de l'affaire">
+                        <button class="btn btn-primary" onclick="addAffaire()">Ajouter</button>
+                    </div>
+                    <div id="affairesList" class="items-list"></div>
+                </div>
+
+                <div class="card management-section">
+                    <h3 style="margin-bottom: 15px; color: #e94560;">🔧 Postes de travail</h3>
+                    <div class="add-item-form">
+                        <input type="text" id="newPoste" placeholder="Nom du poste">
+                        <button class="btn btn-primary" onclick="addPoste()">Ajouter</button>
+                    </div>
+                    <div id="postesList" class="items-list"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Bouton flottant Email -->
-    <button class="floating-btn email-btn" onclick="sendEmail()" title="Envoyer par email">
+    <button class="floating-btn email-btn" onclick="sendEmail()" title="Envoyer par email" style="display: none;">
         ✉️
     </button>
 
     <!-- Bouton flottant Ajouter -->
-    <button class="floating-btn" onclick="openModal()" title="Ajouter une entrée">
+    <button class="floating-btn" onclick="openModal()" title="Ajouter une entrée" id="addBtn" style="display: none;">
         +
     </button>
 
@@ -535,14 +689,24 @@
                 <input type="hidden" id="entryId">
                 <div class="form-group">
                     <label for="client">Client</label>
-                    <input type="text" id="client" placeholder="Nom du client" required>
+                    <select id="client" required>
+                        <option value="">Sélectionner un client</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="affaire">Affaire</label>
-                    <input type="text" id="affaire" placeholder="Référence ou nom de l'affaire" required>
+                    <select id="affaire" required>
+                        <option value="">Sélectionner une affaire</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="hours">Heures de soudure</label>
+                    <label for="poste">Poste de travail</label>
+                    <select id="poste" required>
+                        <option value="">Sélectionner un poste</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="hours">Heures de travail</label>
                     <input type="number" id="hours" placeholder="Nombre d'heures" step="0.5" min="0" required>
                 </div>
                 <button type="submit" class="btn btn-primary">
@@ -552,400 +716,6 @@
         </div>
     </div>
 
-    <script>
-        // Configuration API
-        const API_URL = window.location.origin + '/api';
-
-        // Configuration des utilisateurs
-        const USER_CODES = {
-            admin: 'ADMIN',
-            user: 'SOMEPRE'
-        };
-
-        // État de l'application
-        let entries = [];
-        let editingId = null;
-        let currentUser = null;
-
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            setupLoginForm();
-        });
-
-        // Vérifier l'authentification au chargement
-        function checkAuth() {
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showApp();
-            }
-        }
-
-        // Configuration du formulaire de connexion
-        function setupLoginForm() {
-            const loginForm = document.getElementById('loginForm');
-            const userTypeBtns = document.querySelectorAll('.user-type-btn');
-            let selectedType = 'user';
-
-            // Gestion des boutons de type d'utilisateur
-            userTypeBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    userTypeBtns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    selectedType = btn.dataset.type;
-                });
-            });
-
-            // Soumission du formulaire de connexion
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const code = document.getElementById('accessCode').value;
-
-                if (selectedType === 'admin' && code === USER_CODES.admin) {
-                    login('admin');
-                } else if (selectedType === 'user' && code === USER_CODES.user) {
-                    login('user');
-                } else {
-                    showError('Code d\'accès incorrect');
-                }
-            });
-        }
-
-        // Connexion
-        function login(userType) {
-            currentUser = { type: userType };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            document.getElementById('accessCode').value = '';
-            hideError();
-            showApp();
-        }
-
-        // Déconnexion
-        function logout() {
-            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-                currentUser = null;
-                localStorage.removeItem('currentUser');
-                document.getElementById('appScreen').classList.add('hidden');
-                document.getElementById('loginScreen').classList.remove('hidden');
-            }
-        }
-
-        // Afficher l'application
-        function showApp() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.remove('hidden');
-
-            // Mettre à jour l'interface utilisateur
-            const userIcon = document.getElementById('userIcon');
-            const userTypeText = document.getElementById('userType');
-
-            if (currentUser.type === 'admin') {
-                userIcon.textContent = '👨‍💼';
-                userTypeText.textContent = 'Administrateur';
-            } else {
-                userIcon.textContent = '👤';
-                userTypeText.textContent = 'Utilisateur';
-            }
-
-            // Charger les données
-            loadEntries();
-            document.getElementById('entryForm').addEventListener('submit', handleSubmit);
-        }
-
-        // Vérifier si l'utilisateur est admin
-        function isAdmin() {
-            return currentUser && currentUser.type === 'admin';
-        }
-
-        // Afficher une erreur
-        function showError(message) {
-            const errorEl = document.getElementById('errorMessage');
-            errorEl.textContent = message;
-            errorEl.classList.add('show');
-            setTimeout(() => hideError(), 3000);
-        }
-
-        // Masquer l'erreur
-        function hideError() {
-            const errorEl = document.getElementById('errorMessage');
-            errorEl.classList.remove('show');
-        }
-
-        // Charger les entrées depuis le serveur
-        async function loadEntries() {
-            try {
-                const response = await fetch(`${API_URL}/entries`);
-                if (response.ok) {
-                    const data = await response.json();
-                    entries = data.entries || [];
-                    updateSyncStatus('synced', 'Synchronisé');
-                } else {
-                    throw new Error('Erreur serveur');
-                }
-            } catch (error) {
-                console.error('Erreur de chargement:', error);
-                // Charger depuis localStorage en fallback
-                const saved = localStorage.getItem('soudure_entries');
-                entries = saved ? JSON.parse(saved) : [];
-                updateSyncStatus('error', 'Mode hors-ligne');
-            }
-            renderEntries();
-        }
-
-        // Sauvegarder une entrée
-        async function saveEntry(entry) {
-            try {
-                const response = await fetch(`${API_URL}/entries`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(entry)
-                });
-                if (response.ok) {
-                    const newEntry = await response.json();
-                    entries.push(newEntry);
-                    updateSyncStatus('synced', 'Synchronisé');
-                } else {
-                    throw new Error('Erreur serveur');
-                }
-            } catch (error) {
-                console.error('Erreur de sauvegarde:', error);
-                entry.id = Date.now().toString();
-                entry.date = new Date().toISOString();
-                entries.push(entry);
-                saveToLocalStorage();
-                updateSyncStatus('error', 'Sauvegardé localement');
-            }
-            renderEntries();
-        }
-
-        // Mettre à jour une entrée
-        async function updateEntry(id, updatedData) {
-            try {
-                const response = await fetch(`${API_URL}/entries/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedData)
-                });
-                if (response.ok) {
-                    const updated = await response.json();
-                    const index = entries.findIndex(e => e.id === id);
-                    if (index !== -1) {
-                        entries[index] = updated;
-                    }
-                    updateSyncStatus('synced', 'Synchronisé');
-                } else {
-                    throw new Error('Erreur serveur');
-                }
-            } catch (error) {
-                console.error('Erreur de mise à jour:', error);
-                const index = entries.findIndex(e => e.id === id);
-                if (index !== -1) {
-                    entries[index] = { ...entries[index], ...updatedData };
-                }
-                saveToLocalStorage();
-                updateSyncStatus('error', 'Mis à jour localement');
-            }
-            renderEntries();
-        }
-
-        // Supprimer une entrée
-        async function deleteEntry(id) {
-            if (!isAdmin()) {
-                alert('Seuls les administrateurs peuvent supprimer les entrées');
-                return;
-            }
-
-            if (!confirm('Supprimer cette entrée ?')) return;
-            
-            try {
-                const response = await fetch(`${API_URL}/entries/${id}`, {
-                    method: 'DELETE'
-                });
-                if (response.ok) {
-                    entries = entries.filter(e => e.id !== id);
-                    updateSyncStatus('synced', 'Synchronisé');
-                } else {
-                    throw new Error('Erreur serveur');
-                }
-            } catch (error) {
-                console.error('Erreur de suppression:', error);
-                entries = entries.filter(e => e.id !== id);
-                saveToLocalStorage();
-                updateSyncStatus('error', 'Supprimé localement');
-            }
-            renderEntries();
-        }
-
-        // Sauvegarde locale
-        function saveToLocalStorage() {
-            localStorage.setItem('soudure_entries', JSON.stringify(entries));
-        }
-
-        // Mise à jour du statut de synchronisation
-        function updateSyncStatus(status, message) {
-            const el = document.getElementById('syncStatus');
-            el.textContent = message;
-            el.className = `sync-status ${status}`;
-        }
-
-        // Afficher les entrées
-        function renderEntries() {
-            const container = document.getElementById('entriesList');
-            const totalEl = document.getElementById('totalHours');
-            
-            if (entries.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="12" y1="18" x2="12" y2="12"></line>
-                            <line x1="9" y1="15" x2="15" y2="15"></line>
-                        </svg>
-                        <p>Aucune entrée</p>
-                        <p style="font-size: 0.85rem;">Appuyez sur + pour ajouter</p>
-                    </div>
-                `;
-                totalEl.textContent = '0h';
-                return;
-            }
-
-            let totalHours = 0;
-            container.innerHTML = entries.map(entry => {
-                totalHours += parseFloat(entry.hours) || 0;
-                const date = new Date(entry.date).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric'
-                });
-
-                // Afficher les boutons de modification/suppression uniquement pour les admins
-                const actionsHTML = isAdmin() ? `
-                    <div class="entry-actions">
-                        <button class="btn btn-secondary" onclick="editEntry('${entry.id}')">✏️ Modifier</button>
-                        <button class="btn btn-danger" onclick="deleteEntry('${entry.id}')">🗑️ Supprimer</button>
-                    </div>
-                ` : '';
-
-                return `
-                    <div class="entry-item">
-                        <div class="entry-header">
-                            <span class="entry-client">${escapeHtml(entry.client)}</span>
-                            <span class="entry-hours">${entry.hours}h</span>
-                        </div>
-                        <div class="entry-affaire">${escapeHtml(entry.affaire)}</div>
-                        <div class="entry-date">📅 ${date}</div>
-                        ${actionsHTML}
-                    </div>
-                `;
-            }).join('');
-
-            totalEl.textContent = `${totalHours}h`;
-        }
-
-        // Échapper le HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Ouvrir le modal
-        function openModal() {
-            document.getElementById('modal').classList.add('active');
-            document.getElementById('modalTitle').textContent = 'Nouvelle entrée';
-            document.getElementById('submitBtnText').textContent = 'Ajouter';
-            document.getElementById('entryForm').reset();
-            editingId = null;
-        }
-
-        // Fermer le modal
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-            editingId = null;
-        }
-
-        // Éditer une entrée
-        function editEntry(id) {
-            if (!isAdmin()) {
-                alert('Seuls les administrateurs peuvent modifier les entrées');
-                return;
-            }
-
-            const entry = entries.find(e => e.id === id);
-            if (!entry) return;
-
-            editingId = id;
-            document.getElementById('modal').classList.add('active');
-            document.getElementById('modalTitle').textContent = 'Modifier l\'entrée';
-            document.getElementById('submitBtnText').textContent = 'Mettre à jour';
-
-            document.getElementById('client').value = entry.client;
-            document.getElementById('affaire').value = entry.affaire;
-            document.getElementById('hours').value = entry.hours;
-        }
-
-        // Soumettre le formulaire
-        async function handleSubmit(e) {
-            e.preventDefault();
-
-            // Vérifier les permissions pour la modification
-            if (editingId && !isAdmin()) {
-                alert('Seuls les administrateurs peuvent modifier les entrées');
-                return;
-            }
-
-            const entryData = {
-                client: document.getElementById('client').value.trim(),
-                affaire: document.getElementById('affaire').value.trim(),
-                hours: document.getElementById('hours').value
-            };
-
-            if (editingId) {
-                await updateEntry(editingId, entryData);
-            } else {
-                await saveEntry(entryData);
-            }
-
-            closeModal();
-        }
-
-        // Envoyer par email
-        function sendEmail() {
-            if (entries.length === 0) {
-                alert('Aucune entrée à envoyer');
-                return;
-            }
-
-            let totalHours = 0;
-            let body = 'RAPPORT HEURES DE SOUDURE\n';
-            body += '========================\n\n';
-
-            entries.forEach(entry => {
-                totalHours += parseFloat(entry.hours) || 0;
-                const date = new Date(entry.date).toLocaleDateString('fr-FR');
-                body += `Client: ${entry.client}\n`;
-                body += `Affaire: ${entry.affaire}\n`;
-                body += `Heures: ${entry.hours}h\n`;
-                body += `Date: ${date}\n`;
-                body += '------------------------\n';
-            });
-
-            body += `\nTOTAL: ${totalHours} heures\n`;
-
-            const subject = `Rapport Heures Soudure - ${new Date().toLocaleDateString('fr-FR')}`;
-            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            
-            window.location.href = mailtoLink;
-        }
-
-        // Fermer le modal en cliquant en dehors
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target.id === 'modal') {
-                closeModal();
-            }
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>

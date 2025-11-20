@@ -20,7 +20,12 @@ async function initDataFile() {
     try {
         await fs.access(DATA_FILE);
     } catch {
-        await fs.writeFile(DATA_FILE, JSON.stringify({ entries: [] }));
+        await fs.writeFile(DATA_FILE, JSON.stringify({
+            entries: [],
+            clients: [],
+            affaires: [],
+            postes: []
+        }));
     }
 }
 
@@ -28,9 +33,21 @@ async function initDataFile() {
 async function readData() {
     try {
         const data = await fs.readFile(DATA_FILE, 'utf8');
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        // Assurer que toutes les propriétés existent
+        return {
+            entries: parsed.entries || [],
+            clients: parsed.clients || [],
+            affaires: parsed.affaires || [],
+            postes: parsed.postes || []
+        };
     } catch (error) {
-        return { entries: [] };
+        return {
+            entries: [],
+            clients: [],
+            affaires: [],
+            postes: []
+        };
     }
 }
 
@@ -116,6 +133,127 @@ app.put('/api/sync', async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: 'Erreur de synchronisation' });
+    }
+});
+
+// ===== Routes pour les Clients =====
+
+// GET - Récupérer tous les clients
+app.get('/api/clients', async (req, res) => {
+    try {
+        const data = await readData();
+        res.json({ clients: data.clients });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// POST - Créer un nouveau client
+app.post('/api/clients', async (req, res) => {
+    try {
+        const data = await readData();
+        const newClient = {
+            id: Date.now().toString(),
+            name: req.body.name
+        };
+        data.clients.push(newClient);
+        await writeData(data);
+        res.json(newClient);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de création' });
+    }
+});
+
+// DELETE - Supprimer un client
+app.delete('/api/clients/:id', async (req, res) => {
+    try {
+        const data = await readData();
+        data.clients = data.clients.filter(c => c.id !== req.params.id);
+        await writeData(data);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de suppression' });
+    }
+});
+
+// ===== Routes pour les Affaires =====
+
+// GET - Récupérer toutes les affaires
+app.get('/api/affaires', async (req, res) => {
+    try {
+        const data = await readData();
+        res.json({ affaires: data.affaires });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// POST - Créer une nouvelle affaire
+app.post('/api/affaires', async (req, res) => {
+    try {
+        const data = await readData();
+        const newAffaire = {
+            id: Date.now().toString(),
+            name: req.body.name,
+            clientId: req.body.clientId
+        };
+        data.affaires.push(newAffaire);
+        await writeData(data);
+        res.json(newAffaire);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de création' });
+    }
+});
+
+// DELETE - Supprimer une affaire
+app.delete('/api/affaires/:id', async (req, res) => {
+    try {
+        const data = await readData();
+        data.affaires = data.affaires.filter(a => a.id !== req.params.id);
+        await writeData(data);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de suppression' });
+    }
+});
+
+// ===== Routes pour les Postes =====
+
+// GET - Récupérer tous les postes
+app.get('/api/postes', async (req, res) => {
+    try {
+        const data = await readData();
+        res.json({ postes: data.postes });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// POST - Créer un nouveau poste
+app.post('/api/postes', async (req, res) => {
+    try {
+        const data = await readData();
+        const newPoste = {
+            id: Date.now().toString(),
+            name: req.body.name
+        };
+        data.postes.push(newPoste);
+        await writeData(data);
+        res.json(newPoste);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de création' });
+    }
+});
+
+// DELETE - Supprimer un poste
+app.delete('/api/postes/:id', async (req, res) => {
+    try {
+        const data = await readData();
+        data.postes = data.postes.filter(p => p.id !== req.params.id);
+        await writeData(data);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de suppression' });
     }
 });
 
