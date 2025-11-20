@@ -609,6 +609,7 @@ async function addClient() {
         if (response.ok) {
             const newClient = await response.json();
             clients.push(newClient);
+            localStorage.setItem('affaires_clients', JSON.stringify(clients));
             input.value = '';
             renderClients();
             updateSelects();
@@ -630,6 +631,8 @@ async function deleteClient(id) {
         if (response.ok) {
             clients = clients.filter(c => c.id !== id);
             affaires = affaires.filter(a => a.clientId !== id);
+            localStorage.setItem('affaires_clients', JSON.stringify(clients));
+            localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
             renderClients();
             renderAffaires();
             updateSelects();
@@ -680,6 +683,7 @@ async function addAffaire() {
         if (response.ok) {
             const newAffaire = await response.json();
             affaires.push(newAffaire);
+            localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
             input.value = '';
             document.getElementById('newAffaireClient').value = '';
             renderAffaires();
@@ -701,6 +705,7 @@ async function deleteAffaire(id) {
 
         if (response.ok) {
             affaires = affaires.filter(a => a.id !== id);
+            localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
             renderAffaires();
             updateSelects();
         }
@@ -747,6 +752,7 @@ async function addPoste() {
         if (response.ok) {
             const newPoste = await response.json();
             postes.push(newPoste);
+            localStorage.setItem('affaires_postes', JSON.stringify(postes));
             input.value = '';
             renderPostes();
             updateSelects();
@@ -767,6 +773,7 @@ async function deletePoste(id) {
 
         if (response.ok) {
             postes = postes.filter(p => p.id !== id);
+            localStorage.setItem('affaires_postes', JSON.stringify(postes));
             renderPostes();
             updateSelects();
         }
