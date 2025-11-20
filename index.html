@@ -313,6 +313,123 @@
             color: #ff6b6b;
         }
 
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            color: #e94560;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .user-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .user-type-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #a0a0a0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .user-type-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-type-btn.active {
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e94560;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #a0a0a0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #e8e8e8;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         @media (max-width: 380px) {
             header h1 {
                 font-size: 1.5rem;
@@ -325,12 +442,54 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔧 Suivi Soudure</h1>
-            <p>Gestion des heures de soudure</p>
-            <div id="syncStatus" class="sync-status"></div>
-        </header>
+    <!-- Écran de connexion -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h2>🔧 Suivi Soudure</h2>
+                <p>Connectez-vous pour continuer</p>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <form id="loginForm">
+                <div class="user-type-selector">
+                    <button type="button" class="user-type-btn active" data-type="user">
+                        👤 Utilisateur
+                    </button>
+                    <button type="button" class="user-type-btn" data-type="admin">
+                        👨‍💼 Admin
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label for="accessCode">Code d'accès</label>
+                    <input type="password" id="accessCode" placeholder="Entrez votre code" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application principale -->
+    <div id="appScreen" class="hidden">
+        <div class="container">
+            <header>
+                <h1>🔧 Suivi Soudure</h1>
+                <p>Gestion des heures de soudure</p>
+                <div id="syncStatus" class="sync-status"></div>
+            </header>
+
+            <div class="user-info">
+                <div class="user-badge">
+                    <span id="userIcon">👤</span>
+                    <span id="userType">Utilisateur</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">Déconnexion</button>
+            </div>
 
         <div class="total-section">
             <div class="total-label">Total des heures</div>
@@ -351,6 +510,7 @@
                     <p style="font-size: 0.85rem;">Appuyez sur + pour ajouter</p>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 
@@ -395,16 +555,122 @@
     <script>
         // Configuration API
         const API_URL = window.location.origin + '/api';
-        
+
+        // Configuration des utilisateurs
+        const USER_CODES = {
+            admin: 'ADMIN',
+            user: 'SOMEPRE'
+        };
+
         // État de l'application
         let entries = [];
         let editingId = null;
+        let currentUser = null;
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            setupLoginForm();
+        });
+
+        // Vérifier l'authentification au chargement
+        function checkAuth() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showApp();
+            }
+        }
+
+        // Configuration du formulaire de connexion
+        function setupLoginForm() {
+            const loginForm = document.getElementById('loginForm');
+            const userTypeBtns = document.querySelectorAll('.user-type-btn');
+            let selectedType = 'user';
+
+            // Gestion des boutons de type d'utilisateur
+            userTypeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    userTypeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedType = btn.dataset.type;
+                });
+            });
+
+            // Soumission du formulaire de connexion
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const code = document.getElementById('accessCode').value;
+
+                if (selectedType === 'admin' && code === USER_CODES.admin) {
+                    login('admin');
+                } else if (selectedType === 'user' && code === USER_CODES.user) {
+                    login('user');
+                } else {
+                    showError('Code d\'accès incorrect');
+                }
+            });
+        }
+
+        // Connexion
+        function login(userType) {
+            currentUser = { type: userType };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            document.getElementById('accessCode').value = '';
+            hideError();
+            showApp();
+        }
+
+        // Déconnexion
+        function logout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+            }
+        }
+
+        // Afficher l'application
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+
+            // Mettre à jour l'interface utilisateur
+            const userIcon = document.getElementById('userIcon');
+            const userTypeText = document.getElementById('userType');
+
+            if (currentUser.type === 'admin') {
+                userIcon.textContent = '👨‍💼';
+                userTypeText.textContent = 'Administrateur';
+            } else {
+                userIcon.textContent = '👤';
+                userTypeText.textContent = 'Utilisateur';
+            }
+
+            // Charger les données
             loadEntries();
             document.getElementById('entryForm').addEventListener('submit', handleSubmit);
-        });
+        }
+
+        // Vérifier si l'utilisateur est admin
+        function isAdmin() {
+            return currentUser && currentUser.type === 'admin';
+        }
+
+        // Afficher une erreur
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+            setTimeout(() => hideError(), 3000);
+        }
+
+        // Masquer l'erreur
+        function hideError() {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.classList.remove('show');
+        }
 
         // Charger les entrées depuis le serveur
         async function loadEntries() {
@@ -485,6 +751,11 @@
 
         // Supprimer une entrée
         async function deleteEntry(id) {
+            if (!isAdmin()) {
+                alert('Seuls les administrateurs peuvent supprimer les entrées');
+                return;
+            }
+
             if (!confirm('Supprimer cette entrée ?')) return;
             
             try {
@@ -548,6 +819,15 @@
                     month: 'short',
                     year: 'numeric'
                 });
+
+                // Afficher les boutons de modification/suppression uniquement pour les admins
+                const actionsHTML = isAdmin() ? `
+                    <div class="entry-actions">
+                        <button class="btn btn-secondary" onclick="editEntry('${entry.id}')">✏️ Modifier</button>
+                        <button class="btn btn-danger" onclick="deleteEntry('${entry.id}')">🗑️ Supprimer</button>
+                    </div>
+                ` : '';
+
                 return `
                     <div class="entry-item">
                         <div class="entry-header">
@@ -556,10 +836,7 @@
                         </div>
                         <div class="entry-affaire">${escapeHtml(entry.affaire)}</div>
                         <div class="entry-date">📅 ${date}</div>
-                        <div class="entry-actions">
-                            <button class="btn btn-secondary" onclick="editEntry('${entry.id}')">✏️ Modifier</button>
-                            <button class="btn btn-danger" onclick="deleteEntry('${entry.id}')">🗑️ Supprimer</button>
-                        </div>
+                        ${actionsHTML}
                     </div>
                 `;
             }).join('');
@@ -591,6 +868,11 @@
 
         // Éditer une entrée
         function editEntry(id) {
+            if (!isAdmin()) {
+                alert('Seuls les administrateurs peuvent modifier les entrées');
+                return;
+            }
+
             const entry = entries.find(e => e.id === id);
             if (!entry) return;
 
@@ -598,7 +880,7 @@
             document.getElementById('modal').classList.add('active');
             document.getElementById('modalTitle').textContent = 'Modifier l\'entrée';
             document.getElementById('submitBtnText').textContent = 'Mettre à jour';
-            
+
             document.getElementById('client').value = entry.client;
             document.getElementById('affaire').value = entry.affaire;
             document.getElementById('hours').value = entry.hours;
@@ -607,7 +889,13 @@
         // Soumettre le formulaire
         async function handleSubmit(e) {
             e.preventDefault();
-            
+
+            // Vérifier les permissions pour la modification
+            if (editingId && !isAdmin()) {
+                alert('Seuls les administrateurs peuvent modifier les entrées');
+                return;
+            }
+
             const entryData = {
                 client: document.getElementById('client').value.trim(),
                 affaire: document.getElementById('affaire').value.trim(),
