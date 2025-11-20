@@ -128,11 +128,13 @@ function hideError() {
 
 // ===== GESTION DES ONGLETS =====
 
-function switchTab(tabName) {
+function switchTab(tabName, evt) {
     currentTab = tabName;
 
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (evt && evt.target) {
+        evt.target.classList.add('active');
+    }
 
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
@@ -331,23 +333,55 @@ function renderEntries() {
         return;
     }
 
+    // Grouper les entrées par client/affaire/poste
+    const grouped = {};
     let totalHours = 0;
-    container.innerHTML = entries.map(entry => {
+
+    entries.forEach(entry => {
         totalHours += parseFloat(entry.hours) || 0;
-        const date = new Date(entry.date).toLocaleDateString('fr-FR', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
+        const key = `${entry.clientId}_${entry.affaireId}_${entry.posteId}`;
 
-        const client = clients.find(c => c.id === entry.clientId);
-        const affaire = affaires.find(a => a.id === entry.affaireId);
-        const poste = postes.find(p => p.id === entry.posteId);
+        if (!grouped[key]) {
+            grouped[key] = {
+                clientId: entry.clientId,
+                affaireId: entry.affaireId,
+                posteId: entry.posteId,
+                totalHours: 0,
+                entries: []
+            };
+        }
 
-        const actionsHTML = isAdmin() ? `
-            <div class="entry-actions">
-                <button class="btn btn-secondary" onclick="editEntry('${entry.id}')">✏️ Modifier</button>
-                <button class="btn btn-danger" onclick="deleteEntry('${entry.id}')">🗑️ Supprimer</button>
+        grouped[key].totalHours += parseFloat(entry.hours) || 0;
+        grouped[key].entries.push(entry);
+    });
+
+    // Afficher les groupes
+    container.innerHTML = Object.values(grouped).map(group => {
+        const client = clients.find(c => c.id === group.clientId);
+        const affaire = affaires.find(a => a.id === group.affaireId);
+        const poste = postes.find(p => p.id === group.posteId);
+
+        // Détails des saisies individuelles pour les admins
+        const detailsHTML = isAdmin() ? `
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 0.85rem; color: #888; margin-bottom: 8px;">Détails des saisies :</div>
+                ${group.entries.map(entry => {
+                    const date = new Date(entry.date).toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                    return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 5px 10px; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                            <span style="font-size: 0.8rem; color: #999;">📅 ${date}</span>
+                            <span style="font-size: 0.8rem; color: #e94560;">${entry.hours}h</span>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="editEntry('${entry.id}')">✏️</button>
+                                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteEntry('${entry.id}')">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
             </div>
         ` : '';
 
@@ -355,17 +389,19 @@ function renderEntries() {
             <div class="entry-item">
                 <div class="entry-header">
                     <span class="entry-client">${escapeHtml(client ? client.name : 'Client inconnu')}</span>
-                    <span class="entry-hours">${entry.hours}h</span>
+                    <span class="entry-hours">${group.totalHours.toFixed(1)}h</span>
                 </div>
                 <div class="entry-info">📁 ${escapeHtml(affaire ? affaire.name : 'Affaire inconnue')}</div>
                 <div class="entry-info">🔧 ${escapeHtml(poste ? poste.name : 'Poste inconnu')}</div>
-                <div class="entry-date">📅 ${date}</div>
-                ${actionsHTML}
+                <div class="entry-info" style="color: #666; font-size: 0.85rem;">
+                    ${group.entries.length} saisie${group.entries.length > 1 ? 's' : ''}
+                </div>
+                ${detailsHTML}
             </div>
         `;
     }).join('');
 
-    totalEl.textContent = `${totalHours}h`;
+    totalEl.textContent = `${totalHours.toFixed(1)}h`;
 }
 
 function escapeHtml(text) {
