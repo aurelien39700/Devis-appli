@@ -191,11 +191,14 @@ function setupEventListeners() {
 function handleAffaireChange() {
     const affaireSelect = document.getElementById('affaire');
     const newAffaireGroup = document.getElementById('newAffaireGroup');
+    const posteGroup = document.querySelector('label[for="poste"]').parentElement;
 
     if (affaireSelect.value === '__new__') {
         newAffaireGroup.style.display = 'block';
+        posteGroup.style.display = 'none'; // Masquer le poste pour nouvelle affaire soudure
     } else {
         newAffaireGroup.style.display = 'none';
+        posteGroup.style.display = 'block'; // Afficher le poste pour affaires existantes
     }
 }
 
@@ -557,7 +560,7 @@ function renderEntries() {
 
         // Détails par poste
         const postesDetailsHTML = Object.entries(group.posteDetails).map(([posteName, hours]) => {
-            return `<span style="display: inline-block; background: rgba(233, 69, 96, 0.15); padding: 3px 8px; border-radius: 12px; font-size: 0.85rem; margin-right: 5px; margin-bottom: 5px;">🔧 ${escapeHtml(posteName)}: ${hours.toFixed(1)}h</span>`;
+            return `<span style="display: inline-block; background: rgba(33, 150, 243, 0.15); padding: 3px 8px; border-radius: 12px; font-size: 0.85rem; margin-right: 5px; margin-bottom: 5px;">🔧 ${escapeHtml(posteName)}: ${hours.toFixed(1)}h</span>`;
         }).join('');
 
         // Détails des saisies individuelles pour les admins
@@ -578,7 +581,7 @@ function renderEntries() {
                                 <span style="font-size: 0.75rem; color: #777;">🔧 ${escapeHtml(poste ? poste.name : 'Inconnu')}</span>
                                 ${entry.enteredBy ? `<span style="font-size: 0.75rem; color: #666;">👤 Saisi par: ${escapeHtml(entry.enteredBy)}</span>` : ''}
                             </div>
-                            <span style="font-size: 0.8rem; color: #e94560; font-weight: 600;">${entry.hours}h</span>
+                            <span style="font-size: 0.8rem; color: #2196F3; font-weight: 600;">${entry.hours}h</span>
                             <div style="display: flex; gap: 5px;">
                                 <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="editEntry('${entry.id}')">✏️</button>
                                 <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteEntry('${entry.id}')">🗑️</button>
@@ -647,10 +650,10 @@ function renderQuickAccess(grouped) {
                 onclick="quickSelectAffaire('${group.clientId}', '${group.affaireId}')"
                 style="
                     padding: 10px 16px;
-                    border: 2px solid rgba(233, 69, 96, 0.3);
+                    border: 2px solid rgba(33, 150, 243, 0.3);
                     border-radius: 20px;
-                    background: rgba(233, 69, 96, 0.1);
-                    color: #e94560;
+                    background: rgba(33, 150, 243, 0.1);
+                    color: #2196F3;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     font-size: 0.9rem;
@@ -659,13 +662,13 @@ function renderQuickAccess(grouped) {
                     align-items: center;
                     gap: 6px;
                 "
-                onmouseover="this.style.background='rgba(233, 69, 96, 0.2)'; this.style.borderColor='#e94560';"
-                onmouseout="this.style.background='rgba(233, 69, 96, 0.1)'; this.style.borderColor='rgba(233, 69, 96, 0.3)';"
+                onmouseover="this.style.background='rgba(33, 150, 243, 0.2)'; this.style.borderColor='#2196F3';"
+                onmouseout="this.style.background='rgba(33, 150, 243, 0.1)'; this.style.borderColor='rgba(33, 150, 243, 0.3)';"
             >
                 <span>👥 ${escapeHtml(client ? client.name : 'Client inconnu')}</span>
                 <span style="opacity: 0.7;">•</span>
                 <span>📁 ${escapeHtml(affaire ? affaire.name : 'Affaire inconnue')}</span>
-                <span style="background: rgba(233, 69, 96, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">${group.totalHours.toFixed(1)}h</span>
+                <span style="background: rgba(33, 150, 243, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">${group.totalHours.toFixed(1)}h</span>
             </button>
         `;
     }).join('');
@@ -735,6 +738,7 @@ async function handleSubmit(e) {
     }
 
     let affaireId = document.getElementById('affaire').value;
+    let isNewSoudureAffaire = false;
 
     // Si l'utilisateur veut créer une nouvelle affaire de soudure
     if (affaireId === '__new__') {
@@ -746,6 +750,8 @@ async function handleSubmit(e) {
             alert('Veuillez entrer un nom pour la nouvelle affaire de soudure');
             return;
         }
+
+        isNewSoudureAffaire = true;
 
         // Créer la nouvelle affaire
         try {
@@ -775,10 +781,37 @@ async function handleSubmit(e) {
         }
     }
 
+    // Pour les nouvelles affaires de soudure, trouver ou créer le poste "Soudure"
+    let posteId = document.getElementById('poste').value;
+    if (isNewSoudureAffaire) {
+        let soudurePoste = postes.find(p => p.name.toLowerCase() === 'soudure');
+
+        if (!soudurePoste) {
+            // Créer le poste Soudure
+            try {
+                const response = await fetch(`${API_URL}/postes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'Soudure' })
+                });
+
+                if (response.ok) {
+                    soudurePoste = await response.json();
+                    postes.push(soudurePoste);
+                    localStorage.setItem('affaires_postes', JSON.stringify(postes));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        posteId = soudurePoste.id;
+    }
+
     const entryData = {
         clientId: document.getElementById('client').value,
         affaireId: affaireId,
-        posteId: document.getElementById('poste').value,
+        posteId: posteId,
         hours: document.getElementById('hours').value,
         enteredBy: currentUser.name
     };
@@ -833,7 +866,7 @@ function updateAffairesSelect() {
 
     // Ajouter l'option pour créer une nouvelle affaire (utilisateurs uniquement)
     if (!isAdmin()) {
-        optionsHTML += '<option value="__new__" style="background: rgba(233, 69, 96, 0.2); font-weight: bold;">➕ Nouvelle affaire de soudure</option>';
+        optionsHTML += '<option value="__new__" style="background: rgba(33, 150, 243, 0.2); font-weight: bold;">➕ Nouvelle affaire de soudure</option>';
     }
 
     // Ajouter les affaires existantes avec description si disponible
