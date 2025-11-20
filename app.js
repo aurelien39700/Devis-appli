@@ -58,19 +58,27 @@ async function setupLoginForm() {
 
     updateUserSelect();
 
+    // Initialiser l'état du formulaire (par défaut en mode utilisateur)
+    const userSelect = document.getElementById('userSelect');
+    userSelect.required = true;
+
     userTypeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             userTypeBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             selectedType = btn.dataset.type;
 
+            const userSelect = document.getElementById('userSelect');
+
             // Afficher/masquer le sélecteur d'utilisateur
             if (selectedType === 'user') {
                 userSelectGroup.style.display = 'block';
+                userSelect.required = true;
                 accessCodeLabel.textContent = 'Mot de passe';
                 accessCodeInput.placeholder = 'Entrez votre mot de passe';
             } else {
                 userSelectGroup.style.display = 'none';
+                userSelect.required = false;
                 accessCodeLabel.textContent = 'Code Admin';
                 accessCodeInput.placeholder = 'Entrez le code admin';
             }
