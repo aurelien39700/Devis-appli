@@ -574,9 +574,16 @@
                     </button>
                 </div>
 
+                <div class="form-group" id="userSelectGroup">
+                    <label for="userSelect">Utilisateur</label>
+                    <select id="userSelect" required>
+                        <option value="">Sélectionner votre nom</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
-                    <label for="accessCode">Code d'accès</label>
-                    <input type="password" id="accessCode" placeholder="Entrez votre code" required autocomplete="off">
+                    <label for="accessCode">Mot de passe</label>
+                    <input type="password" id="accessCode" placeholder="Entrez votre mot de passe" required autocomplete="off">
                 </div>
 
                 <button type="submit" class="btn btn-primary">
@@ -669,6 +676,16 @@
                         <button class="btn btn-primary" onclick="addPoste()">Ajouter</button>
                     </div>
                     <div id="postesList" class="items-list"></div>
+                </div>
+
+                <div class="card management-section">
+                    <h3 style="margin-bottom: 15px; color: #e94560;">👤 Utilisateurs</h3>
+                    <div class="add-item-form">
+                        <input type="text" id="newUserName" placeholder="Nom de l'utilisateur">
+                        <input type="password" id="newUserPassword" placeholder="Mot de passe">
+                        <button class="btn btn-primary" onclick="addUser()">Ajouter</button>
+                    </div>
+                    <div id="usersList" class="items-list"></div>
                 </div>
             </div>
         </div>

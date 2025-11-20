@@ -24,7 +24,8 @@ async function initDataFile() {
             entries: [],
             clients: [],
             affaires: [],
-            postes: []
+            postes: [],
+            users: []
         }));
     }
 }
@@ -39,14 +40,16 @@ async function readData() {
             entries: parsed.entries || [],
             clients: parsed.clients || [],
             affaires: parsed.affaires || [],
-            postes: parsed.postes || []
+            postes: parsed.postes || [],
+            users: parsed.users || []
         };
     } catch (error) {
         return {
             entries: [],
             clients: [],
             affaires: [],
-            postes: []
+            postes: [],
+            users: []
         };
     }
 }
@@ -250,6 +253,47 @@ app.delete('/api/postes/:id', async (req, res) => {
     try {
         const data = await readData();
         data.postes = data.postes.filter(p => p.id !== req.params.id);
+        await writeData(data);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de suppression' });
+    }
+});
+
+// ===== Routes pour les Utilisateurs =====
+
+// GET - Récupérer tous les utilisateurs
+app.get('/api/users', async (req, res) => {
+    try {
+        const data = await readData();
+        res.json({ users: data.users });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// POST - Créer un nouvel utilisateur
+app.post('/api/users', async (req, res) => {
+    try {
+        const data = await readData();
+        const newUser = {
+            id: Date.now().toString(),
+            name: req.body.name,
+            password: req.body.password
+        };
+        data.users.push(newUser);
+        await writeData(data);
+        res.json(newUser);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de création' });
+    }
+});
+
+// DELETE - Supprimer un utilisateur
+app.delete('/api/users/:id', async (req, res) => {
+    try {
+        const data = await readData();
+        data.users = data.users.filter(u => u.id !== req.params.id);
         await writeData(data);
         res.json({ success: true });
     } catch (error) {

@@ -12,6 +12,7 @@ let entries = [];
 let clients = [];
 let affaires = [];
 let postes = [];
+let users = [];
 let editingId = null;
 let currentUser = null;
 let currentTab = 'entries';
@@ -32,16 +33,47 @@ function checkAuth() {
     }
 }
 
-function setupLoginForm() {
+async function setupLoginForm() {
+    // Charger les utilisateurs depuis le serveur
+    await loadUsersForLogin();
+
     const loginForm = document.getElementById('loginForm');
     const userTypeBtns = document.querySelectorAll('.user-type-btn');
+    const userSelectGroup = document.getElementById('userSelectGroup');
+    const accessCodeLabel = document.querySelector('label[for="accessCode"]');
+    const accessCodeInput = document.getElementById('accessCode');
     let selectedType = 'user';
+
+    // Fonction pour mettre à jour la liste des utilisateurs
+    function updateUserSelect() {
+        const userSelect = document.getElementById('userSelect');
+        userSelect.innerHTML = '<option value="">Sélectionner votre nom</option>';
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            userSelect.appendChild(option);
+        });
+    }
+
+    updateUserSelect();
 
     userTypeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             userTypeBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             selectedType = btn.dataset.type;
+
+            // Afficher/masquer le sélecteur d'utilisateur
+            if (selectedType === 'user') {
+                userSelectGroup.style.display = 'block';
+                accessCodeLabel.textContent = 'Mot de passe';
+                accessCodeInput.placeholder = 'Entrez votre mot de passe';
+            } else {
+                userSelectGroup.style.display = 'none';
+                accessCodeLabel.textContent = 'Code Admin';
+                accessCodeInput.placeholder = 'Entrez le code admin';
+            }
         });
     });
 
@@ -50,17 +82,54 @@ function setupLoginForm() {
         const code = document.getElementById('accessCode').value;
 
         if (selectedType === 'admin' && code === USER_CODES.admin) {
-            login('admin');
-        } else if (selectedType === 'user' && code === USER_CODES.user) {
-            login('user');
+            login('admin', null);
+        } else if (selectedType === 'user') {
+            const userSelect = document.getElementById('userSelect');
+            const selectedUserId = userSelect.value;
+
+            if (!selectedUserId) {
+                showError('Veuillez sélectionner votre nom');
+                return;
+            }
+
+            const user = users.find(u => u.id === selectedUserId);
+            if (user && user.password === code) {
+                login('user', user);
+            } else {
+                showError('Mot de passe incorrect');
+            }
         } else {
             showError('Code d\'accès incorrect');
         }
     });
 }
 
-function login(userType) {
-    currentUser = { type: userType };
+async function loadUsersForLogin() {
+    try {
+        const response = await fetch(`${API_URL}/users`);
+        if (response.ok) {
+            const data = await response.json();
+            users = data.users || [];
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        const saved = localStorage.getItem('affaires_users');
+        if (saved) {
+            users = JSON.parse(saved);
+        }
+    }
+}
+
+function login(userType, user) {
+    if (userType === 'admin') {
+        currentUser = { type: 'admin', name: 'Administrateur' };
+    } else {
+        currentUser = {
+            type: 'user',
+            name: user.name,
+            userId: user.id
+        };
+    }
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     document.getElementById('accessCode').value = '';
     hideError();
@@ -89,11 +158,11 @@ function showApp() {
 
     if (currentUser.type === 'admin') {
         userIcon.textContent = '👨‍💼';
-        userTypeText.textContent = 'Administrateur';
+        userTypeText.textContent = currentUser.name;
         document.getElementById('managementTabBtn').style.display = 'block';
     } else {
         userIcon.textContent = '👤';
-        userTypeText.textContent = 'Utilisateur';
+        userTypeText.textContent = currentUser.name;
     }
 
     loadAllData();
@@ -153,7 +222,8 @@ async function loadAllData() {
         loadEntries(),
         loadClients(),
         loadAffaires(),
-        loadPostes()
+        loadPostes(),
+        loadUsers()
     ]);
     updateSelects();
 }
@@ -392,6 +462,7 @@ function renderEntries() {
                             <div style="display: flex; flex-direction: column; gap: 2px;">
                                 <span style="font-size: 0.8rem; color: #999;">📅 ${date}</span>
                                 <span style="font-size: 0.75rem; color: #777;">🔧 ${escapeHtml(poste ? poste.name : 'Inconnu')}</span>
+                                ${entry.enteredBy ? `<span style="font-size: 0.75rem; color: #666;">👤 Saisi par: ${escapeHtml(entry.enteredBy)}</span>` : ''}
                             </div>
                             <span style="font-size: 0.8rem; color: #e94560; font-weight: 600;">${entry.hours}h</span>
                             <div style="display: flex; gap: 5px;">
@@ -535,7 +606,8 @@ async function handleSubmit(e) {
         clientId: document.getElementById('client').value,
         affaireId: document.getElementById('affaire').value,
         posteId: document.getElementById('poste').value,
-        hours: document.getElementById('hours').value
+        hours: document.getElementById('hours').value,
+        enteredBy: currentUser.name
     };
 
     if (editingId) {
@@ -794,6 +866,92 @@ function renderPostes() {
         <div class="item-tag">
             <span>${escapeHtml(poste.name)}</span>
             <button class="delete-btn" onclick="deletePoste('${poste.id}')">×</button>
+        </div>
+    `).join('');
+}
+
+// ===== GESTION DES UTILISATEURS =====
+
+async function loadUsers() {
+    try {
+        const response = await fetch(`${API_URL}/users`);
+        if (response.ok) {
+            const data = await response.json();
+            users = data.users || [];
+            localStorage.setItem('affaires_users', JSON.stringify(users));
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        const saved = localStorage.getItem('affaires_users');
+        if (saved) {
+            users = JSON.parse(saved);
+        }
+    }
+    renderUsers();
+}
+
+async function addUser() {
+    const nameInput = document.getElementById('newUserName');
+    const passwordInput = document.getElementById('newUserPassword');
+    const name = nameInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    if (!name || !password) {
+        alert('Veuillez entrer un nom et un mot de passe');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, password })
+        });
+
+        if (response.ok) {
+            const newUser = await response.json();
+            users.push(newUser);
+            localStorage.setItem('affaires_users', JSON.stringify(users));
+            nameInput.value = '';
+            passwordInput.value = '';
+            renderUsers();
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'ajout de l\'utilisateur');
+    }
+}
+
+async function deleteUser(id) {
+    if (!confirm('Supprimer cet utilisateur ?')) return;
+
+    try {
+        const response = await fetch(`${API_URL}/users/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            users = users.filter(u => u.id !== id);
+            localStorage.setItem('affaires_users', JSON.stringify(users));
+            renderUsers();
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+function renderUsers() {
+    const container = document.getElementById('usersList');
+    if (users.length === 0) {
+        container.innerHTML = '<p style="color: #666;">Aucun utilisateur</p>';
+        return;
+    }
+
+    container.innerHTML = users.map(user => `
+        <div class="item-tag">
+            <span>${escapeHtml(user.name)}</span>
+            <button class="delete-btn" onclick="deleteUser('${user.id}')">×</button>
         </div>
     `).join('');
 }
