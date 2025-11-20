@@ -198,7 +198,8 @@ app.post('/api/affaires', async (req, res) => {
         const newAffaire = {
             id: Date.now().toString(),
             name: req.body.name,
-            clientId: req.body.clientId
+            clientId: req.body.clientId,
+            description: req.body.description || ''
         };
         data.affaires.push(newAffaire);
         await writeData(data);

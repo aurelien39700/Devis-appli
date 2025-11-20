@@ -180,11 +180,23 @@ function showApp() {
 function setupEventListeners() {
     document.getElementById('entryForm').addEventListener('submit', handleSubmit);
     document.getElementById('client').addEventListener('change', updateAffairesSelect);
+    document.getElementById('affaire').addEventListener('change', handleAffaireChange);
     document.getElementById('modal').addEventListener('click', (e) => {
         if (e.target.id === 'modal') {
             closeModal();
         }
     });
+}
+
+function handleAffaireChange() {
+    const affaireSelect = document.getElementById('affaire');
+    const newAffaireGroup = document.getElementById('newAffaireGroup');
+
+    if (affaireSelect.value === '__new__') {
+        newAffaireGroup.style.display = 'block';
+    } else {
+        newAffaireGroup.style.display = 'none';
+    }
 }
 
 function isAdmin() {
@@ -680,11 +692,15 @@ function openModal() {
     document.getElementById('modalTitle').textContent = 'Nouvelle entrée';
     document.getElementById('submitBtnText').textContent = 'Ajouter';
     document.getElementById('entryForm').reset();
+    document.getElementById('newAffaireGroup').style.display = 'none';
+    document.getElementById('newAffaireName').value = '';
+    document.getElementById('newAffaireDesc').value = '';
     editingId = null;
 }
 
 function closeModal() {
     document.getElementById('modal').classList.remove('active');
+    document.getElementById('newAffaireGroup').style.display = 'none';
     editingId = null;
 }
 
@@ -718,9 +734,50 @@ async function handleSubmit(e) {
         return;
     }
 
+    let affaireId = document.getElementById('affaire').value;
+
+    // Si l'utilisateur veut créer une nouvelle affaire de soudure
+    if (affaireId === '__new__') {
+        const newAffaireName = document.getElementById('newAffaireName').value.trim();
+        const newAffaireDesc = document.getElementById('newAffaireDesc').value.trim();
+        const clientId = document.getElementById('client').value;
+
+        if (!newAffaireName) {
+            alert('Veuillez entrer un nom pour la nouvelle affaire de soudure');
+            return;
+        }
+
+        // Créer la nouvelle affaire
+        try {
+            const response = await fetch(`${API_URL}/affaires`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: newAffaireName,
+                    clientId: clientId,
+                    description: newAffaireDesc
+                })
+            });
+
+            if (response.ok) {
+                const newAffaire = await response.json();
+                affaires.push(newAffaire);
+                localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
+                affaireId = newAffaire.id;
+                updateSelects();
+            } else {
+                throw new Error('Erreur serveur');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la création de l\'affaire');
+            return;
+        }
+    }
+
     const entryData = {
         clientId: document.getElementById('client').value,
-        affaireId: document.getElementById('affaire').value,
+        affaireId: affaireId,
         posteId: document.getElementById('poste').value,
         hours: document.getElementById('hours').value,
         enteredBy: currentUser.name
@@ -772,8 +829,22 @@ function updateAffairesSelect() {
         );
     }
 
-    affaireSelect.innerHTML = '<option value="">Sélectionner une affaire</option>' +
-        clientAffaires.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+    let optionsHTML = '<option value="">Sélectionner une affaire</option>';
+
+    // Ajouter l'option pour créer une nouvelle affaire (utilisateurs uniquement)
+    if (!isAdmin()) {
+        optionsHTML += '<option value="__new__" style="background: rgba(233, 69, 96, 0.2); font-weight: bold;">➕ Nouvelle affaire de soudure</option>';
+    }
+
+    // Ajouter les affaires existantes avec description si disponible
+    optionsHTML += clientAffaires.map(a => {
+        const displayText = a.description
+            ? `${escapeHtml(a.name)} - ${escapeHtml(a.description.substring(0, 50))}${a.description.length > 50 ? '...' : ''}`
+            : escapeHtml(a.name);
+        return `<option value="${a.id}" title="${escapeHtml(a.description || '')}">${displayText}</option>`;
+    }).join('');
+
+    affaireSelect.innerHTML = optionsHTML;
 }
 
 // ===== GESTION (ADMIN) =====
@@ -856,7 +927,9 @@ function renderClients() {
 async function addAffaire() {
     const clientId = document.getElementById('newAffaireClient').value;
     const input = document.getElementById('newAffaire');
+    const descriptionInput = document.getElementById('newAffaireDescription');
     const name = input.value.trim();
+    const description = descriptionInput ? descriptionInput.value.trim() : '';
 
     if (!clientId) {
         alert('Veuillez sélectionner un client');
@@ -872,7 +945,7 @@ async function addAffaire() {
         const response = await fetch(`${API_URL}/affaires`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, clientId })
+            body: JSON.stringify({ name, clientId, description })
         });
 
         if (response.ok) {
@@ -880,6 +953,7 @@ async function addAffaire() {
             affaires.push(newAffaire);
             localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
             input.value = '';
+            if (descriptionInput) descriptionInput.value = '';
             document.getElementById('newAffaireClient').value = '';
             renderAffaires();
             updateSelects();
