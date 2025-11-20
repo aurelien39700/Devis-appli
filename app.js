@@ -234,6 +234,7 @@ async function loadAllData() {
         loadUsers()
     ]);
     updateSelects();
+    renderEntries(); // Re-render après que tout soit chargé
 }
 
 async function loadEntries() {
@@ -252,7 +253,6 @@ async function loadEntries() {
         entries = saved ? JSON.parse(saved) : [];
         updateSyncStatus('error', 'Mode hors-ligne');
     }
-    renderEntries();
 }
 
 async function loadClients() {
@@ -518,7 +518,21 @@ function renderQuickAccess(grouped) {
 
     card.style.display = 'block';
 
-    container.innerHTML = Object.values(grouped).map(group => {
+    // Filtrer pour les utilisateurs non-admin (uniquement soudure)
+    let groupsToDisplay = Object.values(grouped);
+    if (!isAdmin()) {
+        groupsToDisplay = groupsToDisplay.filter(group => {
+            const affaire = affaires.find(a => a.id === group.affaireId);
+            return affaire && affaire.name.toLowerCase().includes('soudure');
+        });
+    }
+
+    if (groupsToDisplay.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+
+    container.innerHTML = groupsToDisplay.map(group => {
         const client = clients.find(c => c.id === group.clientId);
         const affaire = affaires.find(a => a.id === group.affaireId);
 
@@ -655,7 +669,14 @@ function updateAffairesSelect() {
     }
 
     affaireSelect.disabled = false;
-    const clientAffaires = affaires.filter(a => a.clientId === clientId);
+    let clientAffaires = affaires.filter(a => a.clientId === clientId);
+
+    // Pour les utilisateurs non-admin, filtrer uniquement les affaires de soudure
+    if (!isAdmin()) {
+        clientAffaires = clientAffaires.filter(a =>
+            a.name.toLowerCase().includes('soudure')
+        );
+    }
 
     affaireSelect.innerHTML = '<option value="">Sélectionner une affaire</option>' +
         clientAffaires.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
