@@ -279,8 +279,41 @@ async function loadEntries() {
         const response = await fetch(`${API_URL}/entries`);
         if (response.ok) {
             const data = await response.json();
-            // Le serveur fait autorité - toujours utiliser les données du serveur
-            entries = data.entries || [];
+            const serverEntries = data.entries || [];
+
+            // Restauration initiale si serveur vide mais localStorage plein
+            if (serverEntries.length === 0) {
+                const saved = localStorage.getItem('affaires_entries');
+                const localEntries = saved ? JSON.parse(saved) : [];
+
+                if (localEntries.length > 0 && !sessionStorage.getItem('restored_entries')) {
+                    console.log('Restauration des entrées depuis localStorage');
+                    updateSyncStatus('syncing', 'Restauration...');
+                    for (const entry of localEntries) {
+                        try {
+                            await fetch(`${API_URL}/entries`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(entry)
+                            });
+                        } catch (e) {
+                            console.error('Erreur de resync entry:', e);
+                        }
+                    }
+                    sessionStorage.setItem('restored_entries', 'true');
+                    // Recharger depuis le serveur
+                    const refreshResponse = await fetch(`${API_URL}/entries`);
+                    if (refreshResponse.ok) {
+                        const refreshData = await refreshResponse.json();
+                        entries = refreshData.entries || [];
+                        localStorage.setItem('affaires_entries', JSON.stringify(entries));
+                        updateSyncStatus('synced', 'Données restaurées');
+                        return;
+                    }
+                }
+            }
+
+            entries = serverEntries;
             localStorage.setItem('affaires_entries', JSON.stringify(entries));
             updateSyncStatus('synced', 'Synchronisé');
         } else {
@@ -288,7 +321,6 @@ async function loadEntries() {
         }
     } catch (error) {
         console.error('Erreur de chargement:', error);
-        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_entries');
         entries = saved ? JSON.parse(saved) : [];
         updateSyncStatus('error', 'Mode hors-ligne');
@@ -300,13 +332,43 @@ async function loadClients() {
         const response = await fetch(`${API_URL}/clients`);
         if (response.ok) {
             const data = await response.json();
-            // Le serveur fait autorité - toujours utiliser les données du serveur
-            clients = data.clients || [];
+            const serverClients = data.clients || [];
+
+            // Restauration initiale si serveur vide mais localStorage plein
+            if (serverClients.length === 0) {
+                const saved = localStorage.getItem('affaires_clients');
+                const localClients = saved ? JSON.parse(saved) : [];
+
+                if (localClients.length > 0 && !sessionStorage.getItem('restored_clients')) {
+                    console.log('Restauration des clients depuis localStorage');
+                    for (const client of localClients) {
+                        try {
+                            await fetch(`${API_URL}/clients`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name: client.name })
+                            });
+                        } catch (e) {
+                            console.error('Erreur de resync client:', e);
+                        }
+                    }
+                    sessionStorage.setItem('restored_clients', 'true');
+                    // Recharger depuis le serveur
+                    const refreshResponse = await fetch(`${API_URL}/clients`);
+                    if (refreshResponse.ok) {
+                        const refreshData = await refreshResponse.json();
+                        clients = refreshData.clients || [];
+                        localStorage.setItem('affaires_clients', JSON.stringify(clients));
+                        return;
+                    }
+                }
+            }
+
+            clients = serverClients;
             localStorage.setItem('affaires_clients', JSON.stringify(clients));
         }
     } catch (error) {
         console.error('Erreur de chargement des clients:', error);
-        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_clients');
         clients = saved ? JSON.parse(saved) : [];
     }
@@ -317,13 +379,48 @@ async function loadAffaires() {
         const response = await fetch(`${API_URL}/affaires`);
         if (response.ok) {
             const data = await response.json();
-            // Le serveur fait autorité - toujours utiliser les données du serveur
-            affaires = data.affaires || [];
+            const serverAffaires = data.affaires || [];
+
+            // Restauration initiale si serveur vide mais localStorage plein
+            if (serverAffaires.length === 0) {
+                const saved = localStorage.getItem('affaires_affaires');
+                const localAffaires = saved ? JSON.parse(saved) : [];
+
+                if (localAffaires.length > 0 && !sessionStorage.getItem('restored_affaires')) {
+                    console.log('Restauration des affaires depuis localStorage');
+                    for (const affaire of localAffaires) {
+                        try {
+                            await fetch(`${API_URL}/affaires`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    name: affaire.name,
+                                    clientId: affaire.clientId,
+                                    description: affaire.description || '',
+                                    statut: affaire.statut || 'en_cours'
+                                })
+                            });
+                        } catch (e) {
+                            console.error('Erreur de resync affaire:', e);
+                        }
+                    }
+                    sessionStorage.setItem('restored_affaires', 'true');
+                    // Recharger depuis le serveur
+                    const refreshResponse = await fetch(`${API_URL}/affaires`);
+                    if (refreshResponse.ok) {
+                        const refreshData = await refreshResponse.json();
+                        affaires = refreshData.affaires || [];
+                        localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
+                        return;
+                    }
+                }
+            }
+
+            affaires = serverAffaires;
             localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
         }
     } catch (error) {
         console.error('Erreur de chargement des affaires:', error);
-        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_affaires');
         affaires = saved ? JSON.parse(saved) : [];
     }
@@ -334,13 +431,43 @@ async function loadPostes() {
         const response = await fetch(`${API_URL}/postes`);
         if (response.ok) {
             const data = await response.json();
-            // Le serveur fait autorité - toujours utiliser les données du serveur
-            postes = data.postes || [];
+            const serverPostes = data.postes || [];
+
+            // Restauration initiale si serveur vide mais localStorage plein
+            if (serverPostes.length === 0) {
+                const saved = localStorage.getItem('affaires_postes');
+                const localPostes = saved ? JSON.parse(saved) : [];
+
+                if (localPostes.length > 0 && !sessionStorage.getItem('restored_postes')) {
+                    console.log('Restauration des postes depuis localStorage');
+                    for (const poste of localPostes) {
+                        try {
+                            await fetch(`${API_URL}/postes`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name: poste.name })
+                            });
+                        } catch (e) {
+                            console.error('Erreur de resync poste:', e);
+                        }
+                    }
+                    sessionStorage.setItem('restored_postes', 'true');
+                    // Recharger depuis le serveur
+                    const refreshResponse = await fetch(`${API_URL}/postes`);
+                    if (refreshResponse.ok) {
+                        const refreshData = await refreshResponse.json();
+                        postes = refreshData.postes || [];
+                        localStorage.setItem('affaires_postes', JSON.stringify(postes));
+                        return;
+                    }
+                }
+            }
+
+            postes = serverPostes;
             localStorage.setItem('affaires_postes', JSON.stringify(postes));
         }
     } catch (error) {
         console.error('Erreur de chargement des postes:', error);
-        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_postes');
         postes = saved ? JSON.parse(saved) : [];
     }
@@ -1125,13 +1252,44 @@ async function loadUsers() {
         const response = await fetch(`${API_URL}/users`);
         if (response.ok) {
             const data = await response.json();
-            // Le serveur fait autorité - toujours utiliser les données du serveur
-            users = data.users || [];
+            const serverUsers = data.users || [];
+
+            // Restauration initiale si serveur vide mais localStorage plein
+            if (serverUsers.length === 0) {
+                const saved = localStorage.getItem('affaires_users');
+                const localUsers = saved ? JSON.parse(saved) : [];
+
+                if (localUsers.length > 0 && !sessionStorage.getItem('restored_users')) {
+                    console.log('Restauration des utilisateurs depuis localStorage');
+                    for (const user of localUsers) {
+                        try {
+                            await fetch(`${API_URL}/users`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name: user.name, password: user.password })
+                            });
+                        } catch (e) {
+                            console.error('Erreur de resync user:', e);
+                        }
+                    }
+                    sessionStorage.setItem('restored_users', 'true');
+                    // Recharger depuis le serveur
+                    const refreshResponse = await fetch(`${API_URL}/users`);
+                    if (refreshResponse.ok) {
+                        const refreshData = await refreshResponse.json();
+                        users = refreshData.users || [];
+                        localStorage.setItem('affaires_users', JSON.stringify(users));
+                        renderUsers();
+                        return;
+                    }
+                }
+            }
+
+            users = serverUsers;
             localStorage.setItem('affaires_users', JSON.stringify(users));
         }
     } catch (error) {
         console.error('Erreur:', error);
-        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_users');
         if (saved) {
             users = JSON.parse(saved);
