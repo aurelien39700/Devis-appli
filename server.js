@@ -199,13 +199,31 @@ app.post('/api/affaires', async (req, res) => {
             id: Date.now().toString(),
             name: req.body.name,
             clientId: req.body.clientId,
-            description: req.body.description || ''
+            description: req.body.description || '',
+            statut: req.body.statut || 'en_cours' // en_cours ou terminee
         };
         data.affaires.push(newAffaire);
         await writeData(data);
         res.json(newAffaire);
     } catch (error) {
         res.status(500).json({ error: 'Erreur de création' });
+    }
+});
+
+// PUT - Modifier le statut d'une affaire
+app.put('/api/affaires/:id/statut', async (req, res) => {
+    try {
+        const data = await readData();
+        const affaire = data.affaires.find(a => a.id === req.params.id);
+        if (affaire) {
+            affaire.statut = req.body.statut;
+            await writeData(data);
+            res.json(affaire);
+        } else {
+            res.status(404).json({ error: 'Affaire non trouvée' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de mise à jour' });
     }
 });
 

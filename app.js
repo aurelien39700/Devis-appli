@@ -627,12 +627,18 @@ function renderQuickAccess(grouped) {
 
     card.style.display = 'block';
 
-    // Filtrer pour les utilisateurs non-admin (uniquement soudure)
+    // Filtrer pour les utilisateurs non-admin (uniquement soudure et en cours)
     let groupsToDisplay = Object.values(grouped);
     if (!isAdmin()) {
         groupsToDisplay = groupsToDisplay.filter(group => {
             const affaire = affaires.find(a => a.id === group.affaireId);
-            return affaire && affaire.name.toLowerCase().includes('soudure');
+            return affaire && affaire.name.toLowerCase().includes('soudure') && (!affaire.statut || affaire.statut === 'en_cours');
+        });
+    } else {
+        // Pour les admins, afficher toutes les affaires en cours
+        groupsToDisplay = groupsToDisplay.filter(group => {
+            const affaire = affaires.find(a => a.id === group.affaireId);
+            return affaire && (!affaire.statut || affaire.statut === 'en_cours');
         });
     }
 
@@ -855,11 +861,14 @@ function updateAffairesSelect() {
     affaireSelect.disabled = false;
     let clientAffaires = affaires.filter(a => a.clientId === clientId);
 
-    // Pour les utilisateurs non-admin, filtrer uniquement les affaires de soudure
+    // Pour les utilisateurs non-admin, filtrer uniquement les affaires de soudure ET en cours
     if (!isAdmin()) {
         clientAffaires = clientAffaires.filter(a =>
-            a.name.toLowerCase().includes('soudure')
+            a.name.toLowerCase().includes('soudure') && (!a.statut || a.statut === 'en_cours')
         );
+    } else {
+        // Pour les admins, afficher toutes les affaires en cours
+        clientAffaires = clientAffaires.filter(a => !a.statut || a.statut === 'en_cours');
     }
 
     let optionsHTML = '<option value="">Sélectionner une affaire</option>';
@@ -997,8 +1006,31 @@ async function addAffaire() {
     }
 }
 
+async function toggleAffaireStatut(id, nouveauStatut) {
+    try {
+        const response = await fetch(`${API_URL}/affaires/${id}/statut`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ statut: nouveauStatut })
+        });
+
+        if (response.ok) {
+            const affaire = affaires.find(a => a.id === id);
+            if (affaire) {
+                affaire.statut = nouveauStatut;
+                localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
+                renderAffaires();
+                updateSelects();
+            }
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la mise à jour du statut');
+    }
+}
+
 async function deleteAffaire(id) {
-    if (!confirm('Supprimer cette affaire ?')) return;
+    if (!confirm('Supprimer définitivement cette affaire ? Cette action est irréversible.')) return;
 
     try {
         const response = await fetch(`${API_URL}/affaires/${id}`, {
@@ -1024,15 +1056,43 @@ function renderAffaires() {
         return;
     }
 
-    container.innerHTML = affaires.map(affaire => {
-        const client = clients.find(c => c.id === affaire.clientId);
-        return `
-            <div class="item-tag">
-                <span>${escapeHtml(affaire.name)} <small style="color: #888;">(${client ? escapeHtml(client.name) : 'Client inconnu'})</small></span>
-                <button class="delete-btn" onclick="deleteAffaire('${affaire.id}')">×</button>
-            </div>
-        `;
-    }).join('');
+    // Séparer les affaires en cours et terminées
+    const affairesEnCours = affaires.filter(a => !a.statut || a.statut === 'en_cours');
+    const affairesTerminees = affaires.filter(a => a.statut === 'terminee');
+
+    let html = '';
+
+    if (affairesEnCours.length > 0) {
+        html += '<div style="margin-bottom: 20px;"><h4 style="color: #2196F3; font-size: 0.9rem; margin-bottom: 10px;">🚀 En cours</h4>';
+        html += affairesEnCours.map(affaire => {
+            const client = clients.find(c => c.id === affaire.clientId);
+            return `
+                <div class="item-tag" style="display: flex; gap: 8px; align-items: center;">
+                    <span style="flex: 1;">${escapeHtml(affaire.name)} <small style="color: #888;">(${client ? escapeHtml(client.name) : 'Client inconnu'})</small></span>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem; background: #4CAF50; border: none;" onclick="toggleAffaireStatut('${affaire.id}', 'terminee')">✓ Terminer</button>
+                    <button class="delete-btn" onclick="deleteAffaire('${affaire.id}')">×</button>
+                </div>
+            `;
+        }).join('');
+        html += '</div>';
+    }
+
+    if (affairesTerminees.length > 0) {
+        html += '<div><h4 style="color: #888; font-size: 0.9rem; margin-bottom: 10px;">✓ Terminées / Livrées</h4>';
+        html += affairesTerminees.map(affaire => {
+            const client = clients.find(c => c.id === affaire.clientId);
+            return `
+                <div class="item-tag" style="display: flex; gap: 8px; align-items: center; opacity: 0.6;">
+                    <span style="flex: 1;">${escapeHtml(affaire.name)} <small style="color: #888;">(${client ? escapeHtml(client.name) : 'Client inconnu'})</small></span>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="toggleAffaireStatut('${affaire.id}', 'en_cours')">↺ Réactiver</button>
+                    <button class="delete-btn" onclick="deleteAffaire('${affaire.id}')">×</button>
+                </div>
+            `;
+        }).join('');
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
 }
 
 async function addPoste() {
