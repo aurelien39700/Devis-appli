@@ -475,6 +475,14 @@
             display: block;
         }
 
+        .library-content {
+            display: none;
+        }
+
+        .library-content.active {
+            display: block;
+        }
+
         .management-section {
             margin-bottom: 20px;
         }
@@ -648,45 +656,65 @@
 
             <!-- Onglet Gestion (Admin uniquement) -->
             <div id="managementTab" class="tab-content">
-                <div class="card management-section">
-                    <h3 style="margin-bottom: 15px; color: #2196F3;">👥 Clients</h3>
-                    <div class="add-item-form">
-                        <input type="text" id="newClient" placeholder="Nom du client">
-                        <button class="btn btn-primary" onclick="addClient()">Ajouter</button>
-                    </div>
-                    <div id="clientsList" class="items-list"></div>
+                <!-- Sous-onglets Bibliothèques -->
+                <div class="tabs" style="margin-bottom: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px;">
+                    <button class="tab-btn active" onclick="switchLibrary('clients', event)">👥 Clients</button>
+                    <button class="tab-btn" onclick="switchLibrary('affaires', event)">📁 Affaires</button>
+                    <button class="tab-btn" onclick="switchLibrary('postes', event)">🔧 Postes</button>
+                    <button class="tab-btn" onclick="switchLibrary('users', event)">👤 Utilisateurs</button>
                 </div>
 
-                <div class="card management-section">
-                    <h3 style="margin-bottom: 15px; color: #2196F3;">📁 Affaires</h3>
-                    <div class="add-item-form">
-                        <select id="newAffaireClient">
-                            <option value="">Sélectionner un client</option>
-                        </select>
-                        <input type="text" id="newAffaire" placeholder="Nom de l'affaire">
-                        <textarea id="newAffaireDescription" placeholder="Description des travaux à réaliser (optionnel)" style="width: 100%; min-height: 60px; padding: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; border-radius: 8px; margin-top: 8px; font-family: inherit; resize: vertical;"></textarea>
-                        <button class="btn btn-primary" onclick="addAffaire()">Ajouter</button>
+                <!-- Bibliothèque Clients -->
+                <div id="libraryClients" class="library-content active">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; color: #2196F3;">👥 Bibliothèque des Clients</h3>
+                        <div class="add-item-form">
+                            <input type="text" id="newClient" placeholder="Nom du client">
+                            <button class="btn btn-primary" onclick="addClient()">➕ Ajouter un client</button>
+                        </div>
+                        <div id="clientsList" class="items-list" style="margin-top: 15px;"></div>
                     </div>
-                    <div id="affairesList" class="items-list"></div>
                 </div>
 
-                <div class="card management-section">
-                    <h3 style="margin-bottom: 15px; color: #2196F3;">🔧 Postes de travail</h3>
-                    <div class="add-item-form">
-                        <input type="text" id="newPoste" placeholder="Nom du poste">
-                        <button class="btn btn-primary" onclick="addPoste()">Ajouter</button>
+                <!-- Bibliothèque Affaires -->
+                <div id="libraryAffaires" class="library-content">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; color: #2196F3;">📁 Bibliothèque des Affaires</h3>
+                        <div class="add-item-form">
+                            <select id="newAffaireClient">
+                                <option value="">Sélectionner un client</option>
+                            </select>
+                            <input type="text" id="newAffaire" placeholder="Nom de l'affaire">
+                            <textarea id="newAffaireDescription" placeholder="Description des travaux à réaliser (optionnel)" style="width: 100%; min-height: 60px; padding: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; border-radius: 8px; margin-top: 8px; font-family: inherit; resize: vertical;"></textarea>
+                            <button class="btn btn-primary" onclick="addAffaire()">➕ Ajouter une affaire</button>
+                        </div>
+                        <div id="affairesList" class="items-list" style="margin-top: 15px;"></div>
                     </div>
-                    <div id="postesList" class="items-list"></div>
                 </div>
 
-                <div class="card management-section">
-                    <h3 style="margin-bottom: 15px; color: #2196F3;">👤 Utilisateurs</h3>
-                    <div class="add-item-form">
-                        <input type="text" id="newUserName" placeholder="Nom de l'utilisateur">
-                        <input type="password" id="newUserPassword" placeholder="Mot de passe">
-                        <button class="btn btn-primary" onclick="addUser()">Ajouter</button>
+                <!-- Bibliothèque Postes -->
+                <div id="libraryPostes" class="library-content">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; color: #2196F3;">🔧 Bibliothèque des Postes de Travail</h3>
+                        <div class="add-item-form">
+                            <input type="text" id="newPoste" placeholder="Nom du poste">
+                            <button class="btn btn-primary" onclick="addPoste()">➕ Ajouter un poste</button>
+                        </div>
+                        <div id="postesList" class="items-list" style="margin-top: 15px;"></div>
                     </div>
-                    <div id="usersList" class="items-list"></div>
+                </div>
+
+                <!-- Bibliothèque Utilisateurs -->
+                <div id="libraryUsers" class="library-content">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; color: #2196F3;">👤 Bibliothèque des Utilisateurs</h3>
+                        <div class="add-item-form">
+                            <input type="text" id="newUserName" placeholder="Nom de l'utilisateur">
+                            <input type="password" id="newUserPassword" placeholder="Mot de passe">
+                            <button class="btn btn-primary" onclick="addUser()">➕ Ajouter un utilisateur</button>
+                        </div>
+                        <div id="usersList" class="items-list" style="margin-top: 15px;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -745,6 +773,7 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

@@ -238,6 +238,28 @@ function switchTab(tabName, evt) {
     }
 }
 
+function switchLibrary(libraryName, evt) {
+    // Retirer l'active de tous les boutons de bibliothèque
+    evt.target.parentElement.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    evt.target.classList.add('active');
+
+    // Cacher toutes les bibliothèques
+    document.querySelectorAll('.library-content').forEach(content => content.classList.remove('active'));
+
+    // Afficher la bibliothèque sélectionnée
+    const libraryMap = {
+        'clients': 'libraryClients',
+        'affaires': 'libraryAffaires',
+        'postes': 'libraryPostes',
+        'users': 'libraryUsers'
+    };
+
+    const libraryId = libraryMap[libraryName];
+    if (libraryId) {
+        document.getElementById(libraryId).classList.add('active');
+    }
+}
+
 // ===== CHARGEMENT DES DONNÉES =====
 
 async function loadAllData() {
@@ -563,8 +585,8 @@ function renderEntries() {
             return `<span style="display: inline-block; background: rgba(33, 150, 243, 0.15); padding: 3px 8px; border-radius: 12px; font-size: 0.85rem; margin-right: 5px; margin-bottom: 5px;">🔧 ${escapeHtml(posteName)}: ${hours.toFixed(1)}h</span>`;
         }).join('');
 
-        // Détails des saisies individuelles pour les admins
-        const detailsHTML = isAdmin() ? `
+        // Détails des saisies individuelles
+        const detailsHTML = `
             <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
                 <div style="font-size: 0.85rem; color: #888; margin-bottom: 8px;">Détails des saisies :</div>
                 ${group.entries.map(entry => {
@@ -574,23 +596,30 @@ function renderEntries() {
                         year: 'numeric'
                     });
                     const poste = postes.find(p => p.id === entry.posteId);
+                    // Afficher "Saisi par" uniquement pour les admins
+                    const enteredByHTML = (isAdmin() && entry.enteredBy) ? `<span style="font-size: 0.75rem; color: #666;">👤 Saisi par: ${escapeHtml(entry.enteredBy)}</span>` : '';
+                    // Les utilisateurs voient les boutons uniquement pour leurs propres saisies
+                    const canEdit = isAdmin() || entry.enteredBy === currentUser.name;
+                    const buttonsHTML = canEdit ? `
+                        <div style="display: flex; gap: 5px;">
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="editEntry('${entry.id}')">✏️</button>
+                            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteEntry('${entry.id}')">🗑️</button>
+                        </div>
+                    ` : '';
                     return `
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 5px 10px; background: rgba(255,255,255,0.03); border-radius: 6px;">
                             <div style="display: flex; flex-direction: column; gap: 2px;">
                                 <span style="font-size: 0.8rem; color: #999;">📅 ${date}</span>
                                 <span style="font-size: 0.75rem; color: #777;">🔧 ${escapeHtml(poste ? poste.name : 'Inconnu')}</span>
-                                ${entry.enteredBy ? `<span style="font-size: 0.75rem; color: #666;">👤 Saisi par: ${escapeHtml(entry.enteredBy)}</span>` : ''}
+                                ${enteredByHTML}
                             </div>
                             <span style="font-size: 0.8rem; color: #2196F3; font-weight: 600;">${entry.hours}h</span>
-                            <div style="display: flex; gap: 5px;">
-                                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="editEntry('${entry.id}')">✏️</button>
-                                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteEntry('${entry.id}')">🗑️</button>
-                            </div>
+                            ${buttonsHTML}
                         </div>
                     `;
                 }).join('')}
             </div>
-        ` : '';
+        `;
 
         return `
             <div class="entry-item">
@@ -714,13 +743,14 @@ function closeModal() {
 }
 
 function editEntry(id) {
-    if (!isAdmin()) {
-        alert('Seuls les administrateurs peuvent modifier les entrées');
-        return;
-    }
-
     const entry = entries.find(e => e.id === id);
     if (!entry) return;
+
+    // Les utilisateurs peuvent modifier uniquement leurs propres saisies
+    if (!isAdmin() && entry.enteredBy !== currentUser.name) {
+        alert('Vous ne pouvez modifier que vos propres saisies');
+        return;
+    }
 
     editingId = id;
     updateSelects();
@@ -1007,6 +1037,16 @@ async function addAffaire() {
 }
 
 async function toggleAffaireStatut(id, nouveauStatut) {
+    const affaire = affaires.find(a => a.id === id);
+
+    // Si on termine l'affaire, générer le PDF d'abord
+    if (nouveauStatut === 'terminee' && affaire) {
+        if (!confirm(`Terminer l'affaire "${affaire.name}" ?\n\nUn PDF récapitulatif sera automatiquement généré.`)) {
+            return;
+        }
+        generateAffairePDF(id);
+    }
+
     try {
         const response = await fetch(`${API_URL}/affaires/${id}/statut`, {
             method: 'PUT',
@@ -1015,7 +1055,6 @@ async function toggleAffaireStatut(id, nouveauStatut) {
         });
 
         if (response.ok) {
-            const affaire = affaires.find(a => a.id === id);
             if (affaire) {
                 affaire.statut = nouveauStatut;
                 localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
@@ -1267,6 +1306,118 @@ function renderUsers() {
             <button class="delete-btn" onclick="deleteUser('${user.id}')">×</button>
         </div>
     `).join('');
+}
+
+// ===== GÉNÉRATION PDF =====
+
+function generateAffairePDF(affaireId) {
+    const affaire = affaires.find(a => a.id === affaireId);
+    if (!affaire) return;
+
+    const client = clients.find(c => c.id === affaire.clientId);
+    const affaireEntries = entries.filter(e => e.affaireId === affaireId);
+
+    if (affaireEntries.length === 0) {
+        alert('Aucune entrée pour cette affaire');
+        return;
+    }
+
+    // Calculer les totaux
+    let totalHours = 0;
+    const posteHours = {};
+
+    affaireEntries.forEach(entry => {
+        totalHours += parseFloat(entry.hours) || 0;
+        const poste = postes.find(p => p.id === entry.posteId);
+        const posteName = poste ? poste.name : 'Inconnu';
+        if (!posteHours[posteName]) {
+            posteHours[posteName] = 0;
+        }
+        posteHours[posteName] += parseFloat(entry.hours) || 0;
+    });
+
+    // Créer le PDF avec jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // En-tête
+    doc.setFontSize(20);
+    doc.setTextColor(33, 150, 243); // Bleu
+    doc.text('RÉCAPITULATIF D\'AFFAIRE', 105, 20, { align: 'center' });
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 20, 35);
+
+    // Informations affaire
+    doc.setFontSize(14);
+    doc.setTextColor(33, 150, 243);
+    doc.text('INFORMATIONS', 20, 50);
+
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Client: ${client ? client.name : 'Inconnu'}`, 20, 60);
+    doc.text(`Affaire: ${affaire.name}`, 20, 67);
+    if (affaire.description) {
+        const descLines = doc.splitTextToSize(`Description: ${affaire.description}`, 170);
+        doc.text(descLines, 20, 74);
+    }
+
+    // Détails par poste
+    let yPos = affaire.description ? 90 : 80;
+    doc.setFontSize(14);
+    doc.setTextColor(33, 150, 243);
+    doc.text('HEURES PAR POSTE', 20, yPos);
+
+    yPos += 10;
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+
+    Object.entries(posteHours).forEach(([poste, hours]) => {
+        doc.text(`${poste}: ${hours.toFixed(1)}h`, 25, yPos);
+        yPos += 7;
+    });
+
+    // Total
+    yPos += 5;
+    doc.setFontSize(14);
+    doc.setTextColor(33, 150, 243);
+    doc.text(`TOTAL: ${totalHours.toFixed(1)} heures`, 20, yPos);
+
+    // Détail des saisies
+    yPos += 15;
+    doc.setFontSize(14);
+    doc.setTextColor(33, 150, 243);
+    doc.text('DÉTAIL DES SAISIES', 20, yPos);
+
+    yPos += 10;
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+
+    affaireEntries.forEach((entry, index) => {
+        if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+        }
+
+        const date = new Date(entry.date).toLocaleDateString('fr-FR');
+        const poste = postes.find(p => p.id === entry.posteId);
+        const posteName = poste ? poste.name : 'Inconnu';
+
+        doc.text(`${index + 1}. ${date} - ${posteName}: ${entry.hours}h`, 25, yPos);
+        if (entry.enteredBy) {
+            doc.setTextColor(100, 100, 100);
+            doc.text(`   Saisi par: ${entry.enteredBy}`, 25, yPos + 5);
+            doc.setTextColor(0, 0, 0);
+            yPos += 10;
+        } else {
+            yPos += 7;
+        }
+    });
+
+    // Sauvegarder le PDF
+    const fileName = `Affaire_${affaire.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
 }
 
 // ===== EMAIL =====
