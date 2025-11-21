@@ -1072,10 +1072,29 @@ async function deleteAffaire(id) {
         });
 
         if (response.ok) {
+            // Supprimer l'affaire
             affaires = affaires.filter(a => a.id !== id);
             localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
+
+            // Supprimer toutes les entrées associées à cette affaire
+            const entriesToDelete = entries.filter(e => e.affaireId === id);
+            for (const entry of entriesToDelete) {
+                try {
+                    await fetch(`${API_URL}/entries/${entry.id}`, {
+                        method: 'DELETE'
+                    });
+                } catch (err) {
+                    console.error('Erreur lors de la suppression de l\'entrée:', err);
+                }
+            }
+
+            // Mettre à jour la liste locale des entrées
+            entries = entries.filter(e => e.affaireId !== id);
+            localStorage.setItem('affaires_entries', JSON.stringify(entries));
+
             renderAffaires();
             updateSelects();
+            renderEntries();
         }
     } catch (error) {
         console.error('Erreur:', error);
