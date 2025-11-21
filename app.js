@@ -279,38 +279,16 @@ async function loadEntries() {
         const response = await fetch(`${API_URL}/entries`);
         if (response.ok) {
             const data = await response.json();
-            const serverEntries = data.entries || [];
-
-            // Si le serveur est vide mais localStorage a des données, restaurer depuis localStorage
-            const saved = localStorage.getItem('affaires_entries');
-            const localEntries = saved ? JSON.parse(saved) : [];
-
-            if (serverEntries.length === 0 && localEntries.length > 0) {
-                console.log('Restauration des entrées depuis localStorage');
-                entries = localEntries;
-                // Re-synchroniser vers le serveur
-                for (const entry of entries) {
-                    try {
-                        await fetch(`${API_URL}/entries`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(entry)
-                        });
-                    } catch (e) {
-                        console.error('Erreur de resync entry:', e);
-                    }
-                }
-                updateSyncStatus('synced', 'Données restaurées');
-            } else {
-                entries = serverEntries;
-                localStorage.setItem('affaires_entries', JSON.stringify(entries));
-                updateSyncStatus('synced', 'Synchronisé');
-            }
+            // Le serveur fait autorité - toujours utiliser les données du serveur
+            entries = data.entries || [];
+            localStorage.setItem('affaires_entries', JSON.stringify(entries));
+            updateSyncStatus('synced', 'Synchronisé');
         } else {
             throw new Error('Erreur serveur');
         }
     } catch (error) {
         console.error('Erreur de chargement:', error);
+        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_entries');
         entries = saved ? JSON.parse(saved) : [];
         updateSyncStatus('error', 'Mode hors-ligne');
@@ -322,34 +300,13 @@ async function loadClients() {
         const response = await fetch(`${API_URL}/clients`);
         if (response.ok) {
             const data = await response.json();
-            const serverClients = data.clients || [];
-
-            // Si le serveur est vide mais localStorage a des données, restaurer depuis localStorage
-            const saved = localStorage.getItem('affaires_clients');
-            const localClients = saved ? JSON.parse(saved) : [];
-
-            if (serverClients.length === 0 && localClients.length > 0) {
-                console.log('Restauration des clients depuis localStorage');
-                clients = localClients;
-                // Re-synchroniser vers le serveur
-                for (const client of clients) {
-                    try {
-                        await fetch(`${API_URL}/clients`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: client.name })
-                        });
-                    } catch (e) {
-                        console.error('Erreur de resync client:', e);
-                    }
-                }
-            } else {
-                clients = serverClients;
-                localStorage.setItem('affaires_clients', JSON.stringify(clients));
-            }
+            // Le serveur fait autorité - toujours utiliser les données du serveur
+            clients = data.clients || [];
+            localStorage.setItem('affaires_clients', JSON.stringify(clients));
         }
     } catch (error) {
         console.error('Erreur de chargement des clients:', error);
+        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_clients');
         clients = saved ? JSON.parse(saved) : [];
     }
@@ -360,34 +317,13 @@ async function loadAffaires() {
         const response = await fetch(`${API_URL}/affaires`);
         if (response.ok) {
             const data = await response.json();
-            const serverAffaires = data.affaires || [];
-
-            // Si le serveur est vide mais localStorage a des données, restaurer depuis localStorage
-            const saved = localStorage.getItem('affaires_affaires');
-            const localAffaires = saved ? JSON.parse(saved) : [];
-
-            if (serverAffaires.length === 0 && localAffaires.length > 0) {
-                console.log('Restauration des affaires depuis localStorage');
-                affaires = localAffaires;
-                // Re-synchroniser vers le serveur
-                for (const affaire of affaires) {
-                    try {
-                        await fetch(`${API_URL}/affaires`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: affaire.name, clientId: affaire.clientId })
-                        });
-                    } catch (e) {
-                        console.error('Erreur de resync affaire:', e);
-                    }
-                }
-            } else {
-                affaires = serverAffaires;
-                localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
-            }
+            // Le serveur fait autorité - toujours utiliser les données du serveur
+            affaires = data.affaires || [];
+            localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
         }
     } catch (error) {
         console.error('Erreur de chargement des affaires:', error);
+        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_affaires');
         affaires = saved ? JSON.parse(saved) : [];
     }
@@ -398,34 +334,13 @@ async function loadPostes() {
         const response = await fetch(`${API_URL}/postes`);
         if (response.ok) {
             const data = await response.json();
-            const serverPostes = data.postes || [];
-
-            // Si le serveur est vide mais localStorage a des données, restaurer depuis localStorage
-            const saved = localStorage.getItem('affaires_postes');
-            const localPostes = saved ? JSON.parse(saved) : [];
-
-            if (serverPostes.length === 0 && localPostes.length > 0) {
-                console.log('Restauration des postes depuis localStorage');
-                postes = localPostes;
-                // Re-synchroniser vers le serveur
-                for (const poste of postes) {
-                    try {
-                        await fetch(`${API_URL}/postes`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: poste.name })
-                        });
-                    } catch (e) {
-                        console.error('Erreur de resync poste:', e);
-                    }
-                }
-            } else {
-                postes = serverPostes;
-                localStorage.setItem('affaires_postes', JSON.stringify(postes));
-            }
+            // Le serveur fait autorité - toujours utiliser les données du serveur
+            postes = data.postes || [];
+            localStorage.setItem('affaires_postes', JSON.stringify(postes));
         }
     } catch (error) {
         console.error('Erreur de chargement des postes:', error);
+        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_postes');
         postes = saved ? JSON.parse(saved) : [];
     }
@@ -1210,34 +1125,13 @@ async function loadUsers() {
         const response = await fetch(`${API_URL}/users`);
         if (response.ok) {
             const data = await response.json();
-            const serverUsers = data.users || [];
-
-            // Si le serveur est vide mais localStorage a des données, restaurer depuis localStorage
-            const saved = localStorage.getItem('affaires_users');
-            const localUsers = saved ? JSON.parse(saved) : [];
-
-            if (serverUsers.length === 0 && localUsers.length > 0) {
-                console.log('Restauration des utilisateurs depuis localStorage');
-                users = localUsers;
-                // Re-synchroniser vers le serveur
-                for (const user of users) {
-                    try {
-                        await fetch(`${API_URL}/users`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: user.name, password: user.password })
-                        });
-                    } catch (e) {
-                        console.error('Erreur de resync user:', e);
-                    }
-                }
-            } else {
-                users = serverUsers;
-                localStorage.setItem('affaires_users', JSON.stringify(users));
-            }
+            // Le serveur fait autorité - toujours utiliser les données du serveur
+            users = data.users || [];
+            localStorage.setItem('affaires_users', JSON.stringify(users));
         }
     } catch (error) {
         console.error('Erreur:', error);
+        // Utiliser localStorage uniquement si le serveur est inaccessible
         const saved = localStorage.getItem('affaires_users');
         if (saved) {
             users = JSON.parse(saved);
