@@ -227,11 +227,18 @@ app.put('/api/affaires/:id/statut', async (req, res) => {
     }
 });
 
-// DELETE - Supprimer une affaire
+// DELETE - Supprimer une affaire (et toutes ses entrées en cascade)
 app.delete('/api/affaires/:id', async (req, res) => {
     try {
         const data = await readData();
-        data.affaires = data.affaires.filter(a => a.id !== req.params.id);
+        const affaireId = req.params.id;
+
+        // Supprimer l'affaire
+        data.affaires = data.affaires.filter(a => a.id !== affaireId);
+
+        // Supprimer toutes les entrées associées à cette affaire
+        data.entries = data.entries.filter(e => e.affaireId !== affaireId);
+
         await writeData(data);
         res.json({ success: true });
     } catch (error) {

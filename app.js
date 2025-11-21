@@ -1064,34 +1064,24 @@ async function toggleAffaireStatut(id, nouveauStatut) {
 }
 
 async function deleteAffaire(id) {
-    if (!confirm('Supprimer définitivement cette affaire ? Cette action est irréversible.')) return;
+    if (!confirm('Supprimer définitivement cette affaire et toutes ses entrées ? Cette action est irréversible.')) return;
 
     try {
+        // Le serveur supprime automatiquement l'affaire ET toutes ses entrées en cascade
         const response = await fetch(`${API_URL}/affaires/${id}`, {
             method: 'DELETE'
         });
 
         if (response.ok) {
-            // Supprimer l'affaire
+            // Mettre à jour les données locales
             affaires = affaires.filter(a => a.id !== id);
-            localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
-
-            // Supprimer toutes les entrées associées à cette affaire
-            const entriesToDelete = entries.filter(e => e.affaireId === id);
-            for (const entry of entriesToDelete) {
-                try {
-                    await fetch(`${API_URL}/entries/${entry.id}`, {
-                        method: 'DELETE'
-                    });
-                } catch (err) {
-                    console.error('Erreur lors de la suppression de l\'entrée:', err);
-                }
-            }
-
-            // Mettre à jour la liste locale des entrées
             entries = entries.filter(e => e.affaireId !== id);
+
+            // Sauvegarder dans localStorage
+            localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
             localStorage.setItem('affaires_entries', JSON.stringify(entries));
 
+            // Rafraîchir l'affichage
             renderAffaires();
             updateSelects();
             renderEntries();
