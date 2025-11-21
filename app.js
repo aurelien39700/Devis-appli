@@ -449,6 +449,7 @@ async function saveEntry(entry) {
         if (response.ok) {
             const newEntry = await response.json();
             entries.push(newEntry);
+            saveToLocalStorage(); // IMPORTANT: Sauvegarder dans localStorage aussi !
             updateSyncStatus('synced', 'Synchronisé');
         } else {
             throw new Error('Erreur serveur');
@@ -477,6 +478,7 @@ async function updateEntry(id, updatedData) {
             if (index !== -1) {
                 entries[index] = updated;
             }
+            saveToLocalStorage(); // IMPORTANT: Sauvegarder dans localStorage aussi !
             updateSyncStatus('synced', 'Synchronisé');
         } else {
             throw new Error('Erreur serveur');
@@ -494,8 +496,11 @@ async function updateEntry(id, updatedData) {
 }
 
 async function deleteEntry(id) {
-    if (!isAdmin()) {
-        alert('Seuls les administrateurs peuvent supprimer les entrées');
+    const entry = entries.find(e => e.id === id);
+
+    // Les utilisateurs peuvent supprimer uniquement leurs propres saisies
+    if (!isAdmin() && (!entry || entry.enteredBy !== currentUser.name)) {
+        alert('Vous ne pouvez supprimer que vos propres saisies');
         return;
     }
 
@@ -507,6 +512,7 @@ async function deleteEntry(id) {
         });
         if (response.ok) {
             entries = entries.filter(e => e.id !== id);
+            saveToLocalStorage(); // IMPORTANT: Sauvegarder dans localStorage aussi !
             updateSyncStatus('synced', 'Synchronisé');
         } else {
             throw new Error('Erreur serveur');
