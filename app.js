@@ -662,20 +662,11 @@ function renderQuickAccess(grouped) {
 
     card.style.display = 'block';
 
-    // Filtrer pour les utilisateurs non-admin (uniquement soudure et en cours)
-    let groupsToDisplay = Object.values(grouped);
-    if (!isAdmin()) {
-        groupsToDisplay = groupsToDisplay.filter(group => {
-            const affaire = affaires.find(a => a.id === group.affaireId);
-            return affaire && affaire.name.toLowerCase().includes('soudure') && (!affaire.statut || affaire.statut === 'en_cours');
-        });
-    } else {
-        // Pour les admins, afficher toutes les affaires en cours
-        groupsToDisplay = groupsToDisplay.filter(group => {
-            const affaire = affaires.find(a => a.id === group.affaireId);
-            return affaire && (!affaire.statut || affaire.statut === 'en_cours');
-        });
-    }
+    // Filtrer uniquement les affaires en cours (pour tous)
+    let groupsToDisplay = Object.values(grouped).filter(group => {
+        const affaire = affaires.find(a => a.id === group.affaireId);
+        return affaire && (!affaire.statut || affaire.statut === 'en_cours');
+    });
 
     if (groupsToDisplay.length === 0) {
         card.style.display = 'none';
@@ -897,15 +888,8 @@ function updateAffairesSelect() {
     affaireSelect.disabled = false;
     let clientAffaires = affaires.filter(a => a.clientId === clientId);
 
-    // Pour les utilisateurs non-admin, filtrer uniquement les affaires de soudure ET en cours
-    if (!isAdmin()) {
-        clientAffaires = clientAffaires.filter(a =>
-            a.name.toLowerCase().includes('soudure') && (!a.statut || a.statut === 'en_cours')
-        );
-    } else {
-        // Pour les admins, afficher toutes les affaires en cours
-        clientAffaires = clientAffaires.filter(a => !a.statut || a.statut === 'en_cours');
-    }
+    // Filtrer les affaires en cours (ignorer les terminées)
+    clientAffaires = clientAffaires.filter(a => !a.statut || a.statut === 'en_cours');
 
     let optionsHTML = '<option value="">Sélectionner une affaire</option>';
 
@@ -915,12 +899,17 @@ function updateAffairesSelect() {
     }
 
     // Ajouter les affaires existantes avec description si disponible
-    optionsHTML += clientAffaires.map(a => {
-        const displayText = a.description
-            ? `${escapeHtml(a.name)} - ${escapeHtml(a.description.substring(0, 50))}${a.description.length > 50 ? '...' : ''}`
-            : escapeHtml(a.name);
-        return `<option value="${a.id}" title="${escapeHtml(a.description || '')}">${displayText}</option>`;
-    }).join('');
+    if (clientAffaires.length > 0) {
+        optionsHTML += clientAffaires.map(a => {
+            const displayText = a.description
+                ? `${escapeHtml(a.name)} - ${escapeHtml(a.description.substring(0, 50))}${a.description.length > 50 ? '...' : ''}`
+                : escapeHtml(a.name);
+            return `<option value="${a.id}" title="${escapeHtml(a.description || '')}">${displayText}</option>`;
+        }).join('');
+    } else if (isAdmin()) {
+        // Message pour admin si aucune affaire
+        optionsHTML += '<option value="" disabled style="color: #888;">Aucune affaire en cours pour ce client</option>';
+    }
 
     affaireSelect.innerHTML = optionsHTML;
 }
