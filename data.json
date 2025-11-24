@@ -30,15 +30,7 @@
             "name": "PLASTILYS"
         }
     ],
-    "affaires": [
-        {
-            "id": "1764017373680",
-            "name": "MD1056",
-            "clientId": "1764014447938",
-            "description": "",
-            "statut": "en_cours"
-        }
-    ],
+    "affaires": [],
     "postes": [
         {
             "id": "1764014781418",
