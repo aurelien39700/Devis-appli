@@ -426,7 +426,8 @@ async function loadClients(cacheBuster = '') {
             // PRIORITÉ AU SERVEUR : écraser complètement
             clients = serverClients;
 
-            saveToLocalStorage();
+            // Sauvegarder seulement les clients, pas tout le localStorage
+            localStorage.setItem('affaires_clients', JSON.stringify(clients));
         }
     } catch (error) {
         console.warn('⚠️ Serveur inaccessible pour clients');
@@ -458,7 +459,8 @@ async function loadAffaires(cacheBuster = '') {
                 }
             });
 
-            saveToLocalStorage();
+            // Sauvegarder seulement les affaires, pas tout le localStorage
+            localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
         }
     } catch (error) {
         console.warn('⚠️ Serveur inaccessible pour affaires');
@@ -487,7 +489,8 @@ async function loadPostes(cacheBuster = '') {
                 }
             });
 
-            saveToLocalStorage();
+            // Sauvegarder seulement les postes, pas tout le localStorage
+            localStorage.setItem('affaires_postes', JSON.stringify(postes));
         }
     } catch (error) {
         console.warn('⚠️ Serveur inaccessible pour postes');
@@ -1376,7 +1379,8 @@ async function loadUsers(cacheBuster = '') {
         if (response.ok) {
             const data = await response.json();
             users = data.users || [];
-            saveToLocalStorage();
+            // Sauvegarder seulement les utilisateurs, pas tout le localStorage
+            localStorage.setItem('affaires_users', JSON.stringify(users));
         }
     } catch (error) {
         console.error('Erreur:', error);
