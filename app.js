@@ -222,13 +222,16 @@ function handleAffaireChange() {
     const affaireSelect = document.getElementById('affaire');
     const newAffaireGroup = document.getElementById('newAffaireGroup');
     const posteGroup = document.querySelector('label[for="poste"]').parentElement;
+    const posteSelect = document.getElementById('poste');
 
     if (affaireSelect.value === '__new__') {
         newAffaireGroup.style.display = 'block';
-        posteGroup.style.display = 'none'; // Masquer le poste pour nouvelle affaire soudure
+        posteGroup.style.display = 'none';
+        posteSelect.required = false; // Désactiver le required pour nouvelle affaire soudure
     } else {
         newAffaireGroup.style.display = 'none';
-        posteGroup.style.display = 'block'; // Afficher le poste pour affaires existantes
+        posteGroup.style.display = 'block';
+        posteSelect.required = true; // Réactiver le required pour affaires existantes
     }
 }
 
