@@ -1,22 +1,5 @@
 {
-    "entries": [
-        {
-            "id": "1764019486729",
-            "affaireId": "1764019464672",
-            "posteId": "1764018748947",
-            "hours": "5",
-            "enteredBy": "Aur\u00e9lien",
-            "date": "2025-11-24T21:24:47.004Z"
-        },
-        {
-            "id": "1764019601854",
-            "affaireId": "1764019464672",
-            "posteId": "1764014806191",
-            "hours": "4",
-            "enteredBy": "Aur\u00e9lien",
-            "date": "2025-11-24T21:26:41.971Z"
-        }
-    ],
+    "entries": [],
     "clients": [
         {
             "id": "1764014447938",
@@ -41,31 +24,13 @@
         {
             "id": "1764017522395",
             "name": "PLASTILYS"
-        }
-    ],
-    "affaires": [
-        {
-            "id": "1764019464672",
-            "name": "COVER",
-            "clientId": "1764015790842",
-            "description": "R\u00e9alisation Moule",
-            "statut": "en_cours"
         },
         {
-            "id": "1764019693487",
-            "name": "2975",
-            "clientId": "1764014732621",
-            "description": "Soudure broche",
-            "statut": "en_cours"
-        },
-        {
-            "id": "1764019735413",
-            "name": "TG12",
-            "clientId": "1764014760229",
-            "description": "R\u00e9alisation partie FIXE",
-            "statut": "en_cours"
+            "id": "1764017522512",
+            "name": "PLASTILYS"
         }
     ],
+    "affaires": [],
     "postes": [
         {
             "id": "1764014781418",
