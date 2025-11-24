@@ -1,6 +1,15 @@
 {
     "entries": [],
-    "clients": [],
+    "clients": [
+        {
+            "id": "1764012995096",
+            "name": "NP JURA"
+        },
+        {
+            "id": "1764012995197",
+            "name": "NP JURA"
+        }
+    ],
     "affaires": [],
     "postes": [],
     "users": [
