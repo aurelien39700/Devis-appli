@@ -1,14 +1,5 @@
 {
-    "entries": [
-        {
-            "id": "1764016006739",
-            "affaireId": "1764015984134",
-            "posteId": "1764014788537",
-            "hours": "5",
-            "enteredBy": "Aur\u00e9lien",
-            "date": "2025-11-24T20:26:46.858Z"
-        }
-    ],
+    "entries": [],
     "clients": [
         {
             "id": "1764014447938",
@@ -25,28 +16,9 @@
         {
             "id": "1764015790842",
             "name": "TYCO"
-        },
-        {
-            "id": "1764016138103",
-            "name": "EUROMECA"
         }
     ],
-    "affaires": [
-        {
-            "id": "1764015984134",
-            "name": "4565",
-            "clientId": "1764014732621",
-            "description": "",
-            "statut": "en_cours"
-        },
-        {
-            "id": "1764016178591",
-            "name": "Pignon",
-            "clientId": "1764016138103",
-            "description": "",
-            "statut": "en_cours"
-        }
-    ],
+    "affaires": [],
     "postes": [
         {
             "id": "1764014781418",
