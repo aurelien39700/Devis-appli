@@ -464,11 +464,7 @@ async function loadClients(cacheBuster = '') {
 }
 
 async function loadAffaires(cacheBuster = '') {
-    // Charger d'abord localStorage
-    const saved = localStorage.getItem('affaires_affaires');
-    affaires = saved ? JSON.parse(saved) : [];
-
-    // Puis synchroniser avec le serveur
+    // Priorité au serveur
     try {
         const response = await fetch(`${API_URL}/affaires${cacheBuster}`, {
             cache: cacheBuster ? 'no-store' : 'default',
@@ -478,27 +474,24 @@ async function loadAffaires(cacheBuster = '') {
             const data = await response.json();
             const serverAffaires = data.affaires || [];
 
-            // Merger
-            serverAffaires.forEach(serverAffaire => {
-                if (!affaires.find(a => a.id === serverAffaire.id)) {
-                    affaires.push(serverAffaire);
-                }
-            });
+            // PRIORITÉ AU SERVEUR : écraser complètement
+            affaires = serverAffaires;
 
             // Sauvegarder seulement les affaires, pas tout le localStorage
             localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
+            return;
         }
     } catch (error) {
         console.warn('⚠️ Serveur inaccessible pour affaires');
     }
+
+    // Fallback: charger depuis localStorage
+    const saved = localStorage.getItem('affaires_affaires');
+    affaires = saved ? JSON.parse(saved) : [];
 }
 
 async function loadPostes(cacheBuster = '') {
-    // Charger d'abord localStorage
-    const saved = localStorage.getItem('affaires_postes');
-    postes = saved ? JSON.parse(saved) : [];
-
-    // Puis synchroniser avec le serveur
+    // Priorité au serveur
     try {
         const response = await fetch(`${API_URL}/postes${cacheBuster}`, {
             cache: cacheBuster ? 'no-store' : 'default',
@@ -508,19 +501,20 @@ async function loadPostes(cacheBuster = '') {
             const data = await response.json();
             const serverPostes = data.postes || [];
 
-            // Merger
-            serverPostes.forEach(serverPoste => {
-                if (!postes.find(p => p.id === serverPoste.id)) {
-                    postes.push(serverPoste);
-                }
-            });
+            // PRIORITÉ AU SERVEUR : écraser complètement
+            postes = serverPostes;
 
             // Sauvegarder seulement les postes, pas tout le localStorage
             localStorage.setItem('affaires_postes', JSON.stringify(postes));
+            return;
         }
     } catch (error) {
         console.warn('⚠️ Serveur inaccessible pour postes');
     }
+
+    // Fallback: charger depuis localStorage
+    const saved = localStorage.getItem('affaires_postes');
+    postes = saved ? JSON.parse(saved) : [];
 }
 
 function updateSyncStatus(status, message) {
