@@ -496,43 +496,7 @@ function keepAlive() {
     }, 5 * 60 * 1000); // Toutes les 5 minutes
 }
 
-// Fonction de sauvegarde automatique périodique avec commit GitHub
-async function autoSnapshot() {
-    setInterval(async () => {
-        try {
-            // Lire le fichier actuel
-            const currentData = await fs.readFile(DATA_FILE, 'utf8');
-            const parsed = JSON.parse(currentData);
-
-            // Ne créer un snapshot que si la base n'est pas vide
-            const hasData = parsed.entries?.length > 0 ||
-                           parsed.clients?.length > 0 ||
-                           parsed.affaires?.length > 0 ||
-                           parsed.postes?.length > 0 ||
-                           (parsed.users?.length > 1); // Plus que juste l'admin
-
-            if (hasData) {
-                // Créer/écraser snapshot.json (fichier unique)
-                const SNAPSHOT_FILE = path.join(__dirname, 'snapshot.json');
-                await fs.writeFile(SNAPSHOT_FILE, currentData);
-                console.log(`📸 Snapshot créé: snapshot.json`);
-
-                // Commit et push sur GitHub automatiquement
-                try {
-                    await execPromise('git add snapshot.json');
-                    const timestamp = new Date().toISOString();
-                    await execPromise(`git commit -m "Auto-snapshot: ${timestamp}" || echo "Rien à commiter"`);
-                    await execPromise('git push origin main');
-                    console.log('✅ Snapshot poussé sur GitHub');
-                } catch (gitError) {
-                    console.warn('⚠️ Git push snapshot échoué:', gitError.message);
-                }
-            }
-        } catch (error) {
-            console.error('❌ Erreur snapshot:', error);
-        }
-    }, 15 * 60 * 1000); // Toutes les 15 minutes
-}
+// Fonction de sauvegarde automatique supprimée (plus nécessaire avec commit direct)
 
 // Démarrer le serveur
 async function startServer() {
@@ -548,10 +512,8 @@ async function startServer() {
         console.log(`🚀 Serveur démarré sur le port ${PORT}`);
         console.log(`📍 API disponible sur http://localhost:${PORT}/api/entries`);
         console.log(`💓 Keep-alive activé (ping toutes les 5 minutes)`);
-        console.log(`📸 Snapshots automatiques activés (toutes les 15 minutes)`);
         console.log(`🔄 Git: Pull au démarrage, Push après chaque modification`);
         keepAlive();
-        autoSnapshot();
     });
 }
 
