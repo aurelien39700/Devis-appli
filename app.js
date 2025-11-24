@@ -17,6 +17,7 @@ let editingId = null;
 let currentUser = null;
 let currentTab = 'entries';
 let syncInterval = null;
+let isFormActive = false; // Flag pour savoir si l'utilisateur est en train de saisir
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
@@ -180,17 +181,22 @@ function showApp() {
 
 // Démarrer la synchronisation automatique
 function startAutoSync() {
-    // Synchroniser toutes les 10 secondes
+    // Synchroniser toutes les 30 secondes
     if (syncInterval) {
         clearInterval(syncInterval);
     }
     syncInterval = setInterval(async () => {
+        // Ne pas synchroniser si l'utilisateur est en train de saisir dans le modal
+        if (isFormActive) {
+            console.log('Synchronisation ignorée - formulaire actif');
+            return;
+        }
         try {
             await loadAllData();
         } catch (error) {
             console.error('Erreur de synchronisation:', error);
         }
-    }, 10000); // 10 secondes
+    }, 30000); // 30 secondes
 }
 
 // Arrêter la synchronisation automatique
@@ -657,6 +663,7 @@ function escapeHtml(text) {
 // ===== MODAL =====
 
 function openModal() {
+    isFormActive = true; // Bloquer la synchronisation
     updateSelects();
     document.getElementById('modal').classList.add('active');
     document.getElementById('modalTitle').textContent = 'Nouvelle entrée';
@@ -669,6 +676,7 @@ function openModal() {
 }
 
 function closeModal() {
+    isFormActive = false; // Réactiver la synchronisation
     document.getElementById('modal').classList.remove('active');
     document.getElementById('newAffaireGroup').style.display = 'none';
     editingId = null;
