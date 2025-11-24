@@ -496,17 +496,16 @@ function renderEntries() {
         return;
     }
 
-    // Grouper les entrées par client/affaire (sans le poste)
+    // Grouper les entrées par affaire (le client est dérivé de l'affaire)
     const grouped = {};
     let totalHours = 0;
 
     entries.forEach(entry => {
         totalHours += parseFloat(entry.hours) || 0;
-        const key = `${entry.clientId}_${entry.affaireId}`;
+        const key = entry.affaireId;
 
         if (!grouped[key]) {
             grouped[key] = {
-                clientId: entry.clientId,
                 affaireId: entry.affaireId,
                 totalHours: 0,
                 posteDetails: {},
@@ -528,8 +527,9 @@ function renderEntries() {
 
     // Afficher les groupes
     container.innerHTML = Object.values(grouped).map(group => {
-        const client = clients.find(c => c.id === group.clientId);
         const affaire = affaires.find(a => a.id === group.affaireId);
+        // Dériver le client depuis l'affaire (source unique de vérité)
+        const client = affaire ? clients.find(c => c.id === affaire.clientId) : null;
 
         // Détails par poste
         const postesDetailsHTML = Object.entries(group.posteDetails).map(([posteName, hours]) => {
@@ -619,12 +619,13 @@ function renderQuickAccess(grouped) {
     }
 
     container.innerHTML = groupsToDisplay.map(group => {
-        const client = clients.find(c => c.id === group.clientId);
         const affaire = affaires.find(a => a.id === group.affaireId);
+        // Dériver le client depuis l'affaire
+        const client = affaire ? clients.find(c => c.id === affaire.clientId) : null;
 
         return `
             <button
-                onclick="quickSelectAffaire('${group.clientId}', '${group.affaireId}')"
+                onclick="quickSelectAffaire('${affaire ? affaire.clientId : ''}', '${group.affaireId}')"
                 style="
                     padding: 10px 16px;
                     border: 2px solid rgba(33, 150, 243, 0.3);
@@ -702,7 +703,9 @@ function editEntry(id) {
     document.getElementById('modalTitle').textContent = 'Modifier l\'entrée';
     document.getElementById('submitBtnText').textContent = 'Mettre à jour';
 
-    document.getElementById('client').value = entry.clientId || '';
+    // Dériver le clientId depuis l'affaire
+    const affaire = affaires.find(a => a.id === entry.affaireId);
+    document.getElementById('client').value = affaire ? affaire.clientId : '';
     updateAffairesSelect();
     document.getElementById('affaire').value = entry.affaireId || '';
     document.getElementById('poste').value = entry.posteId || '';
@@ -793,8 +796,8 @@ async function handleSubmit(e) {
         posteId = soudurePoste.id;
     }
 
+    // Ne pas stocker clientId dans l'entrée - il sera dérivé de l'affaire
     const entryData = {
-        clientId: document.getElementById('client').value,
         affaireId: affaireId,
         posteId: posteId,
         hours: document.getElementById('hours').value,
@@ -802,8 +805,7 @@ async function handleSubmit(e) {
     };
 
     console.log('📝 Création entrée:', entryData);
-    console.log('👥 Clients disponibles:', clients.map(c => ({ id: c.id, name: c.name })));
-    console.log('📁 Affaires disponibles:', affaires.map(a => ({ id: a.id, name: a.name, clientId: a.clientId })));
+    console.log('📁 Affaire sélectionnée:', affaires.find(a => a.id === affaireId));
 
     if (editingId) {
         await updateEntry(editingId, entryData);
