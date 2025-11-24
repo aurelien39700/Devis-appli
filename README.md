@@ -1,188 +1,255 @@
-# Suivi d'Affaires - Application de gestion des heures
+# 📱 Système de Suivi d'Affaires
 
-## 🚀 Démarrage rapide
+Application web de suivi de soudure et gestion d'affaires avec synchronisation temps réel.
 
-### Démarrage du serveur
+## 🚀 Démarrage Rapide
 
-**IMPORTANT**: Le serveur synchronise automatiquement avec GitHub!
+### Site Web
+**Production** : https://somepre-suivi.onrender.com/
 
+### Développement Local
 ```bash
-# Méthode recommandée (avec backup automatique)
-./start.sh
-
-# OU directement avec Node
+npm install
 node server.js
 ```
 
-**Au démarrage, le serveur:**
-1. 📥 **Pull automatiquement** les dernières données depuis GitHub
-2. 🔄 Synchronise tous les appareils
-3. 🚀 Démarre sur le port 10000
+Le serveur démarre sur http://localhost:10000
 
-### Accès à l'application
+---
 
-Une fois le serveur démarré, ouvrez votre navigateur:
-- **Local**: http://localhost:10000
-- **Production (Render)**: https://somepre-suivi.onrender.com
+## 📁 Structure du Projet
 
-### 🌐 Configuration Render (sync bidirectionnelle)
-
-Pour activer la synchronisation GitHub sur Render (saisie depuis portable/mobile):
-👉 **[Voir les instructions détaillées](RENDER_SETUP.md)**
-
-Une fois configuré:
-- ✅ Saisir depuis n'importe quel appareil
-- ✅ Commit automatique sur GitHub
-- ✅ Synchronisation complète bidirectionnelle
-
-## 🌐 Synchronisation multi-appareils
-
-### Comment ça marche
-
-**Synchronisation automatique via GitHub:**
-
-1. **Écriture de données** (n'importe quel appareil):
-   - Sauvegarde dans localStorage ✅
-   - Commit automatique sur GitHub ✅
-   - Push instantané ✅
-
-2. **Lecture depuis un autre appareil**:
-   - Démarrer le serveur → Pull auto depuis GitHub ✅
-   - Données à jour instantanément! ✅
-   - **100% automatique, aucune action requise!**
-
-### Utilisation multi-appareils
-
-**Appareil A (Bureau):**
-```bash
-# 1. Saisir des heures
-# 2. Les données sont automatiquement commit sur GitHub
+### Fichiers Principaux
+```
+├── index.html          # Interface utilisateur
+├── app.js             # Logique frontend (sync, cache-busting)
+├── server.js          # API REST + sync Git
+├── data.json          # Base de données JSON
+├── package.json       # Dépendances Node.js
+└── manifest.json      # Configuration PWA
 ```
 
-**Appareil B (Portable):**
-```bash
-# Démarrer le serveur
-node server.js
-# → Pull automatique depuis GitHub au démarrage!
-# → Données de l'appareil A disponibles instantanément!
+### Scripts de Synchronisation
+```
+├── auto-sync-hybrid.sh    # ⭐ Sync automatique (GitHub + API)
+├── sync-now.sh           # Sync manuelle instantanée
+├── test-sync.sh          # Tests de configuration
+├── check-server-sync.sh  # Diagnostic serveur
+└── watch-data.sh         # Surveillance fichier
 ```
 
-**Résultat:** Tous les appareils ont les mêmes données en temps réel!
+### Documentation
+```
+├── README-SYNC.md         # Guide synchronisation
+├── SYNC-GUIDE.md         # Documentation détaillée
+├── CHANGELOG-SYNC.md     # Historique améliorations
+├── FIXES-APPLIED.md      # Corrections appliquées
+├── fix-delete-issues.md  # Dépannage suppressions
+├── fix-render-sync.md    # Réparer Render
+└── force-sync-render.md  # Réparation urgente
+```
 
-## 📦 Système de sauvegarde (Triple protection!)
+---
 
-### 1. **GitHub (PRINCIPAL)** ⭐
-- **Commit automatique** après chaque modification
-- **Historique complet** via Git
-- **Synchronisation** entre appareils
-- **Restauration** possible à n'importe quel moment
-- Commande: `git log` pour voir l'historique
-- Commande: `git checkout <commit>` pour restaurer
+## ✨ Fonctionnalités
 
-### 2. Backup automatique (data.backup.json)
-- Créé **automatiquement avant chaque écriture** dans data.json
-- Permet de restaurer la dernière version en cas de corruption
+### Gestion
+- ✅ Clients
+- ✅ Affaires (projets)
+- ✅ Postes de travail
+- ✅ Entrées/sorties de soudure
+- ✅ Utilisateurs avec authentification
 
-### 3. Snapshot automatique (snapshot.json sur GitHub) ⭐
-- Créé **toutes les 15 minutes** si la base contient des données
-- **Commit et push automatiquement sur GitHub**
-- Fichier unique `snapshot.json` qui écrase le précédent
-- Permet de récupérer l'état complet toutes les 15 min
-- Commande: `git checkout snapshot.json` pour restaurer
+### Synchronisation Temps Réel
+- ✅ Auto-sync toutes les 30 secondes
+- ✅ Cache-busting automatique
+- ✅ Notifications visuelles
+- ✅ VS Code ↔ GitHub ↔ Site
 
-### 4. Backups manuels (dossier backups/)
-- Créés au **démarrage du serveur** via `./start.sh`
-- Format: `data_YYYYMMDD_HHMMSS.json`
+### Export
+- ✅ Export Excel des rapports
+- ✅ Export PDF par affaire
+- ✅ Backup automatique
 
-### 5. localStorage (navigateur)
-- Sauvegarde instantanée dans le navigateur
-- Fonctionne hors-ligne
-- Export manuel disponible
+---
 
-## 🔧 Structure des données
+## 🔄 Synchronisation
 
-Le fichier `data.json` contient:
+### Utilisation Automatique (Recommandé)
+```bash
+./auto-sync-hybrid.sh
+```
+Laissez tourner en arrière-plan pour sync continue.
+
+### Utilisation Manuelle
+```bash
+./sync-now.sh
+```
+Pour une synchronisation immédiate.
+
+### Architecture
+```
+📱 Site Web ──► 🐙 GitHub ──► 💻 VS Code
+     │              ▲            │
+     └── API (3s) ──┴────────────┘
+```
+
+---
+
+## 🛠️ Configuration
+
+### Variables d'Environnement (Render)
+```bash
+GITHUB_TOKEN=your_token_here      # Token GitHub avec permissions repo
+GITHUB_REPO=user/repo             # Votre repository
+PORT=10000                        # Port du serveur (défaut: 10000)
+```
+
+### Configuration Git Locale
+```bash
+git config pull.rebase false
+git config user.name "Your Name"
+git config user.email "your@email.com"
+```
+
+---
+
+## 📊 Base de Données
+
+### Structure data.json
 ```json
 {
-  "entries": [],      // Heures saisies
-  "clients": [],      // Liste des clients
-  "affaires": [],     // Liste des affaires
-  "postes": [],       // Liste des postes de travail
-  "users": []         // Utilisateurs (dont Admin)
+  "entries": [],    // Entrées de soudure
+  "clients": [],    // Liste des clients
+  "affaires": [],   // Projets/affaires
+  "postes": [],     // Postes de travail
+  "users": []       // Utilisateurs
 }
 ```
 
-## 👨‍💼 Compte administrateur
+### Reset Complet
+Pour repartir sur une base propre :
+```bash
+# Vider toutes les données (garde uniquement Admin)
+echo '{
+  "entries": [],
+  "clients": [],
+  "affaires": [],
+  "postes": [],
+  "users": [{"id": "1", "name": "Admin", "password": "ADMIN"}]
+}' > data.json
 
-Par défaut, un compte admin est créé:
-- **Nom**: Admin
-- **Code**: ADMIN
+# Pousser vers GitHub
+git add data.json
+git commit -m "Clean: Reset base de données"
+git push origin main
+```
 
-## 🔄 Restauration des données
+---
 
-### En cas de perte de données
+## 🔐 Authentification
 
-1. **Depuis data.backup.json** (dernière sauvegarde):
-   ```bash
-   cp data.backup.json data.json
-   ```
+### Comptes par Défaut
+- **Admin** : Code `ADMIN`
+- **Utilisateurs** : Créés via l'interface
 
-2. **Depuis un snapshot**:
-   ```bash
-   cp snapshots/snapshot_YYYY-MM-DDTHH-MM-SS.json data.json
-   ```
+### Permissions
+- **Admin** : Toutes permissions (création, modification, suppression)
+- **Utilisateur** : Peut voir et ajouter, peut supprimer uniquement ses propres entrées
 
-3. **Depuis un backup manuel**:
-   ```bash
-   cp backups/data_YYYYMMDD_HHMMSS.json data.json
-   ```
+---
 
-## 📱 Fonctionnalités
+## 🧪 Tests
 
-### Pour les utilisateurs:
-- Saisie des heures de travail
-- Création d'affaires de soudure
-- Consultation de leurs propres saisies
-- Modification/suppression de leurs entrées
+### Test de Configuration
+```bash
+./test-sync.sh
+```
 
-### Pour les administrateurs:
-- Toutes les fonctionnalités utilisateur
-- Gestion des clients, affaires, postes
-- Gestion des utilisateurs
-- Vue globale de toutes les saisies
-- Génération de PDF récapitulatifs
+### Test des API
+```bash
+# Health check
+curl https://somepre-suivi.onrender.com/health
 
-## 🛠️ Maintenance
+# Liste des clients
+curl https://somepre-suivi.onrender.com/api/clients
 
-### Keep-alive
-Le serveur effectue un ping automatique toutes les 5 minutes pour éviter la mise en veille (utile sur les hébergements gratuits comme Render).
+# Diagnostic Git
+curl https://somepre-suivi.onrender.com/api/git-status
+```
 
-### Nettoyage des snapshots
-Les snapshots sont automatiquement limités aux 10 plus récents. Les anciens sont supprimés automatiquement.
+---
+
+## 📱 Déploiement
+
+### Render.com
+1. Connecter le repository GitHub
+2. Configurer les variables d'environnement
+3. Déployer automatiquement
+
+### Variables Requises
+- `GITHUB_TOKEN` : Token avec permissions `repo`
+- `GITHUB_REPO` : Format `username/repository`
+
+---
 
 ## 🐛 Dépannage
 
-### Le serveur ne démarre pas
+### Problèmes de Synchronisation
 ```bash
-# Vérifier que les dépendances sont installées
-npm install
+# Diagnostic complet
+./check-server-sync.sh
 
-# Redémarrer le serveur
-./start.sh
+# Forcer une synchronisation
+./sync-now.sh
+
+# Reset Git sur Render
+git reset --hard origin/main
 ```
 
-### Les données ne se sauvegardent pas
-- **Vérifiez que le serveur est démarré**: `ps aux | grep "node server"`
-- Le serveur DOIT tourner en permanence pour sauvegarder les modifications
+### Cache Navigateur
+Le cache est automatiquement invalidé toutes les 30 secondes.
+Pour forcer : `Ctrl+Shift+R` (ou `Cmd+Shift+R` sur Mac)
 
-### Base de données corrompue
-1. Arrêter le serveur
-2. Restaurer depuis un backup (voir section Restauration)
-3. Redémarrer le serveur
+### Erreurs Git
+Consultez [force-sync-render.md](force-sync-render.md) pour les solutions.
 
-## 📊 Statistiques
+---
 
-- **Synchronisation auto**: Toutes les 30 secondes
-- **Keep-alive**: Toutes les 5 minutes
-- **Snapshots**: Toutes les 15 minutes
-- **Snapshots conservés**: 10 derniers
+## 📚 Documentation Complète
+
+- **[README-SYNC.md](README-SYNC.md)** - Guide synchronisation rapide
+- **[SYNC-GUIDE.md](SYNC-GUIDE.md)** - Documentation exhaustive
+- **[CHANGELOG-SYNC.md](CHANGELOG-SYNC.md)** - Historique des améliorations
+- **[FIXES-APPLIED.md](FIXES-APPLIED.md)** - Corrections appliquées
+
+---
+
+## 🤝 Contribution
+
+Ce projet utilise :
+- **Frontend** : HTML5, CSS3, JavaScript vanilla
+- **Backend** : Node.js, Express
+- **Synchronisation** : Git, GitHub API
+- **Déploiement** : Render.com
+
+---
+
+## 📝 Licence
+
+Propriétaire - Usage interne
+
+---
+
+## 🆘 Support
+
+Pour toute question ou problème :
+1. Consultez la [documentation](SYNC-GUIDE.md)
+2. Vérifiez les [corrections connues](FIXES-APPLIED.md)
+3. Utilisez les [scripts de diagnostic](test-sync.sh)
+
+---
+
+**Dernière mise à jour** : 2025-11-24
+**Version** : 2.0
+**Créé avec** : Claude Code 🤖
