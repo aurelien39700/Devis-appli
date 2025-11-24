@@ -4,31 +4,10 @@
         {
             "id": "1764014447938",
             "name": "NP JURA"
-        },
-        {
-            "id": "1764014732621",
-            "name": "PLASTIGRAY"
-        },
-        {
-            "id": "1764014760229",
-            "name": "NMBP"
         }
     ],
     "affaires": [],
-    "postes": [
-        {
-            "id": "1764014781418",
-            "name": "Soudure"
-        },
-        {
-            "id": "1764014788537",
-            "name": "Fraisage"
-        },
-        {
-            "id": "1764014806191",
-            "name": "Ajustage"
-        }
-    ],
+    "postes": [],
     "users": [
         {
             "id": "1",
