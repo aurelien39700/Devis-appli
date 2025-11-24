@@ -20,9 +20,28 @@ app.use(express.static(__dirname));
 
 // ===== FONCTIONS GIT =====
 
+// Fonction pour configurer Git remote (nécessaire sur Render)
+async function setupGitRemote() {
+    try {
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+        const GITHUB_REPO = process.env.GITHUB_REPO || 'aurelien39700/Devis-appli';
+        const IS_RENDER = process.env.RENDER === 'true' || !!process.env.RENDER_SERVICE_NAME;
+
+        // Sur Render, configurer le remote avec le token
+        if (IS_RENDER && GITHUB_TOKEN) {
+            const remoteUrl = `https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git`;
+            await execPromise(`git remote add origin ${remoteUrl} 2>/dev/null || git remote set-url origin ${remoteUrl}`);
+            console.log('🔧 Git remote configuré pour Render');
+        }
+    } catch (error) {
+        console.warn('⚠️ Setup remote:', error.message);
+    }
+}
+
 // Fonction pour pull les dernières données depuis Git
 async function gitPull() {
     try {
+        await setupGitRemote(); // Configurer le remote avant de pull
         console.log('📥 Git pull...');
         const { stdout, stderr } = await execPromise('git pull origin main');
         console.log('✅ Git pull réussi:', stdout);
@@ -36,21 +55,16 @@ async function gitPull() {
 // Fonction pour commit et push automatiquement (compatible Render)
 async function gitCommitAndPush(message) {
     try {
+        // Configurer le remote si nécessaire
+        await setupGitRemote();
+
         // Configurer Git user si nécessaire (pour Render)
-        const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-        const GITHUB_REPO = process.env.GITHUB_REPO || 'aurelien39700/Devis-appli';
-        const IS_RENDER = process.env.RENDER === 'true' || !!GITHUB_TOKEN;
+        const IS_RENDER = process.env.RENDER === 'true' || !!process.env.RENDER_SERVICE_NAME;
 
         // Configurer l'identité Git (nécessaire pour commit)
         if (IS_RENDER) {
             await execPromise('git config user.email "app@render.com" || true');
             await execPromise('git config user.name "Render App" || true');
-        }
-
-        // Si on a un token GitHub (environnement Render), configurer l'URL avec le token
-        if (GITHUB_TOKEN && IS_RENDER) {
-            const remoteUrl = `https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git`;
-            await execPromise(`git remote set-url origin ${remoteUrl} || true`);
             console.log('🔑 GitHub token configuré pour Render');
         }
 
