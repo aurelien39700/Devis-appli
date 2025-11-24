@@ -17,16 +17,51 @@ app.use(express.static(__dirname));
 
 // Initialiser le fichier de données s'il n'existe pas
 async function initDataFile() {
+    const BACKUP_FILE = path.join(__dirname, 'data.backup.json');
+
     try {
         await fs.access(DATA_FILE);
-    } catch {
-        await fs.writeFile(DATA_FILE, JSON.stringify({
-            entries: [],
-            clients: [],
-            affaires: [],
-            postes: [],
-            users: []
-        }));
+        // Le fichier existe, vérifier qu'il n'est pas vide ou corrompu
+        const data = await fs.readFile(DATA_FILE, 'utf8');
+        const parsed = JSON.parse(data);
+
+        // Vérifier que l'admin existe
+        if (!parsed.users || !parsed.users.find(u => u.name === 'Admin')) {
+            console.log('⚠️ Admin manquant, restauration...');
+            if (!parsed.users) parsed.users = [];
+            parsed.users.push({
+                id: '1',
+                name: 'Admin',
+                password: 'ADMIN'
+            });
+            await fs.writeFile(DATA_FILE, JSON.stringify(parsed, null, 2));
+        }
+    } catch (error) {
+        console.log('❌ Fichier data.json manquant ou corrompu');
+
+        // Essayer de restaurer depuis le backup
+        try {
+            await fs.access(BACKUP_FILE);
+            console.log('🔄 Restauration depuis data.backup.json');
+            const backupData = await fs.readFile(BACKUP_FILE, 'utf8');
+            await fs.writeFile(DATA_FILE, backupData);
+            console.log('✅ Restauration réussie');
+        } catch (backupError) {
+            console.log('📝 Création d\'un nouveau fichier data.json');
+            // Créer un nouveau fichier avec l'admin
+            const initialData = {
+                entries: [],
+                clients: [],
+                affaires: [],
+                postes: [],
+                users: [{
+                    id: '1',
+                    name: 'Admin',
+                    password: 'ADMIN'
+                }]
+            };
+            await fs.writeFile(DATA_FILE, JSON.stringify(initialData, null, 2));
+        }
     }
 }
 
@@ -54,9 +89,38 @@ async function readData() {
     }
 }
 
-// Écrire les données
+// Écrire les données avec backup automatique
 async function writeData(data) {
-    await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+    // Valider les données avant d'écrire
+    const validData = {
+        entries: Array.isArray(data.entries) ? data.entries : [],
+        clients: Array.isArray(data.clients) ? data.clients : [],
+        affaires: Array.isArray(data.affaires) ? data.affaires : [],
+        postes: Array.isArray(data.postes) ? data.postes : [],
+        users: Array.isArray(data.users) ? data.users : []
+    };
+
+    // S'assurer que l'admin existe toujours
+    if (!validData.users.find(u => u.name === 'Admin')) {
+        validData.users.push({
+            id: Date.now().toString(),
+            name: 'Admin',
+            password: 'ADMIN'
+        });
+    }
+
+    // Créer un backup avant d'écrire
+    const BACKUP_FILE = path.join(__dirname, 'data.backup.json');
+    try {
+        await fs.access(DATA_FILE);
+        const currentData = await fs.readFile(DATA_FILE, 'utf8');
+        await fs.writeFile(BACKUP_FILE, currentData);
+    } catch (error) {
+        // Pas de fichier existant, pas de backup
+    }
+
+    // Écrire les nouvelles données
+    await fs.writeFile(DATA_FILE, JSON.stringify(validData, null, 2));
 }
 
 // Routes API

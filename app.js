@@ -300,8 +300,58 @@ async function loadAllData() {
         loadPostes(),
         loadUsers()
     ]);
+
+    // Vérifier si le serveur a des données, sinon restaurer depuis localStorage
+    await checkAndRestoreFromLocalStorage();
+
     updateSelects();
     renderEntries(); // Re-render après que tout soit chargé
+}
+
+// Vérifier et restaurer depuis localStorage si le serveur est vide
+async function checkAndRestoreFromLocalStorage() {
+    const hasServerData = entries.length > 0 || clients.length > 0 || affaires.length > 0;
+
+    if (!hasServerData) {
+        // Le serveur est vide, vérifier localStorage
+        const localEntries = JSON.parse(localStorage.getItem('affaires_entries') || '[]');
+        const localClients = JSON.parse(localStorage.getItem('affaires_clients') || '[]');
+        const localAffaires = JSON.parse(localStorage.getItem('affaires_affaires') || '[]');
+        const localPostes = JSON.parse(localStorage.getItem('affaires_postes') || '[]');
+        const localUsers = JSON.parse(localStorage.getItem('affaires_users') || '[]');
+
+        const hasLocalData = localEntries.length > 0 || localClients.length > 0 || localAffaires.length > 0;
+
+        if (hasLocalData) {
+            console.log('🔄 Restauration des données depuis localStorage vers le serveur...');
+            try {
+                // Envoyer toutes les données au serveur en une fois
+                const response = await fetch(`${API_URL}/sync`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        entries: localEntries,
+                        clients: localClients,
+                        affaires: localAffaires,
+                        postes: localPostes,
+                        users: localUsers
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('✅ Données restaurées avec succès');
+                    // Mettre à jour les variables locales
+                    entries = localEntries;
+                    clients = localClients;
+                    affaires = localAffaires;
+                    postes = localPostes;
+                    users = localUsers;
+                }
+            } catch (error) {
+                console.error('❌ Erreur de restauration:', error);
+            }
+        }
+    }
 }
 
 async function loadEntries() {
