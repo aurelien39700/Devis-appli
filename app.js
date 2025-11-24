@@ -25,6 +25,52 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLoginForm();
 });
 
+// ===== FONCTION DE NOTIFICATION =====
+
+function showNotification(message, type = 'success') {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        background: ${type === 'success' ? '#4CAF50' : '#f44336'};
+        color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-size: 1rem;
+        animation: slideIn 0.3s ease-out;
+    `;
+
+    // Ajouter l'animation CSS
+    if (!document.getElementById('notification-style')) {
+        const style = document.createElement('style');
+        style.id = 'notification-style';
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(notification);
+
+    // Retirer automatiquement après 3 secondes
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
 // ===== AUTHENTIFICATION =====
 
 function checkAuth() {
@@ -181,22 +227,34 @@ function showApp() {
 
 // Démarrer la synchronisation automatique
 function startAutoSync() {
-    // Synchroniser toutes les 30 secondes
+    // Synchroniser toutes les 30 secondes avec cache-busting
     if (syncInterval) {
         clearInterval(syncInterval);
     }
     syncInterval = setInterval(async () => {
         // Ne pas synchroniser si l'utilisateur est en train de saisir dans le modal
         if (isFormActive) {
-            console.log('Synchronisation ignorée - formulaire actif');
+            console.log('⏸️ Synchronisation ignorée - formulaire actif');
             return;
         }
         try {
-            await loadAllData();
+            console.log('🔄 Synchronisation automatique...');
+
+            // Forcer le rechargement depuis le serveur (bypass cache)
+            await loadAllData(true);
+
+            // Rafraîchir tous les affichages
+            renderEntries();
+            renderClients();
+            renderAffaires();
+            renderPostes();
+            updateSelects();
+
+            console.log('✅ Données synchronisées');
         } catch (error) {
-            console.error('Erreur de synchronisation:', error);
+            console.error('❌ Erreur de synchronisation:', error);
         }
-    }, 5000); // 5 secondes pour une synchronisation plus rapide
+    }, 30000); // 30 secondes comme demandé
 
     // Export automatique toutes les 5 minutes (pour admin seulement)
     if (isAdmin()) {
@@ -306,28 +364,33 @@ function switchLibrary(libraryName, evt) {
 
 // ===== CHARGEMENT DES DONNÉES =====
 
-async function loadAllData() {
+async function loadAllData(bypassCache = false) {
+    // Ajouter un timestamp pour forcer le bypass du cache
+    const cacheBuster = bypassCache ? `?_t=${Date.now()}` : '';
+
     await Promise.all([
-        loadEntries(),
-        loadClients(),
-        loadAffaires(),
-        loadPostes(),
-        loadUsers()
+        loadEntries(cacheBuster),
+        loadClients(cacheBuster),
+        loadAffaires(cacheBuster),
+        loadPostes(cacheBuster),
+        loadUsers(cacheBuster)
     ]);
 
     updateSelects();
     renderEntries(); // Re-render après que tout soit chargé
 }
 
-async function loadEntries() {
+async function loadEntries(cacheBuster = '') {
     // TOUJOURS charger depuis localStorage EN PREMIER (source de vérité locale)
     const saved = localStorage.getItem('affaires_entries');
     entries = saved ? JSON.parse(saved) : [];
 
     // PUIS essayer de synchroniser avec le serveur (merge/update)
     try {
-        const response = await fetch(`${API_URL}/entries`, {
-            timeout: 3000 // 3 secondes max
+        const response = await fetch(`${API_URL}/entries${cacheBuster}`, {
+            timeout: 3000, // 3 secondes max
+            cache: cacheBuster ? 'no-store' : 'default', // Forcer no-cache si cacheBuster
+            headers: cacheBuster ? { 'Cache-Control': 'no-cache, no-store, must-revalidate' } : {}
         });
         if (response.ok) {
             const data = await response.json();
@@ -349,14 +412,17 @@ async function loadEntries() {
     }
 }
 
-async function loadClients() {
+async function loadClients(cacheBuster = '') {
     // Charger d'abord localStorage
     const saved = localStorage.getItem('affaires_clients');
     clients = saved ? JSON.parse(saved) : [];
 
     // Puis synchroniser avec le serveur
     try {
-        const response = await fetch(`${API_URL}/clients`);
+        const response = await fetch(`${API_URL}/clients${cacheBuster}`, {
+            cache: cacheBuster ? 'no-store' : 'default',
+            headers: cacheBuster ? { 'Cache-Control': 'no-cache, no-store, must-revalidate' } : {}
+        });
         if (response.ok) {
             const data = await response.json();
             const serverClients = data.clients || [];
@@ -375,14 +441,17 @@ async function loadClients() {
     }
 }
 
-async function loadAffaires() {
+async function loadAffaires(cacheBuster = '') {
     // Charger d'abord localStorage
     const saved = localStorage.getItem('affaires_affaires');
     affaires = saved ? JSON.parse(saved) : [];
 
     // Puis synchroniser avec le serveur
     try {
-        const response = await fetch(`${API_URL}/affaires`);
+        const response = await fetch(`${API_URL}/affaires${cacheBuster}`, {
+            cache: cacheBuster ? 'no-store' : 'default',
+            headers: cacheBuster ? { 'Cache-Control': 'no-cache, no-store, must-revalidate' } : {}
+        });
         if (response.ok) {
             const data = await response.json();
             const serverAffaires = data.affaires || [];
@@ -401,14 +470,17 @@ async function loadAffaires() {
     }
 }
 
-async function loadPostes() {
+async function loadPostes(cacheBuster = '') {
     // Charger d'abord localStorage
     const saved = localStorage.getItem('affaires_postes');
     postes = saved ? JSON.parse(saved) : [];
 
     // Puis synchroniser avec le serveur
     try {
-        const response = await fetch(`${API_URL}/postes`);
+        const response = await fetch(`${API_URL}/postes${cacheBuster}`, {
+            cache: cacheBuster ? 'no-store' : 'default',
+            headers: cacheBuster ? { 'Cache-Control': 'no-cache, no-store, must-revalidate' } : {}
+        });
         if (response.ok) {
             const data = await response.json();
             const serverPostes = data.postes || [];
@@ -1009,21 +1081,43 @@ async function deleteClient(id) {
     if (!confirm('Supprimer ce client ? Cela supprimera aussi ses affaires associées.')) return;
 
     try {
+        // Afficher un indicateur de chargement
+        const button = event?.target;
+        if (button) {
+            button.disabled = true;
+            button.textContent = '⏳';
+        }
+
         const response = await fetch(`${API_URL}/clients/${id}`, {
             method: 'DELETE'
         });
 
         if (response.ok) {
-            // Recharger toutes les données depuis le serveur
+            console.log('✅ Client supprimé avec succès');
+
+            // Supprimer immédiatement de l'affichage pour un feedback instantané
+            clients = clients.filter(c => c.id !== id);
+            renderClients();
+
+            // Recharger toutes les données depuis le serveur pour être sûr
             await Promise.all([loadClients(), loadAffaires(), loadEntries()]);
             renderClients();
             renderAffaires();
             renderEntries();
             updateSelects();
+
+            // Afficher une notification de succès
+            showNotification('✅ Client supprimé avec succès');
+        } else {
+            throw new Error('Échec de la suppression');
         }
     } catch (error) {
-        console.error('Erreur:', error);
-        alert('Erreur lors de la suppression');
+        console.error('❌ Erreur:', error);
+        alert('Erreur lors de la suppression. Veuillez réessayer.');
+
+        // Recharger pour être sûr d'avoir l'état correct
+        await loadClients();
+        renderClients();
     }
 }
 
@@ -1115,12 +1209,27 @@ async function deleteAffaire(id) {
     if (!confirm('Supprimer définitivement cette affaire et toutes ses entrées ? Cette action est irréversible.')) return;
 
     try {
+        // Afficher un indicateur de chargement
+        const button = event?.target;
+        if (button) {
+            button.disabled = true;
+            button.textContent = '⏳';
+        }
+
         // Le serveur supprime automatiquement l'affaire ET toutes ses entrées en cascade
         const response = await fetch(`${API_URL}/affaires/${id}`, {
             method: 'DELETE'
         });
 
         if (response.ok) {
+            console.log('✅ Affaire supprimée avec succès');
+
+            // Supprimer immédiatement de l'affichage
+            affaires = affaires.filter(a => a.id !== id);
+            entries = entries.filter(e => e.affaireId !== id);
+            renderAffaires();
+            renderEntries();
+
             // Recharger toutes les données depuis le serveur (cascade suppression)
             await Promise.all([loadAffaires(), loadEntries()]);
 
@@ -1128,10 +1237,19 @@ async function deleteAffaire(id) {
             renderAffaires();
             updateSelects();
             renderEntries();
+
+            showNotification('✅ Affaire supprimée avec succès');
+        } else {
+            throw new Error('Échec de la suppression');
         }
     } catch (error) {
-        console.error('Erreur:', error);
-        alert('Erreur lors de la suppression');
+        console.error('❌ Erreur:', error);
+        alert('Erreur lors de la suppression. Veuillez réessayer.');
+
+        // Recharger pour avoir l'état correct
+        await Promise.all([loadAffaires(), loadEntries()]);
+        renderAffaires();
+        renderEntries();
     }
 }
 
@@ -1254,9 +1372,12 @@ function renderPostes() {
 
 // ===== GESTION DES UTILISATEURS =====
 
-async function loadUsers() {
+async function loadUsers(cacheBuster = '') {
     try {
-        const response = await fetch(`${API_URL}/users`);
+        const response = await fetch(`${API_URL}/users${cacheBuster}`, {
+            cache: cacheBuster ? 'no-store' : 'default',
+            headers: cacheBuster ? { 'Cache-Control': 'no-cache, no-store, must-revalidate' } : {}
+        });
         if (response.ok) {
             const data = await response.json();
             users = data.users || [];
