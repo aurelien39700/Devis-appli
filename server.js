@@ -572,47 +572,43 @@ function keepAlive() {
 }
 
 // Fonction de pull automatique depuis GitHub (pour synchronisation continue)
+// DÉSACTIVÉ TEMPORAIREMENT : Causait des écrasements de données
+// Le serveur Render devient la source de vérité
+// Les données sont synchronisées via VS Code avec auto-sync-hybrid.sh
 function autoPullFromGit() {
+    console.log('ℹ️  Auto-pull désactivé - Le serveur est la source de vérité');
+    // Gardons juste le push automatique des modifications
     setInterval(async () => {
         try {
             // Vérifier s'il y a des modifications locales non commitées
             const { stdout: status } = await execPromise('git status --porcelain');
 
             if (status.trim()) {
-                // Il y a des modifications locales, commit d'abord
-                console.log('📝 Modifications locales détectées, commit avant pull...');
-                await gitCommitAndPush('Auto-commit avant pull');
+                // Il y a des modifications locales, commit et push vers GitHub
+                console.log('📝 Modifications locales détectées, push vers GitHub...');
+                await gitCommitAndPush('Auto-save depuis serveur');
+                console.log('✅ Modifications poussées vers GitHub');
             }
-
-            // Maintenant on peut pull sans conflit
-            console.log('🔄 Auto-pull depuis GitHub...');
-            await gitPull();
-
-            // Recharger les données en mémoire après le pull
-            await initDataFile();
-            console.log('✅ Données synchronisées depuis GitHub');
         } catch (error) {
-            console.warn('⚠️ Auto-pull échoué:', error.message);
+            console.warn('⚠️ Auto-push échoué:', error.message);
         }
     }, 10 * 1000); // Toutes les 10 secondes
 }
 
 // Démarrer le serveur
 async function startServer() {
-    // 1. Pull les dernières données depuis Git au démarrage
-    console.log('🔄 Synchronisation Git au démarrage...');
-    await gitPull();
-
-    // 2. Initialiser le fichier de données
+    // 1. Initialiser le fichier de données (sans pull - le serveur est la source de vérité)
+    console.log('📂 Initialisation des données...');
     await initDataFile();
 
-    // 3. Démarrer le serveur
+    // 2. Démarrer le serveur
     app.listen(PORT, () => {
         console.log(`🚀 Serveur démarré sur le port ${PORT}`);
         console.log(`📍 API disponible sur http://localhost:${PORT}/api/entries`);
         console.log(`💓 Keep-alive activé (ping toutes les 5 minutes)`);
-        console.log(`🔄 Auto-pull activé (toutes les 10 secondes)`);
-        console.log(`🔄 Git: Pull continu + Push après chaque modification`);
+        console.log(`📤 Auto-push activé (toutes les 10 secondes)`);
+        console.log(`🔄 Git: Push uniquement (serveur = source de vérité)`);
+        console.log(`ℹ️  Sync depuis VS Code via auto-sync-hybrid.sh`);
         keepAlive();
         autoPullFromGit();
     });
