@@ -15,7 +15,12 @@
         }
     ],
     "affaires": [],
-    "postes": [],
+    "postes": [
+        {
+            "id": "1764014781418",
+            "name": "Soudure"
+        }
+    ],
     "users": [
         {
             "id": "1",
