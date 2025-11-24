@@ -1,0 +1,10 @@
+{
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "task.autoDetect": "on",
+    "task.allowAutomaticTasks": "on",
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true
+    }
+}
