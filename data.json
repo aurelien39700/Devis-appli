@@ -1,23 +1,13 @@
 {
-    "entries": [],
-    "clients": [
-        {
-            "id": "1764012995096",
-            "name": "NP JURA"
-        }
-    ],
-    "affaires": [],
-    "postes": [],
-    "users": [
-        {
-            "id": "1",
-            "name": "Admin",
-            "password": "ADMIN"
-        },
-        {
-            "id": "1764012029854",
-            "name": "Aurelien",
-            "password": "Kenfuck39"
-        }
-    ]
+  "entries": [],
+  "clients": [],
+  "affaires": [],
+  "postes": [],
+  "users": [
+    {
+      "id": "1",
+      "name": "Admin",
+      "password": "ADMIN"
+    }
+  ]
 }
