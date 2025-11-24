@@ -1,6 +1,11 @@
 {
     "entries": [],
-    "clients": [],
+    "clients": [
+        {
+            "id": "1764014589357",
+            "name": "TEST CLIENT"
+        }
+    ],
     "affaires": [],
     "postes": [],
     "users": [
