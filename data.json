@@ -18,7 +18,15 @@
             "name": "TYCO"
         }
     ],
-    "affaires": [],
+    "affaires": [
+        {
+            "id": "1764015984134",
+            "name": "4565",
+            "clientId": "1764014732621",
+            "description": "",
+            "statut": "en_cours"
+        }
+    ],
     "postes": [
         {
             "id": "1764014781418",
