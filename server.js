@@ -499,7 +499,20 @@ function keepAlive() {
     }, 5 * 60 * 1000); // Toutes les 5 minutes
 }
 
-// Fonction de sauvegarde automatique supprimée (plus nécessaire avec commit direct)
+// Fonction de pull automatique depuis GitHub (pour synchronisation continue)
+function autoPullFromGit() {
+    setInterval(async () => {
+        try {
+            console.log('🔄 Auto-pull depuis GitHub...');
+            await gitPull();
+            // Recharger les données en mémoire après le pull
+            await initDataFile();
+            console.log('✅ Données synchronisées depuis GitHub');
+        } catch (error) {
+            console.warn('⚠️ Auto-pull échoué:', error.message);
+        }
+    }, 10 * 1000); // Toutes les 10 secondes
+}
 
 // Démarrer le serveur
 async function startServer() {
@@ -515,8 +528,10 @@ async function startServer() {
         console.log(`🚀 Serveur démarré sur le port ${PORT}`);
         console.log(`📍 API disponible sur http://localhost:${PORT}/api/entries`);
         console.log(`💓 Keep-alive activé (ping toutes les 5 minutes)`);
-        console.log(`🔄 Git: Pull au démarrage, Push après chaque modification`);
+        console.log(`🔄 Auto-pull activé (toutes les 10 secondes)`);
+        console.log(`🔄 Git: Pull continu + Push après chaque modification`);
         keepAlive();
+        autoPullFromGit();
     });
 }
 
