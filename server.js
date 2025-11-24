@@ -53,6 +53,10 @@ async function setupGitRemote() {
 async function gitPull() {
     try {
         await setupGitRemote(); // Configurer le remote avant de pull
+
+        // Configurer la stratégie de pull (merge par défaut)
+        await execPromise('git config pull.rebase false').catch(() => {});
+
         console.log('📥 Git pull...');
         const { stdout, stderr } = await execPromise('git pull origin main');
         console.log('✅ Git pull réussi:', stdout);
