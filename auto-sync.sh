@@ -8,17 +8,25 @@ echo "📥 Pull automatique depuis GitHub toutes les 10 secondes"
 echo "⚠️  Appuyez sur Ctrl+C pour arrêter"
 echo ""
 
+# Configurer git pour utiliser la stratégie de merge
+git config pull.rebase false 2>/dev/null
+
 while true; do
     # Afficher l'heure
     echo -n "[$(date '+%H:%M:%S')] "
 
-    # Vérifier s'il y a des modifications locales non commitées
-    if [[ -n $(git status --porcelain) ]]; then
-        echo "⚠️  Modifications locales détectées, commit ignoré (auto-sync)"
-    fi
+    # Pull depuis GitHub (avec gestion des conflits)
+    OUTPUT=$(git pull 2>&1)
 
-    # Pull depuis GitHub
-    git pull --quiet 2>&1 | grep -v "Already up to date" || echo "✅ Données synchronisées"
+    if echo "$OUTPUT" | grep -q "Already up to date"; then
+        echo "✅ Synchronisé (pas de changements)"
+    elif echo "$OUTPUT" | grep -q "Updating\|Fast-forward\|Merge made"; then
+        echo "🔄 NOUVELLES DONNÉES REÇUES!"
+    elif echo "$OUTPUT" | grep -q "fatal\|error"; then
+        echo "❌ Erreur: $OUTPUT"
+    else
+        echo "✅ Synchronisé"
+    fi
 
     # Attendre 10 secondes
     sleep 10
