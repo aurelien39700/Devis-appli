@@ -1594,7 +1594,7 @@ function renderUsers() {
                     </div>
                 </div>
                 <div class="item-info">
-                    <strong>Code:</strong> ${escapeHtml(user.password || 'Non défini')}
+                    <strong>Code:</strong> <span style="letter-spacing: 3px;">••••••</span>
                 </div>
                 <div class="item-info">
                     <strong>Entrées créées:</strong> ${nbEntries} | <strong>Total heures:</strong> ${totalHeures.toFixed(2)}h
@@ -1602,6 +1602,9 @@ function renderUsers() {
                 <div class="item-actions">
                     <button class="btn btn-secondary" onclick="openRenameModal('user', '${user.id}', '${escapeHtml(user.name).replace(/'/g, "\\'")}')">
                         ✏️ Renommer
+                    </button>
+                    <button class="btn" style="background: rgba(255,193,7,0.2); color: #ffc107;" onclick="openChangePasswordModal('${user.id}', '${escapeHtml(user.name).replace(/'/g, "\\'")}')">
+                        🔑 Changer code
                     </button>
                     <button class="btn btn-danger" onclick="openDeleteModal('user', '${user.id}', '${escapeHtml(user.name).replace(/'/g, "\\'")}')">
                         🗑️ Supprimer
@@ -1887,6 +1890,78 @@ async function confirmDelete(type, id) {
 // Alias pour compatibilité avec la nouvelle interface
 function changeAffaireStatut(id, nouveauStatut) {
     return toggleAffaireStatut(id, nouveauStatut);
+}
+
+// ===== MODALE CHANGEMENT MOT DE PASSE =====
+
+function openChangePasswordModal(userId, userName) {
+    const modalHTML = `
+        <div class="modal-overlay" onclick="closeModal(event)">
+            <div class="modal-box" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>🔑 Changer le code</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Nouveau code pour <strong>${userName}</strong> :</p>
+                    <div style="position: relative;">
+                        <input type="password" class="modal-input" id="modalPasswordInput" placeholder="Entrez le nouveau code" autofocus style="padding-right: 50px;">
+                        <button onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; color: #2196F3; font-size: 1.2rem;">
+                            👁️
+                        </button>
+                    </div>
+                    <p style="color: #888; font-size: 0.9rem; margin-top: 10px;">
+                        ℹ️ Cliquez sur l'œil pour afficher/masquer le code
+                    </p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button class="btn btn-primary" onclick="confirmChangePassword('${userId}')">✓ Changer</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modalContainer').innerHTML = modalHTML;
+    setTimeout(() => document.getElementById('modalPasswordInput').focus(), 100);
+}
+
+function togglePasswordVisibility() {
+    const input = document.getElementById('modalPasswordInput');
+    if (input.type === 'password') {
+        input.type = 'text';
+    } else {
+        input.type = 'password';
+    }
+}
+
+async function confirmChangePassword(userId) {
+    const newPassword = document.getElementById('modalPasswordInput').value.trim();
+    if (!newPassword) {
+        alert('Le code ne peut pas être vide');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/users/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: newPassword })
+        });
+
+        if (response.ok) {
+            closeModal();
+            showNotification('✓ Code modifié avec succès', 'success');
+
+            // Recharger les utilisateurs
+            await loadUsers();
+            renderUsers();
+        } else {
+            alert('Erreur lors du changement de code');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+    }
 }
 
 // ===== EMAIL =====
