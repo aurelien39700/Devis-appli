@@ -503,8 +503,19 @@ function keepAlive() {
 function autoPullFromGit() {
     setInterval(async () => {
         try {
+            // Vérifier s'il y a des modifications locales non commitées
+            const { stdout: status } = await execPromise('git status --porcelain');
+
+            if (status.trim()) {
+                // Il y a des modifications locales, commit d'abord
+                console.log('📝 Modifications locales détectées, commit avant pull...');
+                await gitCommitAndPush('Auto-commit avant pull');
+            }
+
+            // Maintenant on peut pull sans conflit
             console.log('🔄 Auto-pull depuis GitHub...');
             await gitPull();
+
             // Recharger les données en mémoire après le pull
             await initDataFile();
             console.log('✅ Données synchronisées depuis GitHub');
