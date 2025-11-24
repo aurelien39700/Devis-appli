@@ -32,13 +32,6 @@
     ],
     "affaires": [
         {
-            "id": "1764017373680",
-            "name": "MD1056",
-            "clientId": "1764014447938",
-            "description": "",
-            "statut": "en_cours"
-        },
-        {
             "id": "1764018099486",
             "name": "COVER",
             "clientId": "1764015790842",
