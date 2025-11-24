@@ -196,7 +196,7 @@ function startAutoSync() {
         } catch (error) {
             console.error('Erreur de synchronisation:', error);
         }
-    }, 30000); // 30 secondes
+    }, 5000); // 5 secondes pour une synchronisation plus rapide
 
     // Export automatique toutes les 5 minutes (pour admin seulement)
     if (isAdmin()) {
@@ -509,21 +509,27 @@ async function deleteEntry(id) {
     if (!confirm('Supprimer cette entrée ?')) return;
 
     try {
+        updateSyncStatus('syncing', 'Suppression en cours...');
         const response = await fetch(`${API_URL}/entries/${id}`, {
             method: 'DELETE'
         });
-        if (response.ok) {
-            entries = entries.filter(e => e.id !== id);
-            saveToLocalStorage(); // IMPORTANT: Sauvegarder dans localStorage aussi !
-            updateSyncStatus('synced', 'Synchronisé');
-        } else {
-            throw new Error('Erreur serveur');
+
+        if (!response.ok) {
+            throw new Error('Erreur serveur lors de la suppression');
         }
-    } catch (error) {
-        console.error('Erreur de suppression:', error);
+
+        // Suppression réussie sur le serveur, mettre à jour localement
         entries = entries.filter(e => e.id !== id);
         saveToLocalStorage();
-        updateSyncStatus('error', 'Supprimé localement');
+        updateSyncStatus('synced', '✓ Supprimé et synchronisé');
+
+        // Re-charger depuis le serveur pour être sûr
+        setTimeout(() => loadAllData(), 1000);
+    } catch (error) {
+        console.error('❌ Erreur de suppression:', error);
+        alert('Erreur: Impossible de supprimer l\'entrée. Vérifiez votre connexion.');
+        updateSyncStatus('error', '✗ Erreur de suppression');
+        // Ne PAS supprimer localement si le serveur a échoué !
     }
     renderEntries();
 }

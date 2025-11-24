@@ -208,11 +208,14 @@ async function writeData(data) {
     // Écrire les nouvelles données
     await fs.writeFile(DATA_FILE, JSON.stringify(validData, null, 2));
 
-    // Commit et push automatiquement sur Git (non-bloquant)
-    // Ne pas await pour ne pas ralentir l'API
-    gitCommitAndPush('Données mises à jour').catch(err => {
+    // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    try {
+        await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et commit\u00e9es sur GitHub');
+    } catch (err) {
         console.warn('⚠️ Git push échoué, mais données sauvegardées localement');
-    });
+        // Les données sont quand même sauvegardées dans data.json
+    }
 }
 
 // Routes API
