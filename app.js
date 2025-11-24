@@ -23,7 +23,27 @@ let isFormActive = false; // Flag pour savoir si l'utilisateur est en train de s
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupLoginForm();
+    updateDateTime();
+    setInterval(updateDateTime, 1000); // Mettre à jour l'heure chaque seconde
 });
+
+// ===== AFFICHAGE HEURE EN TEMPS RÉEL =====
+
+function updateDateTime() {
+    const dateTimeElement = document.getElementById('currentDateTime');
+    if (!dateTimeElement) return;
+
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+
+    dateTimeElement.textContent = `🕐 ${hours}:${minutes}:${seconds} | 📅 ${day}/${month}/${year}`;
+}
 
 // ===== FONCTION DE NOTIFICATION =====
 
