@@ -38,8 +38,8 @@ Une fois le serveur démarré, ouvrez votre navigateur:
 
 2. **Lecture depuis un autre appareil**:
    - Démarrer le serveur → Pull auto depuis GitHub ✅
-   - OU cliquer sur "📥 Synchroniser depuis GitHub" ✅
    - Données à jour instantanément! ✅
+   - **100% automatique, aucune action requise!**
 
 ### Utilisation multi-appareils
 
@@ -51,11 +51,9 @@ Une fois le serveur démarré, ouvrez votre navigateur:
 
 **Appareil B (Portable):**
 ```bash
-# 1. Démarrer le serveur
+# Démarrer le serveur
 node server.js
 # → Pull automatique depuis GitHub au démarrage!
-
-# 2. Ou dans l'app: cliquer sur "📥 Synchroniser depuis GitHub"
 # → Données de l'appareil A disponibles instantanément!
 ```
 
@@ -75,10 +73,12 @@ node server.js
 - Créé **automatiquement avant chaque écriture** dans data.json
 - Permet de restaurer la dernière version en cas de corruption
 
-### 3. Snapshots automatiques (dossier snapshots/)
-- Créés **toutes les 15 minutes** si la base contient des données
-- Garde les **10 derniers snapshots**
-- Format: `snapshot_YYYY-MM-DDTHH-MM-SS.json`
+### 3. Snapshot automatique (snapshot.json sur GitHub) ⭐
+- Créé **toutes les 15 minutes** si la base contient des données
+- **Commit et push automatiquement sur GitHub**
+- Fichier unique `snapshot.json` qui écrase le précédent
+- Permet de récupérer l'état complet toutes les 15 min
+- Commande: `git checkout snapshot.json` pour restaurer
 
 ### 4. Backups manuels (dossier backups/)
 - Créés au **démarrage du serveur** via `./start.sh`

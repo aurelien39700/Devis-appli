@@ -1,10 +1,13 @@
 # Node modules
 node_modules/
 
-# Backups et snapshots (ne pas commit)
+# Backups locaux (ne pas commit)
 backups/
 snapshots/
 *.backup.json
+
+# IMPORTANT: snapshot.json est commit automatiquement (sauvegarde GitHub)
+# Ne PAS l'ajouter au gitignore!
 
 # Logs
 npm-debug.log*

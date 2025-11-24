@@ -445,27 +445,6 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Route pour pull manuel depuis Git
-app.post('/api/git/pull', async (req, res) => {
-    console.log('📥 Pull manuel demandé');
-    const result = await gitPull();
-
-    if (result.success) {
-        // Recharger les données après le pull
-        const data = await readData();
-        res.json({ success: true, message: 'Données synchronisées depuis Git', data });
-    } else {
-        res.status(500).json({ success: false, message: result.message });
-    }
-});
-
-// Route pour forcer un commit/push manuel
-app.post('/api/git/push', async (req, res) => {
-    console.log('📤 Push manuel demandé');
-    const result = await gitCommitAndPush('Push manuel');
-    res.json(result);
-});
-
 // Fonction keep-alive pour empêcher le serveur de se mettre en veille
 function keepAlive() {
     setInterval(() => {
@@ -474,19 +453,10 @@ function keepAlive() {
     }, 5 * 60 * 1000); // Toutes les 5 minutes
 }
 
-// Fonction de sauvegarde automatique périodique (snapshots)
+// Fonction de sauvegarde automatique périodique avec commit GitHub
 async function autoSnapshot() {
     setInterval(async () => {
         try {
-            const SNAPSHOT_DIR = path.join(__dirname, 'snapshots');
-
-            // Créer le dossier snapshots s'il n'existe pas
-            try {
-                await fs.access(SNAPSHOT_DIR);
-            } catch {
-                await fs.mkdir(SNAPSHOT_DIR);
-            }
-
             // Lire le fichier actuel
             const currentData = await fs.readFile(DATA_FILE, 'utf8');
             const parsed = JSON.parse(currentData);
@@ -499,19 +469,20 @@ async function autoSnapshot() {
                            (parsed.users?.length > 1); // Plus que juste l'admin
 
             if (hasData) {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-                const snapshotFile = path.join(SNAPSHOT_DIR, `snapshot_${timestamp}.json`);
-                await fs.writeFile(snapshotFile, currentData);
-                console.log(`📸 Snapshot créé: snapshot_${timestamp}.json`);
+                // Créer/écraser snapshot.json (fichier unique)
+                const SNAPSHOT_FILE = path.join(__dirname, 'snapshot.json');
+                await fs.writeFile(SNAPSHOT_FILE, currentData);
+                console.log(`📸 Snapshot créé: snapshot.json`);
 
-                // Garder seulement les 10 derniers snapshots
-                const files = await fs.readdir(SNAPSHOT_DIR);
-                const snapshots = files.filter(f => f.startsWith('snapshot_')).sort();
-                if (snapshots.length > 10) {
-                    for (let i = 0; i < snapshots.length - 10; i++) {
-                        await fs.unlink(path.join(SNAPSHOT_DIR, snapshots[i]));
-                        console.log(`🗑️ Ancien snapshot supprimé: ${snapshots[i]}`);
-                    }
+                // Commit et push sur GitHub automatiquement
+                try {
+                    await execPromise('git add snapshot.json');
+                    const timestamp = new Date().toISOString();
+                    await execPromise(`git commit -m "Auto-snapshot: ${timestamp}" || echo "Rien à commiter"`);
+                    await execPromise('git push origin main');
+                    console.log('✅ Snapshot poussé sur GitHub');
+                } catch (gitError) {
+                    console.warn('⚠️ Git push snapshot échoué:', gitError.message);
                 }
             }
         } catch (error) {

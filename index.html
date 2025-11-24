@@ -728,18 +728,19 @@
                         </button>
                     </div>
 
-                    <!-- Synchronisation Git -->
+                    <!-- Info Synchronisation Git -->
                     <div class="card" style="margin-top: 20px; background: rgba(33, 150, 243, 0.1); border: 2px solid rgba(33, 150, 243, 0.3);">
                         <h3 style="margin-bottom: 15px; color: #2196F3;">🔄 Synchronisation GitHub</h3>
-                        <p style="font-size: 0.9rem; color: #999; margin-bottom: 15px;">
-                            🔄 Chaque modification est automatiquement commit sur GitHub<br>
-                            📥 Au démarrage, les données sont pull depuis GitHub<br>
-                            🌐 Synchronisation instantanée entre tous les appareils!
+                        <p style="font-size: 0.9rem; color: #999; margin-bottom: 10px;">
+                            ✅ <strong>100% Automatique</strong><br>
+                            🔄 Chaque modification → Commit instantané sur GitHub<br>
+                            📸 Snapshot toutes les 15 min → Commit sur GitHub<br>
+                            📥 Au démarrage serveur → Pull automatique<br>
+                            🌐 Tous les appareils synchronisés en temps réel!
                         </p>
-                        <button class="btn btn-primary" onclick="syncFromGit()" style="background: #2196F3; border: none; width: 100%;">
-                            📥 Synchroniser depuis GitHub maintenant
-                        </button>
-                        <div id="gitSyncStatus" style="margin-top: 10px; padding: 8px; border-radius: 6px; font-size: 0.85rem; text-align: center; display: none;"></div>
+                        <div style="background: rgba(76, 175, 80, 0.2); padding: 10px; border-radius: 6px; border: 1px solid rgba(76, 175, 80, 0.4);">
+                            <span style="color: #4CAF50; font-size: 0.85rem;">💡 Aucune action requise - Tout est automatique!</span>
+                        </div>
                     </div>
                 </div>
             </div>
