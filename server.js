@@ -30,11 +30,21 @@ async function setupGitRemote() {
         // Sur Render, configurer le remote avec le token
         if (IS_RENDER && GITHUB_TOKEN) {
             const remoteUrl = `https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git`;
-            await execPromise(`git remote add origin ${remoteUrl} 2>/dev/null || git remote set-url origin ${remoteUrl}`);
+
+            // Vérifier si origin existe déjà
+            try {
+                await execPromise('git remote get-url origin');
+                // Origin existe, on le met à jour
+                await execPromise(`git remote set-url origin "${remoteUrl}"`);
+            } catch {
+                // Origin n'existe pas, on le crée
+                await execPromise(`git remote add origin "${remoteUrl}"`);
+            }
+
             console.log('🔧 Git remote configuré pour Render');
         }
     } catch (error) {
-        console.warn('⚠️ Setup remote:', error.message);
+        console.warn('⚠️ Setup remote erreur');
     }
 }
 
