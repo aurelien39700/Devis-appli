@@ -1,0 +1,23 @@
+{
+  "entries": [],
+  "clients": [
+    {
+      "id": "1763999475019",
+      "name": "NP JURA"
+    }
+  ],
+  "affaires": [],
+  "postes": [],
+  "users": [
+    {
+      "id": "1763997858970",
+      "name": "Aurelien",
+      "password": "Kenfuck39"
+    },
+    {
+      "id": "1763999465310",
+      "name": "Admin",
+      "password": "ADMIN"
+    }
+  ]
+}
