@@ -23,7 +23,17 @@ node server.js
 
 Une fois le serveur démarré, ouvrez votre navigateur:
 - **Local**: http://localhost:10000
-- **Production**: URL de votre serveur déployé
+- **Production (Render)**: https://somepre-suivi.onrender.com
+
+### 🌐 Configuration Render (sync bidirectionnelle)
+
+Pour activer la synchronisation GitHub sur Render (saisie depuis portable/mobile):
+👉 **[Voir les instructions détaillées](RENDER_SETUP.md)**
+
+Une fois configuré:
+- ✅ Saisir depuis n'importe quel appareil
+- ✅ Commit automatique sur GitHub
+- ✅ Synchronisation complète bidirectionnelle
 
 ## 🌐 Synchronisation multi-appareils
 

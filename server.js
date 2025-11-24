@@ -33,9 +33,24 @@ async function gitPull() {
     }
 }
 
-// Fonction pour commit et push automatiquement
+// Fonction pour commit et push automatiquement (compatible Render)
 async function gitCommitAndPush(message) {
     try {
+        // Configurer Git user si nécessaire (pour Render)
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+        const GITHUB_REPO = process.env.GITHUB_REPO || 'aurelien39700/Devis-appli';
+
+        // Configurer l'identité Git (nécessaire pour commit)
+        await execPromise('git config user.email "app@render.com" || true');
+        await execPromise('git config user.name "Render App" || true');
+
+        // Si on a un token GitHub (environnement Render), configurer l'URL avec le token
+        if (GITHUB_TOKEN) {
+            const remoteUrl = `https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git`;
+            await execPromise(`git remote set-url origin ${remoteUrl} || true`);
+            console.log('🔑 GitHub token configuré pour Render');
+        }
+
         // Ajouter data.json
         await execPromise('git add data.json');
 
