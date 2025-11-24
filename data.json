@@ -30,7 +30,15 @@
             "name": "PLASTILYS"
         }
     ],
-    "affaires": [],
+    "affaires": [
+        {
+            "id": "1764019464672",
+            "name": "COVER",
+            "clientId": "1764015790842",
+            "description": "R\u00e9alisation Moule",
+            "statut": "en_cours"
+        }
+    ],
     "postes": [
         {
             "id": "1764014781418",
