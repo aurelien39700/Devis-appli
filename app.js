@@ -30,8 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== AFFICHAGE HEURE EN TEMPS RÉEL =====
 
 function updateDateTime() {
-    const dateTimeElement = document.getElementById('currentDateTime');
-    if (!dateTimeElement) return;
+    const timeElement = document.querySelector('.time-display');
+    const dateElement = document.querySelector('.date-display');
+    if (!timeElement || !dateElement) return;
 
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
@@ -42,7 +43,12 @@ function updateDateTime() {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
 
-    dateTimeElement.textContent = `🕐 ${hours}:${minutes}:${seconds} | 📅 ${day}/${month}/${year}`;
+    // Nom du jour en français
+    const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const nomJour = jours[now.getDay()];
+
+    timeElement.textContent = `🕐 ${hours}:${minutes}:${seconds}`;
+    dateElement.textContent = `📅 ${nomJour} ${day}/${month}/${year}`;
 }
 
 // ===== FONCTION DE NOTIFICATION =====
