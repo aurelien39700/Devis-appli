@@ -31,14 +31,9 @@
     ],
     "users": [
         {
-            "id": "1",
+            "id": "1764015193303",
             "name": "Admin",
             "password": "ADMIN"
-        },
-        {
-            "id": "1764015215742",
-            "name": "Aur\u00e9lien",
-            "password": "Kenfuck39"
         }
     ]
 }
