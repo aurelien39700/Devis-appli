@@ -1048,8 +1048,15 @@ function renderAffaires() {
     }
 
     // Séparer les affaires en cours et terminées
-    const affairesEnCours = affaires.filter(a => !a.statut || a.statut === 'en_cours');
-    const affairesTerminees = affaires.filter(a => a.statut === 'terminee');
+    // Ne montrer que les affaires qui ont au moins une entrée associée
+    const affairesEnCours = affaires.filter(a => {
+        const hasEntries = entries.some(e => e.affaireId === a.id);
+        return hasEntries && (!a.statut || a.statut === 'en_cours');
+    });
+    const affairesTerminees = affaires.filter(a => {
+        const hasEntries = entries.some(e => e.affaireId === a.id);
+        return hasEntries && a.statut === 'terminee';
+    });
 
     let html = '';
 
