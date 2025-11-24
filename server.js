@@ -404,12 +404,60 @@ function keepAlive() {
     }, 5 * 60 * 1000); // Toutes les 5 minutes
 }
 
+// Fonction de sauvegarde automatique périodique (snapshots)
+async function autoSnapshot() {
+    setInterval(async () => {
+        try {
+            const SNAPSHOT_DIR = path.join(__dirname, 'snapshots');
+
+            // Créer le dossier snapshots s'il n'existe pas
+            try {
+                await fs.access(SNAPSHOT_DIR);
+            } catch {
+                await fs.mkdir(SNAPSHOT_DIR);
+            }
+
+            // Lire le fichier actuel
+            const currentData = await fs.readFile(DATA_FILE, 'utf8');
+            const parsed = JSON.parse(currentData);
+
+            // Ne créer un snapshot que si la base n'est pas vide
+            const hasData = parsed.entries?.length > 0 ||
+                           parsed.clients?.length > 0 ||
+                           parsed.affaires?.length > 0 ||
+                           parsed.postes?.length > 0 ||
+                           (parsed.users?.length > 1); // Plus que juste l'admin
+
+            if (hasData) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+                const snapshotFile = path.join(SNAPSHOT_DIR, `snapshot_${timestamp}.json`);
+                await fs.writeFile(snapshotFile, currentData);
+                console.log(`📸 Snapshot créé: snapshot_${timestamp}.json`);
+
+                // Garder seulement les 10 derniers snapshots
+                const files = await fs.readdir(SNAPSHOT_DIR);
+                const snapshots = files.filter(f => f.startsWith('snapshot_')).sort();
+                if (snapshots.length > 10) {
+                    for (let i = 0; i < snapshots.length - 10; i++) {
+                        await fs.unlink(path.join(SNAPSHOT_DIR, snapshots[i]));
+                        console.log(`🗑️ Ancien snapshot supprimé: ${snapshots[i]}`);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erreur snapshot:', error);
+        }
+    }, 15 * 60 * 1000); // Toutes les 15 minutes
+}
+
 // Démarrer le serveur
 initDataFile().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Serveur démarré sur le port ${PORT}`);
         console.log(`📍 API disponible sur http://localhost:${PORT}/api/entries`);
         console.log(`💓 Keep-alive activé (ping toutes les 5 minutes)`);
+        console.log(`📸 Snapshots automatiques activés (toutes les 15 minutes)`);
         keepAlive();
+        autoSnapshot();
     });
 });
