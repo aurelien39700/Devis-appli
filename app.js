@@ -1271,58 +1271,119 @@ async function deleteAffaire(id) {
     }
 }
 
+let currentAffaireFilter = 'all';
+let currentSearchTerm = '';
+
 function renderAffaires() {
     const container = document.getElementById('affairesList');
-    if (affaires.length === 0) {
-        container.innerHTML = '<p style="color: #666;">Aucune affaire</p>';
+    if (!affaires || affaires.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Aucune affaire créée</p>';
         return;
     }
 
-    // Séparer les affaires en cours et terminées
-    // Ne montrer que les affaires qui ont au moins une entrée associée
-    const affairesEnCours = affaires.filter(a => {
-        const hasEntries = entries.some(e => e.affaireId === a.id);
-        return hasEntries && (!a.statut || a.statut === 'en_cours');
-    });
-    const affairesTerminees = affaires.filter(a => {
-        const hasEntries = entries.some(e => e.affaireId === a.id);
-        return hasEntries && a.statut === 'terminee';
-    });
-
-    let html = '';
-
-    if (affairesEnCours.length > 0) {
-        html += '<div style="margin-bottom: 20px;"><h4 style="color: #2196F3; font-size: 0.9rem; margin-bottom: 10px;">🚀 En cours</h4>';
-        html += affairesEnCours.map(affaire => {
-            const client = clients.find(c => c.id === affaire.clientId);
-            return `
-                <div class="item-tag" style="display: flex; gap: 8px; align-items: center;">
-                    <span style="flex: 1;">${escapeHtml(affaire.name)} <small style="color: #888;">(${client ? escapeHtml(client.name) : 'Client inconnu'})</small></span>
-                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem; background: #4CAF50; border: none;" onclick="toggleAffaireStatut('${affaire.id}', 'terminee')">✓ Terminer</button>
-                    <button class="delete-btn" onclick="deleteAffaire('${affaire.id}')">×</button>
-                </div>
-            `;
-        }).join('');
-        html += '</div>';
+    // Filtrer par statut
+    let filtered = affaires;
+    if (currentAffaireFilter !== 'all') {
+        filtered = affaires.filter(a => (a.statut || 'en_cours') === currentAffaireFilter);
     }
 
-    if (affairesTerminees.length > 0) {
-        html += '<div><h4 style="color: #888; font-size: 0.9rem; margin-bottom: 10px;">✓ Terminées / Livrées</h4>';
-        html += affairesTerminees.map(affaire => {
-            const client = clients.find(c => c.id === affaire.clientId);
-            return `
-                <div class="item-tag" style="display: flex; gap: 8px; align-items: center; opacity: 0.6;">
-                    <span style="flex: 1;">${escapeHtml(affaire.name)} <small style="color: #888;">(${client ? escapeHtml(client.name) : 'Client inconnu'})</small></span>
-                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="toggleAffaireStatut('${affaire.id}', 'en_cours')">↺ Réactiver</button>
-                    <button class="delete-btn" onclick="deleteAffaire('${affaire.id}')">×</button>
-                </div>
-            `;
-        }).join('');
-        html += '</div>';
+    // Filtrer par recherche
+    if (currentSearchTerm) {
+        filtered = filtered.filter(a => {
+            const client = clients.find(c => c.id === a.clientId);
+            const clientName = client ? client.name.toLowerCase() : '';
+            const affaireName = a.name.toLowerCase();
+            const search = currentSearchTerm.toLowerCase();
+            return affaireName.includes(search) || clientName.includes(search);
+        });
     }
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Aucune affaire trouvée</p>';
+        return;
+    }
+
+    const html = filtered.map(affaire => {
+        const client = clients.find(c => c.id === affaire.clientId);
+        const statut = affaire.statut || 'en_cours';
+        const statutLabel = statut === 'en_cours' ? 'En cours' : statut === 'terminee' ? 'Terminée' : 'Archivée';
+        const badgeClass = `badge-${statut}`;
+
+        // Compter les heures
+        const heuresTotal = entries
+            .filter(e => e.affaireId === affaire.id)
+            .reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
+
+        return `
+            <div class="admin-card">
+                <div class="item-header">
+                    <div class="item-title">
+                        <span>${escapeHtml(affaire.name)}</span>
+                        <span class="item-badge ${badgeClass}">${statutLabel}</span>
+                    </div>
+                </div>
+                <div class="item-info">
+                    <strong>Client:</strong> ${client ? escapeHtml(client.name) : 'Non défini'}
+                </div>
+                ${affaire.description ? `<div class="item-info"><strong>Description:</strong> ${escapeHtml(affaire.description)}</div>` : ''}
+                <div class="item-info">
+                    <strong>Heures totales:</strong> ${heuresTotal.toFixed(2)}h
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-secondary" onclick="openRenameModal('affaire', '${affaire.id}', '${escapeHtml(affaire.name).replace(/'/g, "\\'")}')">
+                        ✏️ Renommer
+                    </button>
+                    ${statut === 'en_cours' ? `
+                        <button class="btn btn-success" onclick="changeAffaireStatut('${affaire.id}', 'terminee')">
+                            ✓ Terminer
+                        </button>
+                    ` : statut === 'terminee' ? `
+                        <button class="btn btn-secondary" onclick="changeAffaireStatut('${affaire.id}', 'en_cours')">
+                            ↺ Réactiver
+                        </button>
+                        <button class="btn" style="background: rgba(255,152,0,0.2); color: #ff9800;" onclick="changeAffaireStatut('${affaire.id}', 'archivee')">
+                            📦 Archiver
+                        </button>
+                    ` : `
+                        <button class="btn btn-secondary" onclick="changeAffaireStatut('${affaire.id}', 'en_cours')">
+                            ↺ Réactiver
+                        </button>
+                    `}
+                    <button class="btn btn-danger" onclick="openDeleteModal('affaire', '${affaire.id}', '${escapeHtml(affaire.name).replace(/'/g, "\\'")}')">
+                        🗑️ Supprimer
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
 
     container.innerHTML = html;
 }
+
+function filterAffaires(filter, event) {
+    currentAffaireFilter = filter;
+
+    // Mise à jour des boutons actifs
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
+
+    renderAffaires();
+}
+
+// Écouter la recherche
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchAffaires');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            currentSearchTerm = e.target.value;
+            renderAffaires();
+        });
+    }
+});
 
 async function addPoste() {
     const input = document.getElementById('newPoste');
@@ -1587,6 +1648,169 @@ function generateAffairePDF(affaireId) {
     // Sauvegarder le PDF
     const fileName = `Affaire_${affaire.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
+}
+
+// ===== MODALES PROFESSIONNELLES =====
+
+function openRenameModal(type, id, currentName) {
+    const typeLabels = {
+        'client': 'Client',
+        'affaire': 'Affaire',
+        'poste': 'Poste',
+        'user': 'Utilisateur'
+    };
+
+    const modalHTML = `
+        <div class="modal-overlay" onclick="closeModal(event)">
+            <div class="modal-box" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>✏️ Renommer ${typeLabels[type]}</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Nouveau nom pour <strong>${currentName}</strong> :</p>
+                    <input type="text" class="modal-input" id="modalRenameInput" value="${currentName}" autofocus>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button class="btn btn-primary" onclick="confirmRename('${type}', '${id}')">✓ Renommer</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modalContainer').innerHTML = modalHTML;
+    setTimeout(() => document.getElementById('modalRenameInput').focus(), 100);
+}
+
+function openDeleteModal(type, id, name) {
+    const typeLabels = {
+        'client': 'le client',
+        'affaire': "l'affaire",
+        'poste': 'le poste',
+        'user': "l'utilisateur"
+    };
+
+    const modalHTML = `
+        <div class="modal-overlay" onclick="closeModal(event)">
+            <div class="modal-box" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>🗑️ Confirmation de suppression</h3>
+                </div>
+                <div class="modal-body">
+                    <p style="color: #ff6b6b;">⚠️ Êtes-vous sûr de vouloir supprimer ${typeLabels[type]} :</p>
+                    <p style="font-size: 1.2rem; font-weight: 600; color: #fff; margin: 15px 0;">${name}</p>
+                    <p style="color: #888;">Cette action est irréversible.</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button class="btn btn-danger" onclick="confirmDelete('${type}', '${id}')">🗑️ Supprimer</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modalContainer').innerHTML = modalHTML;
+}
+
+function closeModal(event) {
+    if (!event || event.target.classList.contains('modal-overlay')) {
+        document.getElementById('modalContainer').innerHTML = '';
+    }
+}
+
+async function confirmRename(type, id) {
+    const newName = document.getElementById('modalRenameInput').value.trim();
+    if (!newName) {
+        alert('Le nom ne peut pas être vide');
+        return;
+    }
+
+    const endpoints = {
+        'client': `/clients/${id}`,
+        'affaire': `/affaires/${id}`,
+        'poste': `/postes/${id}`,
+        'user': `/users/${id}`
+    };
+
+    try {
+        const response = await fetch(`${API_URL}${endpoints[type]}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: newName })
+        });
+
+        if (response.ok) {
+            closeModal();
+            showNotification('✓ Renommé avec succès', 'success');
+
+            // Recharger les données
+            if (type === 'client') {
+                await loadClients();
+                renderClients();
+            } else if (type === 'affaire') {
+                await loadAffaires();
+                renderAffaires();
+            } else if (type === 'poste') {
+                await loadPostes();
+                renderPostes();
+            } else if (type === 'user') {
+                await loadUsers();
+                renderUsers();
+            }
+            updateSelects();
+        } else {
+            alert('Erreur lors du renommage');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+    }
+}
+
+async function confirmDelete(type, id) {
+    const endpoints = {
+        'client': `/clients/${id}`,
+        'affaire': `/affaires/${id}`,
+        'poste': `/postes/${id}`,
+        'user': `/users/${id}`
+    };
+
+    try {
+        const response = await fetch(`${API_URL}${endpoints[type]}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            closeModal();
+            showNotification('✓ Supprimé avec succès', 'success');
+
+            // Recharger les données
+            if (type === 'client') {
+                await loadClients();
+                renderClients();
+            } else if (type === 'affaire') {
+                await loadAffaires();
+                renderAffaires();
+            } else if (type === 'poste') {
+                await loadPostes();
+                renderPostes();
+            } else if (type === 'user') {
+                await loadUsers();
+                renderUsers();
+            }
+            updateSelects();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+    }
+}
+
+// Alias pour compatibilité avec la nouvelle interface
+function changeAffaireStatut(id, nouveauStatut) {
+    return toggleAffaireStatut(id, nouveauStatut);
 }
 
 // ===== EMAIL =====
