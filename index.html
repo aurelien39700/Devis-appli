@@ -727,6 +727,20 @@
                             📥 Télécharger sauvegarde maintenant
                         </button>
                     </div>
+
+                    <!-- Synchronisation Git -->
+                    <div class="card" style="margin-top: 20px; background: rgba(33, 150, 243, 0.1); border: 2px solid rgba(33, 150, 243, 0.3);">
+                        <h3 style="margin-bottom: 15px; color: #2196F3;">🔄 Synchronisation GitHub</h3>
+                        <p style="font-size: 0.9rem; color: #999; margin-bottom: 15px;">
+                            🔄 Chaque modification est automatiquement commit sur GitHub<br>
+                            📥 Au démarrage, les données sont pull depuis GitHub<br>
+                            🌐 Synchronisation instantanée entre tous les appareils!
+                        </p>
+                        <button class="btn btn-primary" onclick="syncFromGit()" style="background: #2196F3; border: none; width: 100%;">
+                            📥 Synchroniser depuis GitHub maintenant
+                        </button>
+                        <div id="gitSyncStatus" style="margin-top: 10px; padding: 8px; border-radius: 6px; font-size: 0.85rem; text-align: center; display: none;"></div>
+                    </div>
                 </div>
             </div>
         </div>

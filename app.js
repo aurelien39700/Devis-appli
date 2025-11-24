@@ -1445,3 +1445,51 @@ function generateAffairePDF(affaireId) {
 
 // ===== EMAIL =====
 
+
+
+// ===== SYNCHRONISATION GIT =====
+
+async function syncFromGit() {
+    const statusEl = document.getElementById('gitSyncStatus');
+    statusEl.style.display = 'block';
+    statusEl.style.background = 'rgba(255, 193, 7, 0.2)';
+    statusEl.style.color = '#FFC107';
+    statusEl.textContent = '🔄 Synchronisation en cours...';
+
+    try {
+        const response = await fetch(`${API_URL}/git/pull`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+
+            // Recharger toutes les données depuis le serveur
+            await loadAllData();
+            renderEntries();
+            renderClients();
+            renderAffaires();
+            renderPostes();
+            renderUsers();
+
+            statusEl.style.background = 'rgba(76, 175, 80, 0.2)';
+            statusEl.style.color = '#4CAF50';
+            statusEl.textContent = '✅ Synchronisé avec succès depuis GitHub!';
+
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        } else {
+            throw new Error('Erreur serveur');
+        }
+    } catch (error) {
+        console.error('Erreur sync Git:', error);
+        statusEl.style.background = 'rgba(244, 67, 54, 0.2)';
+        statusEl.style.color = '#F44336';
+        statusEl.textContent = '❌ Erreur de synchronisation. Vérifiez que le serveur est démarré.';
+
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+        }, 5000);
+    }
+}

@@ -5,6 +5,9 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -14,6 +17,46 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
+
+// ===== FONCTIONS GIT =====
+
+// Fonction pour pull les dernières données depuis Git
+async function gitPull() {
+    try {
+        console.log('📥 Git pull...');
+        const { stdout, stderr } = await execPromise('git pull origin main');
+        console.log('✅ Git pull réussi:', stdout);
+        return { success: true, message: stdout };
+    } catch (error) {
+        console.error('❌ Git pull erreur:', error.message);
+        return { success: false, message: error.message };
+    }
+}
+
+// Fonction pour commit et push automatiquement
+async function gitCommitAndPush(message) {
+    try {
+        // Ajouter data.json
+        await execPromise('git add data.json');
+
+        // Créer le commit avec un message descriptif
+        const timestamp = new Date().toISOString();
+        const commitMessage = `Auto-save: ${message} (${timestamp})`;
+
+        await execPromise(`git commit -m "${commitMessage}" || echo "Rien à commiter"`);
+
+        // Push vers GitHub
+        console.log('📤 Git push...');
+        const { stdout, stderr } = await execPromise('git push origin main');
+        console.log('✅ Données sauvegardées sur GitHub:', stdout);
+
+        return { success: true, message: 'Sauvegardé sur GitHub' };
+    } catch (error) {
+        console.error('⚠️ Git push erreur:', error.message);
+        // Ne pas bloquer l'app si git échoue
+        return { success: false, message: error.message };
+    }
+}
 
 // Initialiser le fichier de données s'il n'existe pas
 async function initDataFile() {
@@ -121,6 +164,12 @@ async function writeData(data) {
 
     // Écrire les nouvelles données
     await fs.writeFile(DATA_FILE, JSON.stringify(validData, null, 2));
+
+    // Commit et push automatiquement sur Git (non-bloquant)
+    // Ne pas await pour ne pas ralentir l'API
+    gitCommitAndPush('Données mises à jour').catch(err => {
+        console.warn('⚠️ Git push échoué, mais données sauvegardées localement');
+    });
 }
 
 // Routes API
@@ -396,6 +445,27 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Route pour pull manuel depuis Git
+app.post('/api/git/pull', async (req, res) => {
+    console.log('📥 Pull manuel demandé');
+    const result = await gitPull();
+
+    if (result.success) {
+        // Recharger les données après le pull
+        const data = await readData();
+        res.json({ success: true, message: 'Données synchronisées depuis Git', data });
+    } else {
+        res.status(500).json({ success: false, message: result.message });
+    }
+});
+
+// Route pour forcer un commit/push manuel
+app.post('/api/git/push', async (req, res) => {
+    console.log('📤 Push manuel demandé');
+    const result = await gitCommitAndPush('Push manuel');
+    res.json(result);
+});
+
 // Fonction keep-alive pour empêcher le serveur de se mettre en veille
 function keepAlive() {
     setInterval(() => {
@@ -451,13 +521,27 @@ async function autoSnapshot() {
 }
 
 // Démarrer le serveur
-initDataFile().then(() => {
+async function startServer() {
+    // 1. Pull les dernières données depuis Git au démarrage
+    console.log('🔄 Synchronisation Git au démarrage...');
+    await gitPull();
+
+    // 2. Initialiser le fichier de données
+    await initDataFile();
+
+    // 3. Démarrer le serveur
     app.listen(PORT, () => {
         console.log(`🚀 Serveur démarré sur le port ${PORT}`);
         console.log(`📍 API disponible sur http://localhost:${PORT}/api/entries`);
         console.log(`💓 Keep-alive activé (ping toutes les 5 minutes)`);
         console.log(`📸 Snapshots automatiques activés (toutes les 15 minutes)`);
+        console.log(`🔄 Git: Pull au démarrage, Push après chaque modification`);
         keepAlive();
         autoSnapshot();
     });
+}
+
+startServer().catch(err => {
+    console.error('❌ Erreur au démarrage:', err);
+    process.exit(1);
 });

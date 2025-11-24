@@ -4,7 +4,7 @@
 
 ### Démarrage du serveur
 
-**IMPORTANT**: Le serveur DOIT être démarré pour que les données soient sauvegardées!
+**IMPORTANT**: Le serveur synchronise automatiquement avec GitHub!
 
 ```bash
 # Méthode recommandée (avec backup automatique)
@@ -14,7 +14,10 @@
 node server.js
 ```
 
-Le serveur démarre sur le port 10000 (ou PORT défini dans les variables d'environnement).
+**Au démarrage, le serveur:**
+1. 📥 **Pull automatiquement** les dernières données depuis GitHub
+2. 🔄 Synchronise tous les appareils
+3. 🚀 Démarre sur le port 10000
 
 ### Accès à l'application
 
@@ -22,20 +25,69 @@ Une fois le serveur démarré, ouvrez votre navigateur:
 - **Local**: http://localhost:10000
 - **Production**: URL de votre serveur déployé
 
-## 📦 Système de sauvegarde
+## 🌐 Synchronisation multi-appareils
 
-### 1. Backup automatique (data.backup.json)
+### Comment ça marche
+
+**Synchronisation automatique via GitHub:**
+
+1. **Écriture de données** (n'importe quel appareil):
+   - Sauvegarde dans localStorage ✅
+   - Commit automatique sur GitHub ✅
+   - Push instantané ✅
+
+2. **Lecture depuis un autre appareil**:
+   - Démarrer le serveur → Pull auto depuis GitHub ✅
+   - OU cliquer sur "📥 Synchroniser depuis GitHub" ✅
+   - Données à jour instantanément! ✅
+
+### Utilisation multi-appareils
+
+**Appareil A (Bureau):**
+```bash
+# 1. Saisir des heures
+# 2. Les données sont automatiquement commit sur GitHub
+```
+
+**Appareil B (Portable):**
+```bash
+# 1. Démarrer le serveur
+node server.js
+# → Pull automatique depuis GitHub au démarrage!
+
+# 2. Ou dans l'app: cliquer sur "📥 Synchroniser depuis GitHub"
+# → Données de l'appareil A disponibles instantanément!
+```
+
+**Résultat:** Tous les appareils ont les mêmes données en temps réel!
+
+## 📦 Système de sauvegarde (Triple protection!)
+
+### 1. **GitHub (PRINCIPAL)** ⭐
+- **Commit automatique** après chaque modification
+- **Historique complet** via Git
+- **Synchronisation** entre appareils
+- **Restauration** possible à n'importe quel moment
+- Commande: `git log` pour voir l'historique
+- Commande: `git checkout <commit>` pour restaurer
+
+### 2. Backup automatique (data.backup.json)
 - Créé **automatiquement avant chaque écriture** dans data.json
 - Permet de restaurer la dernière version en cas de corruption
 
-### 2. Snapshots automatiques (dossier snapshots/)
+### 3. Snapshots automatiques (dossier snapshots/)
 - Créés **toutes les 15 minutes** si la base contient des données
 - Garde les **10 derniers snapshots**
 - Format: `snapshot_YYYY-MM-DDTHH-MM-SS.json`
 
-### 3. Backups manuels (dossier backups/)
+### 4. Backups manuels (dossier backups/)
 - Créés au **démarrage du serveur** via `./start.sh`
 - Format: `data_YYYYMMDD_HHMMSS.json`
+
+### 5. localStorage (navigateur)
+- Sauvegarde instantanée dans le navigateur
+- Fonctionne hors-ligne
+- Export manuel disponible
 
 ## 🔧 Structure des données
 
