@@ -57,6 +57,13 @@
             "clientId": "1764014732621",
             "description": "Soudure broche",
             "statut": "en_cours"
+        },
+        {
+            "id": "1764019735413",
+            "name": "TG12",
+            "clientId": "1764014760229",
+            "description": "R\u00e9alisation partie FIXE",
+            "statut": "en_cours"
         }
     ],
     "postes": [
