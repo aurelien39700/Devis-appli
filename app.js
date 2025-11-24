@@ -197,6 +197,17 @@ function startAutoSync() {
             console.error('Erreur de synchronisation:', error);
         }
     }, 30000); // 30 secondes
+
+    // Export automatique toutes les 5 minutes (pour admin seulement)
+    if (isAdmin()) {
+        setInterval(() => {
+            // Vérifier s'il y a des données
+            if (entries.length > 0 || clients.length > 0 || affaires.length > 0) {
+                console.log('📥 Export automatique des données...');
+                exportDataToFile();
+            }
+        }, 5 * 60 * 1000); // 5 minutes
+    }
 }
 
 // Arrêter la synchronisation automatique
@@ -309,66 +320,110 @@ async function loadAllData() {
 }
 
 async function loadEntries() {
+    // TOUJOURS charger depuis localStorage EN PREMIER (source de vérité locale)
+    const saved = localStorage.getItem('affaires_entries');
+    entries = saved ? JSON.parse(saved) : [];
+
+    // PUIS essayer de synchroniser avec le serveur (merge/update)
     try {
-        const response = await fetch(`${API_URL}/entries`);
+        const response = await fetch(`${API_URL}/entries`, {
+            timeout: 3000 // 3 secondes max
+        });
         if (response.ok) {
             const data = await response.json();
-            entries = data.entries || [];
+            const serverEntries = data.entries || [];
+
+            // Merger: garder les entrées locales + ajouter celles du serveur
+            serverEntries.forEach(serverEntry => {
+                if (!entries.find(e => e.id === serverEntry.id)) {
+                    entries.push(serverEntry);
+                }
+            });
+
             saveToLocalStorage();
-            updateSyncStatus('synced', 'Synchronisé');
-        } else {
-            throw new Error('Erreur serveur');
+            updateSyncStatus('synced', 'Synchronisé ✓');
         }
     } catch (error) {
-        console.error('Erreur de chargement:', error);
-        const saved = localStorage.getItem('affaires_entries');
-        entries = saved ? JSON.parse(saved) : [];
-        updateSyncStatus('error', 'Mode hors-ligne');
+        console.warn('⚠️ Serveur inaccessible, utilisation des données locales');
+        updateSyncStatus('offline', 'Mode local 💾');
     }
 }
 
 async function loadClients() {
+    // Charger d'abord localStorage
+    const saved = localStorage.getItem('affaires_clients');
+    clients = saved ? JSON.parse(saved) : [];
+
+    // Puis synchroniser avec le serveur
     try {
         const response = await fetch(`${API_URL}/clients`);
         if (response.ok) {
             const data = await response.json();
-            clients = data.clients || [];
+            const serverClients = data.clients || [];
+
+            // Merger
+            serverClients.forEach(serverClient => {
+                if (!clients.find(c => c.id === serverClient.id)) {
+                    clients.push(serverClient);
+                }
+            });
+
             saveToLocalStorage();
         }
     } catch (error) {
-        console.error('Erreur de chargement des clients:', error);
-        const saved = localStorage.getItem('affaires_clients');
-        clients = saved ? JSON.parse(saved) : [];
+        console.warn('⚠️ Serveur inaccessible pour clients');
     }
 }
 
 async function loadAffaires() {
+    // Charger d'abord localStorage
+    const saved = localStorage.getItem('affaires_affaires');
+    affaires = saved ? JSON.parse(saved) : [];
+
+    // Puis synchroniser avec le serveur
     try {
         const response = await fetch(`${API_URL}/affaires`);
         if (response.ok) {
             const data = await response.json();
-            affaires = data.affaires || [];
+            const serverAffaires = data.affaires || [];
+
+            // Merger
+            serverAffaires.forEach(serverAffaire => {
+                if (!affaires.find(a => a.id === serverAffaire.id)) {
+                    affaires.push(serverAffaire);
+                }
+            });
+
             saveToLocalStorage();
         }
     } catch (error) {
-        console.error('Erreur de chargement des affaires:', error);
-        const saved = localStorage.getItem('affaires_affaires');
-        affaires = saved ? JSON.parse(saved) : [];
+        console.warn('⚠️ Serveur inaccessible pour affaires');
     }
 }
 
 async function loadPostes() {
+    // Charger d'abord localStorage
+    const saved = localStorage.getItem('affaires_postes');
+    postes = saved ? JSON.parse(saved) : [];
+
+    // Puis synchroniser avec le serveur
     try {
         const response = await fetch(`${API_URL}/postes`);
         if (response.ok) {
             const data = await response.json();
-            postes = data.postes || [];
+            const serverPostes = data.postes || [];
+
+            // Merger
+            serverPostes.forEach(serverPoste => {
+                if (!postes.find(p => p.id === serverPoste.id)) {
+                    postes.push(serverPoste);
+                }
+            });
+
             saveToLocalStorage();
         }
     } catch (error) {
-        console.error('Erreur de chargement des postes:', error);
-        const saved = localStorage.getItem('affaires_postes');
-        postes = saved ? JSON.parse(saved) : [];
+        console.warn('⚠️ Serveur inaccessible pour postes');
     }
 }
 
@@ -381,6 +436,15 @@ function updateSyncStatus(status, message) {
 // ===== GESTION DES ENTRÉES =====
 
 async function saveEntry(entry) {
+    // TOUJOURS sauvegarder localement EN PREMIER (garanti)
+    entry.id = entry.id || Date.now().toString();
+    entry.date = entry.date || new Date().toISOString();
+    entries.push(entry);
+    saveToLocalStorage();
+    renderEntries();
+    updateSyncStatus('saved', '💾 Sauvegardé');
+
+    // PUIS essayer de synchroniser avec le serveur (optionnel)
     try {
         const response = await fetch(`${API_URL}/entries`, {
             method: 'POST',
@@ -388,22 +452,19 @@ async function saveEntry(entry) {
             body: JSON.stringify(entry)
         });
         if (response.ok) {
-            const newEntry = await response.json();
-            entries.push(newEntry);
-            saveToLocalStorage(); // IMPORTANT: Sauvegarder dans localStorage aussi !
-            updateSyncStatus('synced', 'Synchronisé');
-        } else {
-            throw new Error('Erreur serveur');
+            const serverEntry = await response.json();
+            // Remplacer l'ID local par l'ID serveur si différent
+            const index = entries.findIndex(e => e.id === entry.id);
+            if (index !== -1 && serverEntry.id !== entry.id) {
+                entries[index].id = serverEntry.id;
+                saveToLocalStorage();
+            }
+            updateSyncStatus('synced', '✓ Synchronisé');
         }
     } catch (error) {
-        console.error('Erreur de sauvegarde:', error);
-        entry.id = Date.now().toString();
-        entry.date = new Date().toISOString();
-        entries.push(entry);
-        saveToLocalStorage();
-        updateSyncStatus('error', 'Sauvegardé localement');
+        console.warn('⚠️ Serveur inaccessible, données sauvegardées localement');
+        updateSyncStatus('offline', '💾 Mode local');
     }
-    renderEntries();
 }
 
 async function updateEntry(id, updatedData) {
@@ -473,6 +534,34 @@ function saveToLocalStorage() {
     localStorage.setItem('affaires_affaires', JSON.stringify(affaires));
     localStorage.setItem('affaires_postes', JSON.stringify(postes));
     localStorage.setItem('affaires_users', JSON.stringify(users));
+
+    // Sauvegarder aussi un timestamp de dernière modification
+    localStorage.setItem('affaires_lastUpdate', new Date().toISOString());
+}
+
+// Fonction pour exporter toutes les données en JSON téléchargeable
+function exportDataToFile() {
+    const data = {
+        entries: entries,
+        clients: clients,
+        affaires: affaires,
+        postes: postes,
+        users: users,
+        exportDate: new Date().toISOString()
+    };
+
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `suivi-affaires-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    console.log('📥 Export des données créé:', link.download);
 }
 
 function renderEntries() {
