@@ -62,8 +62,20 @@ Ouvrez un terminal et lancez :
 
 ## 🛠️ Scripts Disponibles
 
-### `auto-sync-bidirectional.sh` (RECOMMANDÉ)
-Synchronisation bidirectionnelle complète
+### `auto-sync-hybrid.sh` (⭐ RECOMMANDÉ)
+Synchronisation hybride intelligente - combine GitHub + API directe
+
+**Avantages :**
+- Détecte les changements via GitHub ET via l'API du serveur
+- Fonctionne même si le serveur ne push pas vers GitHub
+- Synchronisation la plus rapide et fiable
+
+```bash
+./auto-sync-hybrid.sh
+```
+
+### `auto-sync-bidirectional.sh`
+Synchronisation bidirectionnelle via GitHub uniquement
 
 ```bash
 ./auto-sync-bidirectional.sh
@@ -74,6 +86,13 @@ Ancien script - pull uniquement depuis GitHub
 
 ```bash
 ./auto-sync.sh
+```
+
+### `check-server-sync.sh`
+Diagnostic du serveur Render pour identifier les problèmes
+
+```bash
+./check-server-sync.sh
 ```
 
 ### `watch-data.sh`
