@@ -23,8 +23,9 @@ app.use(express.static(__dirname));
 // Fonction pour configurer Git remote (nécessaire sur Render)
 async function setupGitRemote() {
     try {
-        const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-        const GITHUB_REPO = process.env.GITHUB_REPO || 'aurelien39700/Devis-appli';
+        // Nettoyer le token (supprimer espaces, retours à la ligne, etc.)
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN?.trim().replace(/[\r\n\s]/g, '');
+        const GITHUB_REPO = (process.env.GITHUB_REPO || 'aurelien39700/Devis-appli').trim();
         const IS_RENDER = process.env.RENDER === 'true' || !!process.env.RENDER_SERVICE_NAME;
 
         // Sur Render, configurer le remote avec le token
