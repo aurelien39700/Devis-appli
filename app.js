@@ -1312,35 +1312,3 @@ function generateAffairePDF(affaireId) {
 
 // ===== EMAIL =====
 
-function sendEmail() {
-    if (entries.length === 0) {
-        alert('Aucune entrée à envoyer');
-        return;
-    }
-
-    let totalHours = 0;
-    let body = 'RAPPORT HEURES DE TRAVAIL\n';
-    body += '========================\n\n';
-
-    entries.forEach(entry => {
-        totalHours += parseFloat(entry.hours) || 0;
-        const date = new Date(entry.date).toLocaleDateString('fr-FR');
-        const client = clients.find(c => c.id === entry.clientId);
-        const affaire = affaires.find(a => a.id === entry.affaireId);
-        const poste = postes.find(p => p.id === entry.posteId);
-
-        body += `Client: ${client ? client.name : 'Inconnu'}\n`;
-        body += `Affaire: ${affaire ? affaire.name : 'Inconnue'}\n`;
-        body += `Poste: ${poste ? poste.name : 'Inconnu'}\n`;
-        body += `Heures: ${entry.hours}h\n`;
-        body += `Date: ${date}\n`;
-        body += '------------------------\n';
-    });
-
-    body += `\nTOTAL: ${totalHours} heures\n`;
-
-    const subject = `Rapport Heures Travail - ${new Date().toLocaleDateString('fr-FR')}`;
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    window.location.href = mailtoLink;
-}

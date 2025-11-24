@@ -327,10 +327,25 @@ app.delete('/api/users/:id', async (req, res) => {
     }
 });
 
+// Route de health check pour le keep-alive
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Fonction keep-alive pour empêcher le serveur de se mettre en veille
+function keepAlive() {
+    setInterval(() => {
+        const timestamp = new Date().toISOString();
+        console.log(`⏰ Keep-alive ping: ${timestamp}`);
+    }, 5 * 60 * 1000); // Toutes les 5 minutes
+}
+
 // Démarrer le serveur
 initDataFile().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Serveur démarré sur le port ${PORT}`);
         console.log(`📍 API disponible sur http://localhost:${PORT}/api/entries`);
+        console.log(`💓 Keep-alive activé (ping toutes les 5 minutes)`);
+        keepAlive();
     });
 });

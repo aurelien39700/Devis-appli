@@ -218,29 +218,28 @@
 
         .floating-btn {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
+            bottom: 25px;
+            right: 25px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             background: linear-gradient(135deg, #2196F3, #1565C0);
             border: none;
             color: white;
-            font-size: 1.5rem;
+            font-size: 2.2rem;
+            font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(33, 150, 243, 0.5);
+            box-shadow: 0 6px 25px rgba(33, 150, 243, 0.6);
             transition: all 0.3s ease;
             z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .floating-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .email-btn {
-            right: 85px;
-            background: linear-gradient(135deg, #0984e3, #0652DD);
-            box-shadow: 0 4px 20px rgba(9, 132, 227, 0.5);
+            transform: scale(1.15);
+            box-shadow: 0 8px 30px rgba(33, 150, 243, 0.8);
         }
 
         .modal {
@@ -720,11 +719,6 @@
         </div>
     </div>
 
-    <!-- Bouton flottant Email -->
-    <button class="floating-btn email-btn" onclick="sendEmail()" title="Envoyer par email" style="display: none;">
-        ✉️
-    </button>
-
     <!-- Bouton flottant Ajouter -->
     <button class="floating-btn" onclick="openModal()" title="Ajouter une entrée" id="addBtn" style="display: none;">
         +
@@ -763,11 +757,12 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="hours">Heures de travail</label>
-                    <input type="number" id="hours" placeholder="Nombre d'heures" step="0.5" min="0" required>
+                    <label for="hours" style="font-size: 1.1rem; font-weight: 600;">Heures de travail</label>
+                    <input type="number" id="hours" placeholder="Ex: 8" step="0.5" min="0" required
+                           style="font-size: 1.8rem; padding: 20px; text-align: center; font-weight: 600; height: 70px;">
                 </div>
-                <button type="submit" class="btn btn-primary">
-                    <span id="submitBtnText">Ajouter</span>
+                <button type="submit" class="btn btn-primary" style="font-size: 1.3rem; padding: 18px; height: auto; min-height: 60px; font-weight: 600;">
+                    <span id="submitBtnText">✓ Ajouter</span>
                 </button>
             </form>
         </div>
