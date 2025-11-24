@@ -755,9 +755,9 @@ async function handleSubmit(e) {
 
             if (response.ok) {
                 const newAffaire = await response.json();
-                affaires.push(newAffaire);
-                saveToLocalStorage();
                 affaireId = newAffaire.id;
+                // Recharger toutes les affaires depuis le serveur
+                await loadAffaires();
                 updateSelects();
             } else {
                 throw new Error('Erreur serveur');
@@ -784,9 +784,9 @@ async function handleSubmit(e) {
                 });
 
                 if (response.ok) {
-                    soudurePoste = await response.json();
-                    postes.push(soudurePoste);
-                    saveToLocalStorage();
+                    // Recharger tous les postes depuis le serveur
+                    await loadPostes();
+                    soudurePoste = postes.find(p => p.name.toLowerCase() === 'soudure');
                 }
             } catch (error) {
                 console.error('Erreur:', error);
@@ -898,10 +898,9 @@ async function addClient() {
         });
 
         if (response.ok) {
-            const newClient = await response.json();
-            clients.push(newClient);
-            saveToLocalStorage();
             input.value = '';
+            // Recharger toutes les données depuis le serveur pour garantir la cohérence
+            await loadClients();
             renderClients();
             updateSelects();
         }
@@ -920,11 +919,11 @@ async function deleteClient(id) {
         });
 
         if (response.ok) {
-            clients = clients.filter(c => c.id !== id);
-            affaires = affaires.filter(a => a.clientId !== id);
-            saveToLocalStorage();
+            // Recharger toutes les données depuis le serveur
+            await Promise.all([loadClients(), loadAffaires(), loadEntries()]);
             renderClients();
             renderAffaires();
+            renderEntries();
             updateSelects();
         }
     } catch (error) {
@@ -973,12 +972,11 @@ async function addAffaire() {
         });
 
         if (response.ok) {
-            const newAffaire = await response.json();
-            affaires.push(newAffaire);
-            saveToLocalStorage();
             input.value = '';
             if (descriptionInput) descriptionInput.value = '';
             document.getElementById('newAffaireClient').value = '';
+            // Recharger toutes les données depuis le serveur
+            await loadAffaires();
             renderAffaires();
             updateSelects();
         }
@@ -1007,12 +1005,10 @@ async function toggleAffaireStatut(id, nouveauStatut) {
         });
 
         if (response.ok) {
-            if (affaire) {
-                affaire.statut = nouveauStatut;
-                saveToLocalStorage();
-                renderAffaires();
-                updateSelects();
-            }
+            // Recharger toutes les données depuis le serveur
+            await loadAffaires();
+            renderAffaires();
+            updateSelects();
         }
     } catch (error) {
         console.error('Erreur:', error);
@@ -1030,12 +1026,8 @@ async function deleteAffaire(id) {
         });
 
         if (response.ok) {
-            // Mettre à jour les données locales
-            affaires = affaires.filter(a => a.id !== id);
-            entries = entries.filter(e => e.affaireId !== id);
-
-            // Sauvegarder dans localStorage
-            saveToLocalStorage();
+            // Recharger toutes les données depuis le serveur (cascade suppression)
+            await Promise.all([loadAffaires(), loadEntries()]);
 
             // Rafraîchir l'affichage
             renderAffaires();
@@ -1111,10 +1103,9 @@ async function addPoste() {
         });
 
         if (response.ok) {
-            const newPoste = await response.json();
-            postes.push(newPoste);
-            saveToLocalStorage();
             input.value = '';
+            // Recharger toutes les données depuis le serveur
+            await loadPostes();
             renderPostes();
             updateSelects();
         }
@@ -1133,8 +1124,8 @@ async function deletePoste(id) {
         });
 
         if (response.ok) {
-            postes = postes.filter(p => p.id !== id);
-            saveToLocalStorage();
+            // Recharger toutes les données depuis le serveur
+            await loadPostes();
             renderPostes();
             updateSelects();
         }
@@ -1198,11 +1189,10 @@ async function addUser() {
         });
 
         if (response.ok) {
-            const newUser = await response.json();
-            users.push(newUser);
-            saveToLocalStorage();
             nameInput.value = '';
             passwordInput.value = '';
+            // Recharger toutes les données depuis le serveur
+            await loadUsers();
             renderUsers();
         }
     } catch (error) {
@@ -1220,8 +1210,8 @@ async function deleteUser(id) {
         });
 
         if (response.ok) {
-            users = users.filter(u => u.id !== id);
-            saveToLocalStorage();
+            // Recharger toutes les données depuis le serveur
+            await loadUsers();
             renderUsers();
         }
     } catch (error) {
