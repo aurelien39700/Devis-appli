@@ -49,27 +49,11 @@ while true; do
     fi
 
     # ═══════════════════════════════════════════════════════
-    # ÉTAPE 2 : Vérifier changements sur GITHUB
+    # ÉTAPE 2 : Vérifier changements sur GITHUB (DÉSACTIVÉ)
     # ═══════════════════════════════════════════════════════
-    git fetch origin main --quiet 2>/dev/null
-    CURRENT_REMOTE_COMMIT=$(git rev-parse origin/main 2>/dev/null)
-
-    if [ "$CURRENT_REMOTE_COMMIT" != "$LAST_REMOTE_COMMIT" ] && [ -n "$LAST_REMOTE_COMMIT" ]; then
-        echo "[$TIMESTAMP] 🌐 Changement sur GitHub détecté"
-        echo "[$TIMESTAMP] ➜ Pull depuis GitHub..."
-
-        if ! git diff --quiet data.json 2>/dev/null; then
-            git add data.json 2>/dev/null
-            git commit -m "Sync: Auto-commit avant pull" --quiet 2>/dev/null
-        fi
-
-        if git pull origin main --quiet 2>&1; then
-            echo "[$TIMESTAMP] ✅ Synchronisé depuis GitHub"
-            LAST_LOCAL_HASH=$(md5sum data.json 2>/dev/null | cut -d' ' -f1)
-            echo ""
-        fi
-    fi
-    LAST_REMOTE_COMMIT="$CURRENT_REMOTE_COMMIT"
+    # DÉSACTIVÉ: Le pull depuis GitHub écrasait les modifications locales
+    # La synchronisation GitHub → VS Code se fait uniquement via le serveur (Étape 3)
+    # Cela évite les conflits et garantit que le serveur est la source de vérité
 
     # ═══════════════════════════════════════════════════════
     # ÉTAPE 3 : Vérifier changements directs sur le SERVEUR
