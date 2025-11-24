@@ -16,6 +16,7 @@ let users = [];
 let editingId = null;
 let currentUser = null;
 let currentTab = 'entries';
+let syncInterval = null;
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
@@ -146,12 +147,12 @@ function login(userType, user) {
 
 function logout() {
     if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+        stopAutoSync();
         currentUser = null;
         localStorage.removeItem('currentUser');
         document.getElementById('appScreen').classList.add('hidden');
         document.getElementById('loginScreen').classList.remove('hidden');
         document.getElementById('addBtn').style.display = 'none';
-        document.querySelector('.email-btn').style.display = 'none';
     }
 }
 
@@ -159,7 +160,6 @@ function showApp() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('appScreen').classList.remove('hidden');
     document.getElementById('addBtn').style.display = 'block';
-    document.querySelector('.email-btn').style.display = 'block';
 
     const userIcon = document.getElementById('userIcon');
     const userTypeText = document.getElementById('userType');
@@ -175,6 +175,30 @@ function showApp() {
 
     loadAllData();
     setupEventListeners();
+    startAutoSync();
+}
+
+// Démarrer la synchronisation automatique
+function startAutoSync() {
+    // Synchroniser toutes les 10 secondes
+    if (syncInterval) {
+        clearInterval(syncInterval);
+    }
+    syncInterval = setInterval(async () => {
+        try {
+            await loadAllData();
+        } catch (error) {
+            console.error('Erreur de synchronisation:', error);
+        }
+    }, 10000); // 10 secondes
+}
+
+// Arrêter la synchronisation automatique
+function stopAutoSync() {
+    if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = null;
+    }
 }
 
 function setupEventListeners() {

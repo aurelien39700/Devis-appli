@@ -1,1 +1,13 @@
-{"entries":[],"clients":[],"affaires":[],"postes":[],"users":[]}
+{
+  "entries": [],
+  "clients": [],
+  "affaires": [],
+  "postes": [],
+  "users": [
+    {
+      "id": "1",
+      "name": "Admin",
+      "password": "ADMIN"
+    }
+  ]
+}
