@@ -381,11 +381,7 @@ async function loadAllData(bypassCache = false) {
 }
 
 async function loadEntries(cacheBuster = '') {
-    // TOUJOURS charger depuis localStorage EN PREMIER (source de vérité locale)
-    const saved = localStorage.getItem('affaires_entries');
-    entries = saved ? JSON.parse(saved) : [];
-
-    // PUIS essayer de synchroniser avec le serveur (merge/update)
+    // Essayer de charger depuis le serveur EN PRIORITÉ
     try {
         const response = await fetch(`${API_URL}/entries${cacheBuster}`, {
             timeout: 3000, // 3 secondes max
@@ -394,30 +390,30 @@ async function loadEntries(cacheBuster = '') {
         });
         if (response.ok) {
             const data = await response.json();
-            const serverEntries = data.entries || [];
 
-            // Merger: garder les entrées locales + ajouter celles du serveur
-            serverEntries.forEach(serverEntry => {
-                if (!entries.find(e => e.id === serverEntry.id)) {
-                    entries.push(serverEntry);
-                }
-            });
+            // PRIORITÉ AU SERVEUR : écraser complètement les données locales
+            entries = data.entries || [];
+            clients = data.clients || [];
+            affaires = data.affaires || [];
+            postes = data.postes || [];
+            users = data.users || [];
 
             saveToLocalStorage();
             updateSyncStatus('synced', 'Synchronisé ✓');
+            return;
         }
     } catch (error) {
         console.warn('⚠️ Serveur inaccessible, utilisation des données locales');
         updateSyncStatus('offline', 'Mode local 💾');
     }
+
+    // FALLBACK : Si le serveur est inaccessible, utiliser localStorage
+    const saved = localStorage.getItem('affaires_entries');
+    entries = saved ? JSON.parse(saved) : [];
 }
 
 async function loadClients(cacheBuster = '') {
-    // Charger d'abord localStorage
-    const saved = localStorage.getItem('affaires_clients');
-    clients = saved ? JSON.parse(saved) : [];
-
-    // Puis synchroniser avec le serveur
+    // Priorité au serveur
     try {
         const response = await fetch(`${API_URL}/clients${cacheBuster}`, {
             cache: cacheBuster ? 'no-store' : 'default',
@@ -427,17 +423,16 @@ async function loadClients(cacheBuster = '') {
             const data = await response.json();
             const serverClients = data.clients || [];
 
-            // Merger
-            serverClients.forEach(serverClient => {
-                if (!clients.find(c => c.id === serverClient.id)) {
-                    clients.push(serverClient);
-                }
-            });
+            // PRIORITÉ AU SERVEUR : écraser complètement
+            clients = serverClients;
 
             saveToLocalStorage();
         }
     } catch (error) {
         console.warn('⚠️ Serveur inaccessible pour clients');
+        // Fallback: charger depuis localStorage
+        const saved = localStorage.getItem('affaires_clients');
+        clients = saved ? JSON.parse(saved) : [];
     }
 }
 
