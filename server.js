@@ -491,6 +491,74 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Route de diagnostic Git (pour débugger les problèmes de sync)
+app.get('/api/git-status', async (req, res) => {
+    try {
+        const diagnostics = {};
+
+        // Vérifier les variables d'environnement
+        diagnostics.hasToken = !!process.env.GITHUB_TOKEN;
+        diagnostics.tokenLength = process.env.GITHUB_TOKEN ? process.env.GITHUB_TOKEN.trim().length : 0;
+        diagnostics.repoConfig = process.env.GITHUB_REPO || 'aurelien39700/Devis-appli';
+        diagnostics.isRender = process.env.RENDER === 'true' || !!process.env.RENDER_SERVICE_NAME;
+
+        // Vérifier la config Git
+        try {
+            const { stdout: userName } = await execPromise('git config user.name');
+            diagnostics.gitUserName = userName.trim();
+        } catch { diagnostics.gitUserName = 'Non configuré'; }
+
+        try {
+            const { stdout: userEmail } = await execPromise('git config user.email');
+            diagnostics.gitUserEmail = userEmail.trim();
+        } catch { diagnostics.gitUserEmail = 'Non configuré'; }
+
+        // Vérifier le remote
+        try {
+            const { stdout: remoteUrl } = await execPromise('git remote get-url origin');
+            diagnostics.remoteConfigured = true;
+            diagnostics.remoteUrl = remoteUrl.replace(/:[^@]+@/, ':***@'); // Masquer le token
+        } catch {
+            diagnostics.remoteConfigured = false;
+            diagnostics.remoteUrl = 'Non configuré';
+        }
+
+        // Vérifier l'état Git
+        try {
+            const { stdout: status } = await execPromise('git status --porcelain');
+            diagnostics.hasLocalChanges = !!status.trim();
+            diagnostics.localChanges = status.trim();
+        } catch (err) {
+            diagnostics.statusError = err.message;
+        }
+
+        // Vérifier le dernier commit
+        try {
+            const { stdout: lastCommit } = await execPromise('git log -1 --oneline');
+            diagnostics.lastCommit = lastCommit.trim();
+        } catch { diagnostics.lastCommit = 'Aucun commit'; }
+
+        // Tester la connexion à GitHub
+        try {
+            await execPromise('git ls-remote origin HEAD', { timeout: 5000 });
+            diagnostics.githubConnection = 'OK';
+        } catch (err) {
+            diagnostics.githubConnection = 'ERREUR: ' + err.message;
+        }
+
+        res.json({
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            diagnostics
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+});
+
 // Fonction keep-alive pour empêcher le serveur de se mettre en veille
 function keepAlive() {
     setInterval(() => {
