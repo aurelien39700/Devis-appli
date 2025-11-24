@@ -1,38 +1,5 @@
 {
-    "entries": [
-        {
-            "id": "1764018912259",
-            "affaireId": "1764018843293",
-            "posteId": "1764018761642",
-            "hours": "50",
-            "enteredBy": "Aur\u00e9lien",
-            "date": "2025-11-24T21:15:12.361Z"
-        },
-        {
-            "id": "1764018930519",
-            "affaireId": "1764018870558",
-            "posteId": "1764014806191",
-            "hours": "10",
-            "enteredBy": "Aur\u00e9lien",
-            "date": "2025-11-24T21:15:30.802Z"
-        },
-        {
-            "id": "1764018981811",
-            "affaireId": "1764018870558",
-            "posteId": "1764018773499",
-            "hours": "5",
-            "enteredBy": "Aur\u00e9lien",
-            "date": "2025-11-24T21:16:22.078Z"
-        },
-        {
-            "id": "1764018990334",
-            "affaireId": "1764018870558",
-            "posteId": "1764018808747",
-            "hours": "0.5",
-            "enteredBy": "Aur\u00e9lien",
-            "date": "2025-11-24T21:16:30.431Z"
-        }
-    ],
+    "entries": [],
     "clients": [
         {
             "id": "1764014447938",
@@ -70,20 +37,6 @@
             "clientId": "1764014447938",
             "description": "",
             "statut": "en_cours"
-        },
-        {
-            "id": "1764018843293",
-            "name": "COVER",
-            "clientId": "1764015790842",
-            "description": "R\u00e9alisation moule",
-            "statut": "en_cours"
-        },
-        {
-            "id": "1764018870558",
-            "name": "Tournage",
-            "clientId": "1764016652926",
-            "description": "R\u00e9alisation insert",
-            "statut": "en_cours"
         }
     ],
     "postes": [
@@ -102,18 +55,6 @@
         {
             "id": "1764018748947",
             "name": "Erosion"
-        },
-        {
-            "id": "1764018761642",
-            "name": "Erosion FIL"
-        },
-        {
-            "id": "1764018773499",
-            "name": "Etude"
-        },
-        {
-            "id": "1764018808747",
-            "name": "Montage / Demontage"
         }
     ],
     "users": [
