@@ -7,6 +7,14 @@
             "hours": "5",
             "enteredBy": "Aur\u00e9lien",
             "date": "2025-11-24T20:26:46.858Z"
+        },
+        {
+            "id": "1764016179747",
+            "affaireId": "1764016178591",
+            "posteId": "1764014781418",
+            "hours": "5",
+            "enteredBy": "Aur\u00e9lien",
+            "date": "2025-11-24T20:29:39.837Z"
         }
     ],
     "clients": [
@@ -36,6 +44,13 @@
             "id": "1764015984134",
             "name": "4565",
             "clientId": "1764014732621",
+            "description": "",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764016178591",
+            "name": "Pignon",
+            "clientId": "1764016138103",
             "description": "",
             "statut": "en_cours"
         }
