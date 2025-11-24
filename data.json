@@ -32,10 +32,10 @@
     ],
     "affaires": [
         {
-            "id": "1764017373680",
-            "name": "MD1056",
-            "clientId": "1764014447938",
-            "description": "",
+            "id": "1764018099486",
+            "name": "COVER",
+            "clientId": "1764015790842",
+            "description": "R\u00e9alisation moule",
             "statut": "en_cours"
         }
     ],
@@ -68,6 +68,11 @@
             "id": "1764017886342",
             "name": "Quentin",
             "password": "caca"
+        },
+        {
+            "id": "1764017993563",
+            "name": "Christophe",
+            "password": "Somepre@21"
         }
     ]
 }
