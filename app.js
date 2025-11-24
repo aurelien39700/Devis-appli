@@ -726,6 +726,11 @@ async function handleSubmit(e) {
         const newAffaireDesc = document.getElementById('newAffaireDesc').value.trim();
         const clientId = document.getElementById('client').value;
 
+        if (!clientId) {
+            alert('Veuillez d\'abord sélectionner un client');
+            return;
+        }
+
         if (!newAffaireName) {
             alert('Veuillez entrer un nom pour la nouvelle affaire de soudure');
             return;
@@ -795,6 +800,10 @@ async function handleSubmit(e) {
         hours: document.getElementById('hours').value,
         enteredBy: currentUser.name
     };
+
+    console.log('📝 Création entrée:', entryData);
+    console.log('👥 Clients disponibles:', clients.map(c => ({ id: c.id, name: c.name })));
+    console.log('📁 Affaires disponibles:', affaires.map(a => ({ id: a.id, name: a.name, clientId: a.clientId })));
 
     if (editingId) {
         await updateEntry(editingId, entryData);
