@@ -12,14 +12,6 @@
         {
             "id": "1764014760229",
             "name": "NMBP"
-        },
-        {
-            "id": "1764015374269",
-            "name": "TYCO"
-        },
-        {
-            "id": "1764015383988",
-            "name": "EUROMECA"
         }
     ],
     "affaires": [],
@@ -39,12 +31,12 @@
     ],
     "users": [
         {
-            "id": "1764015193303",
+            "id": "1",
             "name": "Admin",
             "password": "ADMIN"
         },
         {
-            "id": "1764015329353",
+            "id": "1764015215742",
             "name": "Aur\u00e9lien",
             "password": "Kenfuck39"
         }
