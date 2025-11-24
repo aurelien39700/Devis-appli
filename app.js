@@ -1141,17 +1141,38 @@ async function deleteClient(id) {
 
 function renderClients() {
     const container = document.getElementById('clientsList');
-    if (clients.length === 0) {
-        container.innerHTML = '<p style="color: #666;">Aucun client</p>';
+    if (!clients || clients.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Aucun client créé</p>';
         return;
     }
 
-    container.innerHTML = clients.map(client => `
-        <div class="item-tag">
-            <span>${escapeHtml(client.name)}</span>
-            <button class="delete-btn" onclick="deleteClient('${client.id}')">×</button>
-        </div>
-    `).join('');
+    const html = clients.map(client => {
+        // Compter le nombre d'affaires pour ce client
+        const nbAffaires = affaires.filter(a => a.clientId === client.id).length;
+
+        return `
+            <div class="admin-card">
+                <div class="item-header">
+                    <div class="item-title">
+                        <span>👥 ${escapeHtml(client.name)}</span>
+                    </div>
+                </div>
+                <div class="item-info">
+                    <strong>Affaires:</strong> ${nbAffaires} affaire${nbAffaires > 1 ? 's' : ''}
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-secondary" onclick="openRenameModal('client', '${client.id}', '${escapeHtml(client.name).replace(/'/g, "\\'")}')">
+                        ✏️ Renommer
+                    </button>
+                    <button class="btn btn-danger" onclick="openDeleteModal('client', '${client.id}', '${escapeHtml(client.name).replace(/'/g, "\\'")}')">
+                        🗑️ Supprimer
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
 }
 
 async function addAffaire() {
@@ -1436,17 +1457,41 @@ async function deletePoste(id) {
 
 function renderPostes() {
     const container = document.getElementById('postesList');
-    if (postes.length === 0) {
-        container.innerHTML = '<p style="color: #666;">Aucun poste</p>';
+    if (!postes || postes.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Aucun poste créé</p>';
         return;
     }
 
-    container.innerHTML = postes.map(poste => `
-        <div class="item-tag">
-            <span>${escapeHtml(poste.name)}</span>
-            <button class="delete-btn" onclick="deletePoste('${poste.id}')">×</button>
-        </div>
-    `).join('');
+    const html = postes.map(poste => {
+        // Compter le nombre d'entrées pour ce poste
+        const nbEntries = entries.filter(e => e.posteId === poste.id).length;
+        const totalHeures = entries
+            .filter(e => e.posteId === poste.id)
+            .reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
+
+        return `
+            <div class="admin-card">
+                <div class="item-header">
+                    <div class="item-title">
+                        <span>🔧 ${escapeHtml(poste.name)}</span>
+                    </div>
+                </div>
+                <div class="item-info">
+                    <strong>Entrées:</strong> ${nbEntries} | <strong>Total heures:</strong> ${totalHeures.toFixed(2)}h
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-secondary" onclick="openRenameModal('poste', '${poste.id}', '${escapeHtml(poste.name).replace(/'/g, "\\'")}')">
+                        ✏️ Renommer
+                    </button>
+                    <button class="btn btn-danger" onclick="openDeleteModal('poste', '${poste.id}', '${escapeHtml(poste.name).replace(/'/g, "\\'")}')">
+                        🗑️ Supprimer
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
 }
 
 // ===== GESTION DES UTILISATEURS =====
@@ -1525,17 +1570,48 @@ async function deleteUser(id) {
 
 function renderUsers() {
     const container = document.getElementById('usersList');
-    if (users.length === 0) {
-        container.innerHTML = '<p style="color: #666;">Aucun utilisateur</p>';
+
+    // Filtrer pour exclure l'utilisateur Admin (id = "1")
+    const regularUsers = users.filter(u => u.id !== "1" && u.name !== "Admin");
+
+    if (regularUsers.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Aucun utilisateur créé</p>';
         return;
     }
 
-    container.innerHTML = users.map(user => `
-        <div class="item-tag">
-            <span>${escapeHtml(user.name)}</span>
-            <button class="delete-btn" onclick="deleteUser('${user.id}')">×</button>
-        </div>
-    `).join('');
+    const html = regularUsers.map(user => {
+        // Compter le nombre d'entrées créées par cet utilisateur
+        const nbEntries = entries.filter(e => e.enteredBy === user.name).length;
+        const totalHeures = entries
+            .filter(e => e.enteredBy === user.name)
+            .reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
+
+        return `
+            <div class="admin-card">
+                <div class="item-header">
+                    <div class="item-title">
+                        <span>👤 ${escapeHtml(user.name)}</span>
+                    </div>
+                </div>
+                <div class="item-info">
+                    <strong>Code:</strong> ${escapeHtml(user.password || 'Non défini')}
+                </div>
+                <div class="item-info">
+                    <strong>Entrées créées:</strong> ${nbEntries} | <strong>Total heures:</strong> ${totalHeures.toFixed(2)}h
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-secondary" onclick="openRenameModal('user', '${user.id}', '${escapeHtml(user.name).replace(/'/g, "\\'")}')">
+                        ✏️ Renommer
+                    </button>
+                    <button class="btn btn-danger" onclick="openDeleteModal('user', '${user.id}', '${escapeHtml(user.name).replace(/'/g, "\\'")}')">
+                        🗑️ Supprimer
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
 }
 
 // ===== GÉNÉRATION PDF =====
