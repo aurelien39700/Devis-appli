@@ -22,7 +22,15 @@
             "name": "EUROMECA"
         }
     ],
-    "affaires": [],
+    "affaires": [
+        {
+            "id": "1764017373680",
+            "name": "MD1056",
+            "clientId": "1764014447938",
+            "description": "",
+            "statut": "en_cours"
+        }
+    ],
     "postes": [
         {
             "id": "1764014781418",
