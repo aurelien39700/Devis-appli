@@ -1,5 +1,14 @@
 {
-    "entries": [],
+    "entries": [
+        {
+            "id": "1764060234537",
+            "affaireId": "1764060146963",
+            "posteId": "1764055164678",
+            "hours": "9",
+            "enteredBy": "Quentin",
+            "date": "2025-11-25T08:43:54.738Z"
+        }
+    ],
     "clients": [
         {
             "id": "1764014447938",
@@ -30,7 +39,15 @@
             "name": "PROFIL C"
         }
     ],
-    "affaires": [],
+    "affaires": [
+        {
+            "id": "1764060146963",
+            "name": "428",
+            "clientId": "1764014732621",
+            "description": "Remise en \u00e9tat",
+            "statut": "en_cours"
+        }
+    ],
     "postes": [
         {
             "id": "1764014781418",
@@ -59,6 +76,22 @@
         {
             "id": "1764055523549",
             "name": "Fraisage CN"
+        },
+        {
+            "id": "1764060067448",
+            "name": "\u00c9tude"
+        },
+        {
+            "id": "1764060071044",
+            "name": "\u00c9bauche"
+        },
+        {
+            "id": "1764060074533",
+            "name": "Carcasse"
+        },
+        {
+            "id": "1764060086821",
+            "name": "Microper\u00e7age"
         }
     ],
     "users": [
@@ -81,6 +114,16 @@
             "id": "1764018442182",
             "name": "Christophe",
             "password": "Somepre@21"
+        },
+        {
+            "id": "1764060383113",
+            "name": "Thomas",
+            "password": "Somepre2004"
+        },
+        {
+            "id": "1764060402075",
+            "name": "jojo",
+            "password": "C4i+m6pl"
         }
     ]
 }

@@ -835,32 +835,41 @@ function renderQuickAccess(grouped) {
     const container = document.getElementById('quickAccessAffaires');
     const card = document.getElementById('quickAccessCard');
 
-    if (Object.keys(grouped).length === 0) {
+    // Récupérer TOUTES les affaires en cours, même celles sans heures
+    const affairesEnCours = affaires.filter(a => !a.statut || a.statut === 'en_cours');
+
+    if (affairesEnCours.length === 0) {
         card.style.display = 'none';
         return;
     }
 
     card.style.display = 'block';
 
-    // Filtrer uniquement les affaires en cours (pour tous)
-    let groupsToDisplay = Object.values(grouped).filter(group => {
-        const affaire = affaires.find(a => a.id === group.affaireId);
-        return affaire && (!affaire.statut || affaire.statut === 'en_cours');
+    // Créer un tableau combinant les affaires avec heures et celles sans
+    const affairesToDisplay = affairesEnCours.map(affaire => {
+        const existingGroup = grouped[affaire.id];
+        return {
+            affaireId: affaire.id,
+            totalHours: existingGroup ? existingGroup.totalHours : 0,
+            affaire: affaire,
+            client: clients.find(c => c.id === affaire.clientId)
+        };
     });
 
-    if (groupsToDisplay.length === 0) {
-        card.style.display = 'none';
-        return;
-    }
+    // Trier par nombre d'heures décroissant, puis par nom d'affaire
+    affairesToDisplay.sort((a, b) => {
+        if (b.totalHours !== a.totalHours) {
+            return b.totalHours - a.totalHours;
+        }
+        return (a.affaire.name || '').localeCompare(b.affaire.name || '');
+    });
 
-    container.innerHTML = groupsToDisplay.map(group => {
-        const affaire = affaires.find(a => a.id === group.affaireId);
-        // Dériver le client depuis l'affaire
-        const client = affaire ? clients.find(c => c.id === affaire.clientId) : null;
+    container.innerHTML = affairesToDisplay.map(item => {
+        const { affaire, client, totalHours } = item;
 
         return `
             <button
-                onclick="quickSelectAffaire('${affaire ? affaire.clientId : ''}', '${group.affaireId}')"
+                onclick="quickSelectAffaire('${affaire.clientId}', '${affaire.id}')"
                 style="
                     padding: 10px 16px;
                     border: 2px solid rgba(33, 150, 243, 0.3);
@@ -880,8 +889,8 @@ function renderQuickAccess(grouped) {
             >
                 <span>👥 ${escapeHtml(client ? client.name : 'Client inconnu')}</span>
                 <span style="opacity: 0.7;">•</span>
-                <span>📁 ${escapeHtml(affaire ? affaire.name : 'Affaire inconnue')}</span>
-                <span style="background: rgba(33, 150, 243, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">${group.totalHours.toFixed(1)}h</span>
+                <span>📁 ${escapeHtml(affaire.name)}</span>
+                <span style="background: rgba(33, 150, 243, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">${totalHours.toFixed(1)}h</span>
             </button>
         `;
     }).join('');
