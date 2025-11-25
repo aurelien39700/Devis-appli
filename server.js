@@ -437,6 +437,29 @@ app.post('/api/postes', async (req, res) => {
     }
 });
 
+// PUT - Mettre à jour un poste
+app.put('/api/postes/:id', async (req, res) => {
+    try {
+        const data = await readData();
+        const posteIndex = data.postes.findIndex(p => p.id === req.params.id);
+
+        if (posteIndex === -1) {
+            return res.status(404).json({ error: 'Poste non trouvé' });
+        }
+
+        // Mettre à jour le nom et conserver les autres propriétés
+        data.postes[posteIndex] = {
+            ...data.postes[posteIndex],
+            name: req.body.name
+        };
+
+        await writeData(data);
+        res.json(data.postes[posteIndex]);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de mise à jour' });
+    }
+});
+
 // DELETE - Supprimer un poste
 app.delete('/api/postes/:id', async (req, res) => {
     try {
