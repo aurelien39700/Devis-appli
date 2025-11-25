@@ -161,12 +161,28 @@
             "date": "2025-11-25T14:59:07.508Z"
         },
         {
-            "id": "1764083468849",
-            "affaireId": "1764083466293",
+            "id": "1764086838806",
+            "affaireId": "1764062109157",
+            "posteId": "1764014788537",
+            "hours": "4",
+            "enteredBy": "Jojo",
+            "date": "2025-11-25T16:07:18.986Z"
+        },
+        {
+            "id": "1764086864425",
+            "affaireId": "1764062109157",
+            "posteId": "1764055523549",
+            "hours": "39",
+            "enteredBy": "Jojo",
+            "date": "2025-11-25T16:07:44.562Z"
+        },
+        {
+            "id": "1764087073172",
+            "affaireId": "1764087070809",
             "posteId": "1764014781418",
-            "hours": "9.25",
+            "hours": "0.75",
             "enteredBy": "Thomas",
-            "date": "2025-11-25T15:11:07.496Z"
+            "date": "2025-11-25T16:11:11.811Z"
         }
     ],
     "clients": [
@@ -205,7 +221,7 @@
             "name": "428",
             "clientId": "1764014732621",
             "description": "Remise en \u00e9tat",
-            "statut": "terminee"
+            "statut": "archivee"
         },
         {
             "id": "1764061107990",
@@ -285,10 +301,10 @@
             "statut": "en_cours"
         },
         {
-            "id": "1764083466293",
-            "name": "Soudure fictive",
+            "id": "1764087070809",
+            "name": "Pliloire 24",
             "clientId": "1764017522395",
-            "description": "Cette soudure n'existe pas",
+            "description": "Soudure au fond des rainure",
             "statut": "en_cours"
         }
     ],
