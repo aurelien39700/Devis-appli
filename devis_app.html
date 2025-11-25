@@ -1015,21 +1015,40 @@
     </div>
 
     <script>
-        // Données
-        const postesTravail = [
-            { nom: 'Étude', taux: 65 },
-            { nom: 'Ébauche', taux: 75 },
-            { nom: 'Carcasse', taux: 75 },
-            { nom: 'Rectification', taux: 75 },
-            { nom: 'Microperçage', taux: 55 },
-            { nom: 'Découpe Fil', taux: 90 },
-            { nom: 'Érosion', taux: 80 },
-            { nom: 'Électrode', taux: 80 },
-            { nom: 'Fraisage CN', taux: 90 },
-            { nom: 'Ajustage', taux: 75 },
-            { nom: 'Montage', taux: 55 },
-            { nom: 'Soudure', taux: 80 }
-        ];
+        // Charger les postes depuis la bibliothèque synchronisée avec l'application principale
+        function chargerPostesBibliotheque() {
+            const postesSync = localStorage.getItem('devis_postes_bibliothèque');
+            if (postesSync) {
+                try {
+                    const postes = JSON.parse(postesSync);
+                    return postes.map(p => ({
+                        nom: p.name,
+                        taux: p.taux || 75
+                    }));
+                } catch (error) {
+                    console.error('Erreur chargement postes synchronisés:', error);
+                }
+            }
+
+            // Postes par défaut si pas de synchronisation
+            return [
+                { nom: 'Étude', taux: 65 },
+                { nom: 'Ébauche', taux: 75 },
+                { nom: 'Carcasse', taux: 75 },
+                { nom: 'Rectification', taux: 75 },
+                { nom: 'Microperçage', taux: 55 },
+                { nom: 'Découpe Fil', taux: 90 },
+                { nom: 'Érosion', taux: 80 },
+                { nom: 'Électrode', taux: 80 },
+                { nom: 'Fraisage CN', taux: 90 },
+                { nom: 'Ajustage', taux: 75 },
+                { nom: 'Montage', taux: 55 },
+                { nom: 'Soudure', taux: 80 }
+            ];
+        }
+
+        // Données - charger depuis localStorage ou utiliser les postes par défaut
+        const postesTravail = chargerPostesBibliotheque();
 
         const machines = [
             { nom: 'Fraisage CN', taux: 46 },

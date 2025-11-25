@@ -556,6 +556,43 @@ async function loadPostes(cacheBuster = '') {
     postes = saved ? JSON.parse(saved) : [];
 }
 
+// Fonction pour synchroniser les postes vers devis_app
+function syncPostesVersDevisApp() {
+    try {
+        // Charger les données actuelles de devis_app s'il y en a
+        const devisData = localStorage.getItem('devis_somepre');
+        let devisObj = devisData ? JSON.parse(devisData) : null;
+
+        if (devisObj && devisObj.data && devisObj.data.travail) {
+            // Créer un map des postes existants dans devis pour conserver les heures
+            const postesMap = {};
+            devisObj.data.travail.forEach(p => {
+                postesMap[p.nom] = p;
+            });
+
+            // Mettre à jour la liste des postes avec les données de l'application
+            devisObj.data.travail = postes.map(poste => {
+                const existant = postesMap[poste.name];
+                return {
+                    nom: poste.name,
+                    taux: poste.taux || 75,
+                    // Conserver les heures si le poste existait déjà
+                    semaines: existant ? existant.semaines : [0, 0, 0, 0, 0, 0, 0, 0]
+                };
+            });
+
+            // Sauvegarder les modifications
+            localStorage.setItem('devis_somepre', JSON.stringify(devisObj));
+            console.log('✅ Postes synchronisés vers devis_app');
+        }
+
+        // Aussi sauvegarder une copie des postes pour usage futur
+        localStorage.setItem('devis_postes_biblioth que', JSON.stringify(postes));
+    } catch (error) {
+        console.error('Erreur synchronisation postes vers devis_app:', error);
+    }
+}
+
 function updateSyncStatus(status, message) {
     const el = document.getElementById('syncStatus');
     el.textContent = message;
@@ -1645,6 +1682,8 @@ async function addPoste() {
             await loadPostes();
             renderPostes();
             updateSelects();
+            // Synchroniser vers devis_app
+            syncPostesVersDevisApp();
         }
     } catch (error) {
         console.error('Erreur:', error);
@@ -2056,6 +2095,8 @@ async function confirmRename(type, id) {
             } else if (type === 'poste') {
                 await loadPostes(cacheBuster);
                 renderPostes();
+                // Synchroniser vers devis_app
+                syncPostesVersDevisApp();
             } else if (type === 'user') {
                 await loadUsers(cacheBuster);
                 renderUsers();
@@ -2099,6 +2140,8 @@ async function confirmDelete(type, id) {
             } else if (type === 'poste') {
                 await loadPostes();
                 renderPostes();
+                // Synchroniser vers devis_app
+                syncPostesVersDevisApp();
             } else if (type === 'user') {
                 await loadUsers();
                 renderUsers();

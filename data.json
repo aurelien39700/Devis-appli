@@ -151,6 +151,22 @@
             "hours": "1.5",
             "enteredBy": "Thomas",
             "date": "2025-11-25T14:14:59.302Z"
+        },
+        {
+            "id": "1764082746894",
+            "affaireId": "1764082722139",
+            "posteId": "1764061151273",
+            "hours": "2",
+            "enteredBy": "Henri",
+            "date": "2025-11-25T14:59:07.508Z"
+        },
+        {
+            "id": "1764083468849",
+            "affaireId": "1764083466293",
+            "posteId": "1764014781418",
+            "hours": "9.25",
+            "enteredBy": "Thomas",
+            "date": "2025-11-25T15:11:07.496Z"
         }
     ],
     "clients": [
@@ -260,6 +276,20 @@
             "clientId": "1764014732621",
             "description": "Noyau moule Bi mati\u00e8re",
             "statut": "en_cours"
+        },
+        {
+            "id": "1764082722139",
+            "name": "Buse presse",
+            "clientId": "1764014447938",
+            "description": "",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764083466293",
+            "name": "Soudure fictive",
+            "clientId": "1764017522395",
+            "description": "Cette soudure n'existe pas",
+            "statut": "en_cours"
         }
     ],
     "postes": [
@@ -281,7 +311,7 @@
         },
         {
             "id": "1764019427786",
-            "name": "Erosion FIL"
+            "name": "\u00c9rosion FIL"
         },
         {
             "id": "1764055164678",
