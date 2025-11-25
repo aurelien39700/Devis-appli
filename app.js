@@ -736,12 +736,12 @@ function renderEntries() {
     let totalHours = 0;
 
     entries.forEach(entry => {
-        // Filtrer les entrées des affaires archivées ou terminées (sauf pour les admins)
+        // Filtrer les entrées des affaires archivées ou terminées (pour tous les utilisateurs)
         const affaire = affaires.find(a => a.id === entry.affaireId);
         const isArchived = affaire && (affaire.statut === 'archivee' || affaire.statut === 'terminee');
 
-        // Les utilisateurs non-admin ne voient pas les affaires archivées/terminées
-        if (!isAdmin() && isArchived) {
+        // Personne ne voit les affaires archivées/terminées dans la liste principale (elles sont dans les archives)
+        if (isArchived) {
             return;
         }
 
@@ -775,9 +775,6 @@ function renderEntries() {
         // Dériver le client depuis l'affaire (source unique de vérité)
         const client = affaire ? clients.find(c => c.id === affaire.clientId) : null;
 
-        // Vérifier si l'affaire est archivée/terminée
-        const isArchived = affaire && (affaire.statut === 'archivee' || affaire.statut === 'terminee');
-
         // Détails par poste
         const postesDetailsHTML = Object.entries(group.posteDetails).map(([posteName, hours]) => {
             return `<span style="display: inline-block; background: rgba(33, 150, 243, 0.15); padding: 3px 8px; border-radius: 12px; font-size: 0.85rem; margin-right: 5px; margin-bottom: 5px;">🔧 ${escapeHtml(posteName)}: ${hours.toFixed(1)}h</span>`;
@@ -797,23 +794,19 @@ function renderEntries() {
                     // Afficher "Saisi par" uniquement pour les admins
                     const enteredByHTML = (isAdmin() && entry.enteredBy) ? `<span style="font-size: 0.75rem; color: #666;">👤 Saisi par: ${escapeHtml(entry.enteredBy)}</span>` : '';
                     // Les utilisateurs voient les boutons uniquement pour leurs propres saisies
-                    // ET ne peuvent pas modifier les heures des affaires archivées/terminées
-                    const canEdit = (isAdmin() || entry.enteredBy === currentUser.name) && !isArchived;
+                    const canEdit = isAdmin() || entry.enteredBy === currentUser.name;
                     const buttonsHTML = canEdit ? `
                         <div style="display: flex; gap: 5px;">
                             <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="editEntry('${entry.id}')">✏️</button>
                             <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteEntry('${entry.id}')">🗑️</button>
                         </div>
                     ` : '';
-                    // Message pour les affaires archivées
-                    const archivedMsg = isArchived && !isAdmin() ? `<span style="font-size: 0.7rem; color: #ff9800;">🔒 Affaire archivée</span>` : '';
                     return `
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 5px 10px; background: rgba(255,255,255,0.03); border-radius: 6px;">
                             <div style="display: flex; flex-direction: column; gap: 2px;">
                                 <span style="font-size: 0.8rem; color: #999;">📅 ${date}</span>
                                 <span style="font-size: 0.75rem; color: #777;">🔧 ${escapeHtml(poste ? poste.name : 'Inconnu')}</span>
                                 ${enteredByHTML}
-                                ${archivedMsg}
                             </div>
                             <span style="font-size: 0.8rem; color: #2196F3; font-weight: 600;">${entry.hours}h</span>
                             ${buttonsHTML}
