@@ -1026,6 +1026,9 @@ function editEntry(id) {
         return;
     }
 
+    isFormActive = true; // Bloquer la synchronisation
+    console.log('🔒 Formulaire d\'édition ouvert - synchronisation bloquée');
+
     editingId = id;
     updateSelects();
     document.getElementById('modal').classList.add('active');
@@ -1044,9 +1047,13 @@ function editEntry(id) {
 async function handleSubmit(e) {
     e.preventDefault();
 
-    if (editingId && !isAdmin()) {
-        alert('Seuls les administrateurs peuvent modifier les entrées');
-        return;
+    // Vérifier que l'utilisateur peut modifier cette entrée
+    if (editingId) {
+        const entry = entries.find(e => e.id === editingId);
+        if (entry && !isAdmin() && entry.enteredBy !== currentUser.name) {
+            alert('Vous ne pouvez modifier que vos propres saisies');
+            return;
+        }
     }
 
     let affaireId = document.getElementById('affaire').value;
