@@ -2012,37 +2012,46 @@ async function confirmRename(type, id) {
     };
 
     try {
-        const response = await fetch(`${API_URL}${endpoints[type]}`, {
+        console.log(`Renommage ${type} ${id} vers "${newName}"`);
+        const url = `${API_URL}${endpoints[type]}`;
+        console.log('URL:', url);
+
+        const response = await fetch(url, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: newName })
         });
 
+        console.log('Response status:', response.status);
+
         if (response.ok) {
             closeConfirmModal();
             showNotification('✓ Renommé avec succès', 'success');
 
-            // Recharger les données
+            // Recharger les données avec cache buster
+            const cacheBuster = `?t=${Date.now()}`;
             if (type === 'client') {
-                await loadClients();
+                await loadClients(cacheBuster);
                 renderClients();
             } else if (type === 'affaire') {
-                await loadAffaires();
+                await loadAffaires(cacheBuster);
                 renderAffaires();
             } else if (type === 'poste') {
-                await loadPostes();
+                await loadPostes(cacheBuster);
                 renderPostes();
             } else if (type === 'user') {
-                await loadUsers();
+                await loadUsers(cacheBuster);
                 renderUsers();
             }
             updateSelects();
         } else {
-            alert('Erreur lors du renommage');
+            const errorText = await response.text();
+            console.error('Erreur serveur:', errorText);
+            alert('Erreur lors du renommage: ' + (errorText || response.status));
         }
     } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur de connexion');
+        alert('Erreur de connexion: ' + error.message);
     }
 }
 
