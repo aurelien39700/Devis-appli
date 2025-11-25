@@ -823,6 +823,7 @@ function renderEntries() {
                     <span class="entry-hours">${group.totalHours.toFixed(1)}h</span>
                 </div>
                 <div class="entry-info">📁 ${escapeHtml(affaire ? affaire.name : 'Affaire inconnue')}</div>
+                ${affaire && affaire.description ? `<div class="entry-info" style="color: #888; font-size: 0.8rem; font-style: italic; margin-top: 3px;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
                 <div style="margin-top: 8px;">
                     ${postesDetailsHTML}
                 </div>
