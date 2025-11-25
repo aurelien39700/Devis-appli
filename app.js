@@ -242,9 +242,12 @@ function showApp() {
         userIcon.textContent = '👨‍💼';
         userTypeText.textContent = currentUser.name;
         document.getElementById('managementTabBtn').style.display = 'block';
+        document.getElementById('devisAppBtn').style.display = 'block';
     } else {
         userIcon.textContent = '👤';
         userTypeText.textContent = currentUser.name;
+        document.getElementById('managementTabBtn').style.display = 'none';
+        document.getElementById('devisAppBtn').style.display = 'none';
     }
 
     loadAllData();
@@ -1403,6 +1406,20 @@ function preparerDevisApp(affaireId) {
 
     if (!newWindow) {
         alert('⚠️ Le popup a été bloqué par votre navigateur.\n\nVeuillez autoriser les popups pour ce site, puis réessayez.\n\nVous pouvez aussi ouvrir manuellement devis_app.html - les données ont été sauvegardées.');
+    }
+}
+
+// Fonction pour ouvrir devis_app depuis le bouton admin
+function ouvrirDevisApp() {
+    // Construire l'URL complète pour devis_app
+    const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+    const devisUrl = baseUrl + 'devis_app.html';
+
+    // Ouvrir devis_app dans un nouvel onglet
+    const newWindow = window.open(devisUrl, '_blank');
+
+    if (!newWindow) {
+        alert('⚠️ Le popup a été bloqué par votre navigateur.\n\nVeuillez autoriser les popups pour ce site, puis réessayez.');
     }
 }
 
