@@ -7,6 +7,102 @@
             "hours": "9",
             "enteredBy": "Quentin",
             "date": "2025-11-25T08:43:54.738Z"
+        },
+        {
+            "id": "1764060486799",
+            "affaireId": "1764060146963",
+            "posteId": "1764055164678",
+            "hours": "4.5",
+            "enteredBy": "Jojo",
+            "date": "2025-11-25T08:48:07.088Z"
+        },
+        {
+            "id": "1764061062438",
+            "affaireId": "1764060146963",
+            "posteId": "1764014781418",
+            "hours": "2.5",
+            "enteredBy": "Thomas",
+            "date": "2025-11-25T08:57:41.204Z"
+        },
+        {
+            "id": "1764061150349",
+            "affaireId": "1764060146963",
+            "posteId": "1764061108386",
+            "hours": "1.5",
+            "enteredBy": "Thomas",
+            "date": "2025-11-25T08:59:09.037Z"
+        },
+        {
+            "id": "1764061196959",
+            "affaireId": "1764060146963",
+            "posteId": "1764060074533",
+            "hours": "2",
+            "enteredBy": "Henri",
+            "date": "2025-11-25T08:59:57.779Z"
+        },
+        {
+            "id": "1764061582820",
+            "affaireId": "1764061178087",
+            "posteId": "1764014788537",
+            "hours": "1",
+            "enteredBy": "Jojo",
+            "date": "2025-11-25T09:06:23.039Z"
+        },
+        {
+            "id": "1764061613394",
+            "affaireId": "1764061178087",
+            "posteId": "1764055523549",
+            "hours": "1.25",
+            "enteredBy": "Jojo",
+            "date": "2025-11-25T09:06:53.647Z"
+        },
+        {
+            "id": "1764061614818",
+            "affaireId": "1764061178087",
+            "posteId": "1764055523549",
+            "hours": "1.25",
+            "enteredBy": "Jojo",
+            "date": "2025-11-25T09:06:54.936Z"
+        },
+        {
+            "id": "1764061722550",
+            "affaireId": "1764061701442",
+            "posteId": "1764061151273",
+            "hours": "11",
+            "enteredBy": "Henri",
+            "date": "2025-11-25T09:08:44.005Z"
+        },
+        {
+            "id": "1764061767006",
+            "affaireId": "1764061127262",
+            "posteId": "1764060067448",
+            "hours": "35",
+            "enteredBy": "Quentin",
+            "date": "2025-11-25T09:09:27.182Z"
+        },
+        {
+            "id": "1764061790511",
+            "affaireId": "1764061701442",
+            "posteId": "1764060067448",
+            "hours": "1",
+            "enteredBy": "Quentin",
+            "date": "2025-11-25T09:09:50.687Z"
+        },
+        {
+            "id": "1764061807747",
+            "affaireId": "1764061283933",
+            "posteId": "1764055164678",
+            "hours": "2",
+            "enteredBy": "Quentin",
+            "date": "2025-11-25T09:10:07.928Z"
+        },
+        {
+            "id": "1764061828469",
+            "affaireId": "1764061394216",
+            "posteId": "1764055164678",
+            "hours": "2",
+            "enteredBy": "Quentin",
+            "date": "2025-11-25T09:10:28.643Z"
         }
     ],
     "clients": [
@@ -45,6 +141,76 @@
             "name": "428",
             "clientId": "1764014732621",
             "description": "Remise en \u00e9tat",
+            "statut": "archivee"
+        },
+        {
+            "id": "1764061107990",
+            "name": "3075",
+            "clientId": "1764014732621",
+            "description": "Noyau PM",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764061127262",
+            "name": "P2 MK3",
+            "clientId": "1764015790842",
+            "description": "Moule Bi mati\u00e8re",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764061178087",
+            "name": "RENAULT",
+            "clientId": "1764014447938",
+            "description": "Plaque centreur conique",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764061252565",
+            "name": "Bali 12",
+            "clientId": "1764014760229",
+            "description": "Noyau en 140 Kg",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764061283933",
+            "name": "MD1178",
+            "clientId": "1764014447938",
+            "description": "Moule avec les 3 v\u00e9rins (Goupilles \u00e0 r\u00e9parer)",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764061394216",
+            "name": "MF9632",
+            "clientId": "1764014447938",
+            "description": "Noyau d\u00e9centr\u00e9 (Grand v\u00e9rin)",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764061438182",
+            "name": "MD7106",
+            "clientId": "1764014447938",
+            "description": "R\u00e9fection fixation Strack",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764061701442",
+            "name": "MZF9537",
+            "clientId": "1764014447938",
+            "description": "Noyau Pin Point",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764062065991",
+            "name": "Moule 6",
+            "clientId": "1764014760229",
+            "description": "Soudure 0.04mm sur gros noyau + 2 noyaux soudure rerpise",
+            "statut": "en_cours"
+        },
+        {
+            "id": "1764062109157",
+            "name": "3165",
+            "clientId": "1764014732621",
+            "description": "Noyau moule Bi mati\u00e8re",
             "statut": "en_cours"
         }
     ],
@@ -92,6 +258,14 @@
         {
             "id": "1764060086821",
             "name": "Microper\u00e7age"
+        },
+        {
+            "id": "1764061108386",
+            "name": "Rectification"
+        },
+        {
+            "id": "1764061151273",
+            "name": "Tournage CN"
         }
     ],
     "users": [
@@ -124,6 +298,11 @@
             "id": "1764060402075",
             "name": "jojo",
             "password": "C4i+m6pl"
+        },
+        {
+            "id": "1764061084451",
+            "name": "Henri",
+            "password": "henri60"
         }
     ]
 }

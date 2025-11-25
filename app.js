@@ -856,20 +856,32 @@ function renderQuickAccess(grouped) {
         };
     });
 
-    // Trier par nombre d'heures décroissant, puis par nom d'affaire
+    // Trier par nom de client, puis par nom d'affaire
     affairesToDisplay.sort((a, b) => {
-        if (b.totalHours !== a.totalHours) {
-            return b.totalHours - a.totalHours;
+        const clientNameA = a.client ? a.client.name : '';
+        const clientNameB = b.client ? b.client.name : '';
+
+        // D'abord par client
+        const clientCompare = clientNameA.localeCompare(clientNameB);
+        if (clientCompare !== 0) {
+            return clientCompare;
         }
+
+        // Puis par nom d'affaire
         return (a.affaire.name || '').localeCompare(b.affaire.name || '');
     });
 
     container.innerHTML = affairesToDisplay.map(item => {
         const { affaire, client, totalHours } = item;
 
+        // Préparer la description pour l'infobulle (title)
+        const description = affaire.description ? affaire.description : 'Pas de description';
+        const tooltipText = `${client ? client.name : 'Client inconnu'} - ${affaire.name}\n${description}\n${totalHours.toFixed(1)}h enregistrées`;
+
         return `
             <button
                 onclick="quickSelectAffaire('${affaire.clientId}', '${affaire.id}')"
+                title="${escapeHtml(tooltipText)}"
                 style="
                     padding: 10px 16px;
                     border: 2px solid rgba(33, 150, 243, 0.3);
@@ -881,16 +893,21 @@ function renderQuickAccess(grouped) {
                     font-size: 0.9rem;
                     font-weight: 500;
                     display: flex;
-                    align-items: center;
-                    gap: 6px;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 4px;
+                    text-align: left;
                 "
                 onmouseover="this.style.background='rgba(33, 150, 243, 0.2)'; this.style.borderColor='#2196F3';"
                 onmouseout="this.style.background='rgba(33, 150, 243, 0.1)'; this.style.borderColor='rgba(33, 150, 243, 0.3)';"
             >
-                <span>👥 ${escapeHtml(client ? client.name : 'Client inconnu')}</span>
-                <span style="opacity: 0.7;">•</span>
-                <span>📁 ${escapeHtml(affaire.name)}</span>
-                <span style="background: rgba(33, 150, 243, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">${totalHours.toFixed(1)}h</span>
+                <div style="display: flex; align-items: center; gap: 6px; width: 100%;">
+                    <span>👥 ${escapeHtml(client ? client.name : 'Client inconnu')}</span>
+                    <span style="opacity: 0.7;">•</span>
+                    <span>📁 ${escapeHtml(affaire.name)}</span>
+                    <span style="background: rgba(33, 150, 243, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-left: auto;">${totalHours.toFixed(1)}h</span>
+                </div>
+                ${affaire.description ? `<div style="font-size: 0.75rem; color: rgba(33, 150, 243, 0.7); font-style: italic; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
             </button>
         `;
     }).join('');
