@@ -26,8 +26,8 @@
             "name": "PLASTILYS"
         },
         {
-            "id": "1764017522512",
-            "name": "PLASTILYS"
+            "id": "1764055731886",
+            "name": "PROFIL C"
         }
     ],
     "affaires": [],
@@ -51,6 +51,14 @@
         {
             "id": "1764019427786",
             "name": "Erosion FIL"
+        },
+        {
+            "id": "1764055164678",
+            "name": "Montage / Demontage"
+        },
+        {
+            "id": "1764055523549",
+            "name": "Fraisage CN"
         }
     ],
     "users": [

@@ -18,6 +18,7 @@ let currentUser = null;
 let currentTab = 'entries';
 let syncInterval = null;
 let isFormActive = false; // Flag pour savoir si l'utilisateur est en train de saisir
+let lastSaveTime = 0; // Timestamp de la dernière sauvegarde
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
@@ -263,6 +264,14 @@ function startAutoSync() {
             console.log('⏸️ Synchronisation ignorée - formulaire actif');
             return;
         }
+
+        // Ne pas synchroniser si une sauvegarde a eu lieu il y a moins de 5 secondes
+        const timeSinceLastSave = Date.now() - lastSaveTime;
+        if (timeSinceLastSave < 5000) {
+            console.log('⏸️ Synchronisation ignorée - sauvegarde récente (il y a ' + Math.round(timeSinceLastSave / 1000) + 's)');
+            return;
+        }
+
         try {
             console.log('🔄 Synchronisation automatique...');
 
@@ -281,17 +290,6 @@ function startAutoSync() {
             console.error('❌ Erreur de synchronisation:', error);
         }
     }, 30000); // 30 secondes comme demandé
-
-    // Export automatique toutes les 5 minutes (pour admin seulement)
-    if (isAdmin()) {
-        setInterval(() => {
-            // Vérifier s'il y a des données
-            if (entries.length > 0 || clients.length > 0 || affaires.length > 0) {
-                console.log('📥 Export automatique des données...');
-                exportDataToFile();
-            }
-        }, 5 * 60 * 1000); // 5 minutes
-    }
 }
 
 // Arrêter la synchronisation automatique
@@ -526,34 +524,48 @@ function updateSyncStatus(status, message) {
 // ===== GESTION DES ENTRÉES =====
 
 async function saveEntry(entry) {
-    // TOUJOURS sauvegarder localement EN PREMIER (garanti)
+    // Générer un ID temporaire local
     entry.id = entry.id || Date.now().toString();
     entry.date = entry.date || new Date().toISOString();
-    entries.push(entry);
-    saveToLocalStorage();
-    renderEntries();
-    updateSyncStatus('saved', '💾 Sauvegardé');
 
-    // PUIS essayer de synchroniser avec le serveur (optionnel)
+    updateSyncStatus('saving', '💾 Sauvegarde en cours...');
+
+    // PRIORITÉ: Essayer de sauvegarder sur le serveur D'ABORD
     try {
         const response = await fetch(`${API_URL}/entries`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entry)
+            body: JSON.stringify(entry),
+            timeout: 5000 // 5 secondes max
         });
+
         if (response.ok) {
             const serverEntry = await response.json();
-            // Remplacer l'ID local par l'ID serveur si différent
-            const index = entries.findIndex(e => e.id === entry.id);
-            if (index !== -1 && serverEntry.id !== entry.id) {
-                entries[index].id = serverEntry.id;
-                saveToLocalStorage();
-            }
-            updateSyncStatus('synced', '✓ Synchronisé');
+            // Utiliser l'entrée retournée par le serveur (avec l'ID serveur)
+            entries.push(serverEntry);
+            saveToLocalStorage();
+            renderEntries();
+            updateSyncStatus('synced', '✓ Synchronisé avec le serveur');
+            console.log('✅ Entrée sauvegardée sur le serveur:', serverEntry);
+
+            // Marquer le timestamp de la dernière sauvegarde
+            lastSaveTime = Date.now();
+
+            // Recharger toutes les données pour être certain de la cohérence
+            setTimeout(() => loadAllData(true), 500);
+            return true;
+        } else {
+            throw new Error('Erreur serveur: ' + response.status);
         }
     } catch (error) {
-        console.warn('⚠️ Serveur inaccessible, données sauvegardées localement');
-        updateSyncStatus('offline', '💾 Mode local');
+        console.warn('⚠️ Impossible de sauvegarder sur le serveur:', error);
+        // FALLBACK: Sauvegarder localement
+        entries.push(entry);
+        saveToLocalStorage();
+        renderEntries();
+        updateSyncStatus('offline', '💾 Sauvegardé localement (serveur inaccessible)');
+        lastSaveTime = Date.now();
+        return false;
     }
 }
 
@@ -854,6 +866,7 @@ function escapeHtml(text) {
 
 function openModal() {
     isFormActive = true; // Bloquer la synchronisation
+    console.log('🔒 Formulaire ouvert - synchronisation bloquée');
     updateSelects();
     document.getElementById('modal').classList.add('active');
     document.getElementById('modalTitle').textContent = 'Nouvelle entrée';
@@ -867,6 +880,7 @@ function openModal() {
 
 function closeModal() {
     isFormActive = false; // Réactiver la synchronisation
+    console.log('🔓 Formulaire fermé - synchronisation réactivée');
     document.getElementById('modal').classList.remove('active');
     document.getElementById('newAffaireGroup').style.display = 'none';
     editingId = null;
@@ -994,11 +1008,18 @@ async function handleSubmit(e) {
 
     if (editingId) {
         await updateEntry(editingId, entryData);
+        closeModal();
     } else {
-        await saveEntry(entryData);
-    }
+        const success = await saveEntry(entryData);
+        if (success) {
+            // Attendre un peu que le serveur traite complètement la requête
+            await new Promise(resolve => setTimeout(resolve, 300));
+        }
+        closeModal();
 
-    closeModal();
+        // Afficher une notification de succès
+        showNotification('✅ Entrée ajoutée avec succès', 'success');
+    }
 }
 
 function updateSelects() {
@@ -1740,7 +1761,7 @@ function openRenameModal(type, id, currentName) {
     };
 
     const modalHTML = `
-        <div class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-overlay" onclick="closeConfirmModal(event)">
             <div class="modal-box" onclick="event.stopPropagation()">
                 <div class="modal-header">
                     <h3>✏️ Renommer ${typeLabels[type]}</h3>
@@ -1750,7 +1771,7 @@ function openRenameModal(type, id, currentName) {
                     <input type="text" class="modal-input" id="modalRenameInput" value="${currentName}" autofocus>
                 </div>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button class="btn btn-secondary" onclick="closeConfirmModal()">Annuler</button>
                     <button class="btn btn-primary" onclick="confirmRename('${type}', '${id}')">✓ Renommer</button>
                 </div>
             </div>
@@ -1770,7 +1791,7 @@ function openDeleteModal(type, id, name) {
     };
 
     const modalHTML = `
-        <div class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-overlay" onclick="closeConfirmModal(event)">
             <div class="modal-box" onclick="event.stopPropagation()">
                 <div class="modal-header">
                     <h3>🗑️ Confirmation de suppression</h3>
@@ -1781,7 +1802,7 @@ function openDeleteModal(type, id, name) {
                     <p style="color: #888;">Cette action est irréversible.</p>
                 </div>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button class="btn btn-secondary" onclick="closeConfirmModal()">Annuler</button>
                     <button class="btn btn-danger" onclick="confirmDelete('${type}', '${id}')">🗑️ Supprimer</button>
                 </div>
             </div>
@@ -1791,7 +1812,7 @@ function openDeleteModal(type, id, name) {
     document.getElementById('modalContainer').innerHTML = modalHTML;
 }
 
-function closeModal(event) {
+function closeConfirmModal(event) {
     if (!event || event.target.classList.contains('modal-overlay')) {
         document.getElementById('modalContainer').innerHTML = '';
     }
@@ -1819,7 +1840,7 @@ async function confirmRename(type, id) {
         });
 
         if (response.ok) {
-            closeModal();
+            closeConfirmModal();
             showNotification('✓ Renommé avec succès', 'success');
 
             // Recharger les données
@@ -1860,7 +1881,7 @@ async function confirmDelete(type, id) {
         });
 
         if (response.ok) {
-            closeModal();
+            closeConfirmModal();
             showNotification('✓ Supprimé avec succès', 'success');
 
             // Recharger les données
@@ -1896,7 +1917,7 @@ function changeAffaireStatut(id, nouveauStatut) {
 
 function openChangePasswordModal(userId, userName) {
     const modalHTML = `
-        <div class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-overlay" onclick="closeConfirmModal(event)">
             <div class="modal-box" onclick="event.stopPropagation()">
                 <div class="modal-header">
                     <h3>🔑 Changer le code</h3>
@@ -1914,7 +1935,7 @@ function openChangePasswordModal(userId, userName) {
                     </p>
                 </div>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button class="btn btn-secondary" onclick="closeConfirmModal()">Annuler</button>
                     <button class="btn btn-primary" onclick="confirmChangePassword('${userId}')">✓ Changer</button>
                 </div>
             </div>
@@ -1949,7 +1970,7 @@ async function confirmChangePassword(userId) {
         });
 
         if (response.ok) {
-            closeModal();
+            closeConfirmModal();
             showNotification('✓ Code modifié avec succès', 'success');
 
             // Recharger les utilisateurs
