@@ -1416,6 +1416,9 @@ function renderAffaires() {
     let filtered = affaires;
     if (currentAffaireFilter !== 'all') {
         filtered = affaires.filter(a => (a.statut || 'en_cours') === currentAffaireFilter);
+    } else {
+        // Dans "Toutes", exclure les affaires archivées
+        filtered = affaires.filter(a => (a.statut || 'en_cours') !== 'archivee');
     }
 
     // Filtrer par recherche
