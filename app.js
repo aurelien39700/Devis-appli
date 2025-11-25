@@ -304,9 +304,47 @@ function setupEventListeners() {
     document.getElementById('entryForm').addEventListener('submit', handleSubmit);
     document.getElementById('client').addEventListener('change', updateAffairesSelect);
     document.getElementById('affaire').addEventListener('change', handleAffaireChange);
+
+    // Fermeture du modal avec le bouton × (ajout d'un écouteur direct)
+    const closeButtons = document.querySelectorAll('.modal-close');
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔘 Bouton × cliqué (addEventListener)');
+            closeModal();
+        });
+    });
+
+    // Fermeture du modal avec les boutons Annuler
+    const cancelButtons = document.querySelectorAll('.btn-secondary');
+    cancelButtons.forEach(btn => {
+        if (btn.textContent.includes('Annuler')) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔘 Bouton Annuler cliqué (addEventListener)');
+                closeModal();
+            });
+        }
+    });
+
+    // Fermeture du modal en cliquant sur l'overlay
     document.getElementById('modal').addEventListener('click', (e) => {
         if (e.target.id === 'modal') {
+            console.log('🔘 Overlay cliqué');
             closeModal();
+        }
+    });
+
+    // Fermeture du modal avec la touche Échap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            const modal = document.getElementById('modal');
+            if (modal && modal.classList.contains('active')) {
+                console.log('⌨️ Touche Échap pressée');
+                closeModal();
+            }
         }
     });
 }
@@ -879,12 +917,28 @@ function openModal() {
 }
 
 function closeModal() {
+    console.log('🔓 closeModal() appelée');
     isFormActive = false; // Réactiver la synchronisation
     console.log('🔓 Formulaire fermé - synchronisation réactivée');
-    document.getElementById('modal').classList.remove('active');
-    document.getElementById('newAffaireGroup').style.display = 'none';
+
+    const modal = document.getElementById('modal');
+    if (modal) {
+        modal.classList.remove('active');
+        console.log('✅ Modal fermé avec succès');
+    } else {
+        console.error('❌ Modal introuvable !');
+    }
+
+    const newAffaireGroup = document.getElementById('newAffaireGroup');
+    if (newAffaireGroup) {
+        newAffaireGroup.style.display = 'none';
+    }
+
     editingId = null;
 }
+
+// Exposer closeModal globalement pour être sûr qu'il est accessible
+window.closeModal = closeModal;
 
 function editEntry(id) {
     const entry = entries.find(e => e.id === id);

@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Suivi d'Affaires</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f3460">
@@ -1277,7 +1280,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="modalTitle">Nouvelle entrée</h3>
-                <button class="modal-close" onclick="closeModal()">×</button>
+                <button type="button" class="modal-close" id="modalCloseBtn">×</button>
             </div>
             <form id="entryForm">
                 <input type="hidden" id="entryId">
@@ -1310,7 +1313,7 @@
                            style="font-size: 1.8rem; padding: 20px; text-align: center; font-weight: 600; height: 70px;">
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1; font-size: 1.2rem; padding: 18px; min-height: 60px;">
+                    <button type="button" class="btn btn-secondary" id="modalCancelBtn" style="flex: 1; font-size: 1.2rem; padding: 18px; min-height: 60px;">
                         ✕ Annuler
                     </button>
                     <button type="submit" class="btn btn-primary" style="flex: 2; font-size: 1.3rem; padding: 18px; height: auto; min-height: 60px; font-weight: 600;">
@@ -1325,6 +1328,6 @@
     <div id="modalContainer"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=20251125-2"></script>
 </body>
 </html>
