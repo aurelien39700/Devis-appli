@@ -1325,15 +1325,93 @@ async function addAffaire() {
     }
 }
 
+// Fonction pour préparer et transférer les données vers devis_app
+function preparerDevisApp(affaireId) {
+    const affaire = affaires.find(a => a.id === affaireId);
+    if (!affaire) return;
+
+    const client = clients.find(c => c.id === affaire.clientId);
+
+    // Récupérer toutes les entrées de cette affaire
+    const affaireEntries = entries.filter(e => e.affaireId === affaireId);
+
+    // Grouper les heures par poste
+    const heuresParPoste = {};
+    affaireEntries.forEach(entry => {
+        const poste = postes.find(p => p.id === entry.posteId);
+        const posteName = poste ? poste.name : 'Poste inconnu';
+
+        if (!heuresParPoste[posteName]) {
+            heuresParPoste[posteName] = {
+                nom: posteName,
+                taux: poste ? (poste.taux || 75) : 75,
+                totalHeures: 0
+            };
+        }
+        heuresParPoste[posteName].totalHeures += parseFloat(entry.hours) || 0;
+    });
+
+    // Préparer les données pour devis_app avec la structure exacte attendue
+    const devisData = {
+        client: client ? client.name : '',
+        numCommande: '',
+        affaire: affaire.name,
+        date: new Date().toISOString().split('T')[0],
+        coeffMarge: 1.30,
+        data: {
+            travail: postes.map(poste => {
+                const heures = heuresParPoste[poste.name];
+                return {
+                    nom: poste.name,
+                    taux: poste.taux || 75,
+                    semaines: heures ? [heures.totalHeures, 0, 0, 0, 0, 0, 0, 0] : [0, 0, 0, 0, 0, 0, 0, 0]
+                };
+            }),
+            machine: [
+                { nom: 'Fraisage CN', taux: 46, temps: 0 },
+                { nom: 'Découpe Fil', taux: 46, temps: 0 },
+                { nom: 'Érosion', taux: 46, temps: 0 }
+            ],
+            achats: [
+                { nom: 'Carcasse', fournisseur: '', quantite: 0, prixUnit: 0 },
+                { nom: 'Éléments carcasse', fournisseur: '', quantite: 0, prixUnit: 0 },
+                { nom: 'Matière première', fournisseur: '', quantite: 0, prixUnit: 0 },
+                { nom: 'Traitement thermique', fournisseur: '', quantite: 0, prixUnit: 0 },
+                { nom: 'Bloc chaud', fournisseur: '', quantite: 0, prixUnit: 0 },
+                { nom: 'Sous-traitance', fournisseur: '', quantite: 0, prixUnit: 0 },
+                { nom: 'Transport', fournisseur: '', quantite: 0, prixUnit: 0 }
+            ]
+        },
+        fournisseurs: [
+            'Fournisseur A',
+            'Fournisseur B',
+            'Fournisseur C',
+            'Sous-traitant X',
+            'Sous-traitant Y'
+        ]
+    };
+
+    // Sauvegarder dans localStorage pour devis_app
+    localStorage.setItem('devis_somepre', JSON.stringify(devisData));
+
+    // Ouvrir devis_app dans un nouvel onglet
+    window.open('devis_app.html', '_blank');
+}
+
 async function toggleAffaireStatut(id, nouveauStatut) {
     const affaire = affaires.find(a => a.id === id);
 
     // Si on termine l'affaire, générer le PDF d'abord
     if (nouveauStatut === 'terminee' && affaire) {
-        if (!confirm(`Terminer l'affaire "${affaire.name}" ?\n\nUn PDF récapitulatif sera automatiquement généré.`)) {
+        if (!confirm(`Terminer l'affaire "${affaire.name}" ?\n\nUn PDF récapitulatif sera automatiquement généré et les données seront transférées vers le devis.`)) {
             return;
         }
+
+        // Générer le PDF
         generateAffairePDF(id);
+
+        // Préparer et ouvrir devis_app avec les données
+        preparerDevisApp(id);
     }
 
     try {
