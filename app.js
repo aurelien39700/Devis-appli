@@ -1394,8 +1394,16 @@ function preparerDevisApp(affaireId) {
     // Sauvegarder dans localStorage pour devis_app
     localStorage.setItem('devis_somepre', JSON.stringify(devisData));
 
+    // Construire l'URL complète pour devis_app
+    const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+    const devisUrl = baseUrl + 'devis_app.html';
+
     // Ouvrir devis_app dans un nouvel onglet
-    window.open('devis_app.html', '_blank');
+    const newWindow = window.open(devisUrl, '_blank');
+
+    if (!newWindow) {
+        alert('⚠️ Le popup a été bloqué par votre navigateur.\n\nVeuillez autoriser les popups pour ce site, puis réessayez.\n\nVous pouvez aussi ouvrir manuellement devis_app.html - les données ont été sauvegardées.');
+    }
 }
 
 async function toggleAffaireStatut(id, nouveauStatut) {
