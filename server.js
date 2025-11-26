@@ -114,17 +114,29 @@ async function gitCommitAndPush(message) {
             throw commitError; // Autre erreur = problème réel
         }
 
-        // Pull avant push pour éviter les conflits
-        console.log('📥 Git pull origin main...');
+        // Synchroniser avec GitHub (fetch + reset au lieu de pull pour éviter les conflits)
+        console.log('📥 Git fetch origin...');
         try {
-            const pullResult = await execPromise('git pull origin main --no-rebase --no-edit');
-            console.log('✅ Pull réussi:', pullResult.stdout.trim());
-        } catch (pullError) {
-            console.error('❌ Pull échoué:', pullError.message);
-            // Si déjà à jour, continuer
-            if (!pullError.message.includes('Already up to date')) {
-                throw pullError;
+            await execPromise('git fetch origin main');
+            console.log('✅ Fetch réussi');
+
+            // Reset des références locales si corrompues
+            console.log('🔄 Reset références locales...');
+            await execPromise('git update-ref refs/remotes/origin/main origin/main');
+
+            // Vérifier si on est en retard
+            const { stdout: behind } = await execPromise('git rev-list HEAD..origin/main --count');
+            if (parseInt(behind) > 0) {
+                console.log(`⚠️ Serveur en retard de ${behind} commit(s), merge avec GitHub...`);
+                // Merge au lieu de reset pour garder nos commits locaux
+                await execPromise('git merge origin/main --no-edit');
+                console.log('✅ Merge réussi');
+            } else {
+                console.log('✅ Déjà à jour avec GitHub');
             }
+        } catch (syncError) {
+            console.error('❌ Sync échoué:', syncError.message);
+            // Continuer quand même, on tentera le push
         }
 
         // Push vers GitHub
