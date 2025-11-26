@@ -80,15 +80,6 @@ async function gitCommitAndPush(message) {
             gitQueue.push({ message, resolve });
         });
     }
-async function gitCommitAndPush() {
-  try {
-     await execPromise('git add data.json');
-     await execPromise('git commit -m "Auto-save"');
-     await execPromise('git push origin main');
-  } catch (error) {
-     console.error(error);
-  }
-}
 
     gitLock = true;
     try {
@@ -136,32 +127,7 @@ async function gitCommitAndPush() {
             throw commitError; // Autre erreur = problème réel
         }
 
-        // Synchroniser avec GitHub (fetch + reset au lieu de pull pour éviter les conflits)
-        console.log('📥 Git fetch origin...');
-        try {
-            await execPromise('git fetch origin main');
-            console.log('✅ Fetch réussi');
-
-            // Reset des références locales si corrompues
-            console.log('🔄 Reset références locales...');
-            await execPromise('git update-ref refs/remotes/origin/main origin/main');
-
-            // Vérifier si on est en retard
-            const { stdout: behind } = await execPromise('git rev-list HEAD..origin/main --count');
-            if (parseInt(behind) > 0) {
-                console.log(`⚠️ Serveur en retard de ${behind} commit(s), merge avec GitHub...`);
-                // Merge au lieu de reset pour garder nos commits locaux
-                await execPromise('git merge origin/main --no-edit');
-                console.log('✅ Merge réussi');
-            } else {
-                console.log('✅ Déjà à jour avec GitHub');
-            }
-        } catch (syncError) {
-            console.error('❌ Sync échoué:', syncError.message);
-            // Continuer quand même, on tentera le push
-        }
-
-        // Push vers GitHub
+        // Push vers GitHub (avec gestion automatique des divergences)
         console.log('📤 Git push origin main...');
         try {
             const pushResult = await execPromise('git push origin main');
@@ -185,28 +151,43 @@ async function gitCommitAndPush() {
             console.error('❌ GIT PUSH A ÉCHOUÉ!');
             console.error('❌ Push error message:', pushError.message);
 
-            // Détecter si c'est un problème de non-fast-forward
-            const isNonFastForward = pushError.message.includes('non-fast-forward') ||
-                                     pushError.message.includes('rejected');
+            // Détecter si c'est un problème de divergence (serveur en retard)
+            const isDivergence = pushError.message.includes('non-fast-forward') ||
+                                 pushError.message.includes('rejected') ||
+                                 pushError.message.includes('behind');
 
-            if (isNonFastForward) {
-                console.error('⚠️ DIVERGENCE: Le serveur est en retard par rapport à GitHub');
-                console.error('🔄 Tentative de pull + rebase automatique...');
+            if (isDivergence) {
+                console.error('⚠️ DIVERGENCE: Le serveur a divergé de GitHub');
+                console.error('🔄 Stratégie: Pull avec rebase automatique...');
 
                 try {
-                    // Essayer de fetch et rebase
+                    // 1. Fetch les dernières modifications
+                    console.log('📥 Fetch origin/main...');
                     await execPromise('git fetch origin main');
+
+                    // 2. Rebase notre commit local sur origin/main
+                    console.log('🔄 Rebase sur origin/main...');
                     await execPromise('git rebase origin/main');
 
-                    // Retry le push
-                    console.log('🔄 Nouvelle tentative de push...');
-                    await execPromise('git push origin main');
+                    // 3. Retry le push
+                    console.log('📤 Nouvelle tentative de push...');
+                    const retryPush = await execPromise('git push origin main');
                     console.log('✅ Push réussi après rebase!');
-                    return { success: true, message: 'Sauvegardé sur GitHub (après rebase)' };
+
+                    return { success: true, message: 'Sauvegardé sur GitHub (resync auto)' };
                 } catch (rebaseError) {
-                    console.error('❌ Échec du rebase automatique:', rebaseError.message);
+                    console.error('❌ Rebase automatique échoué:', rebaseError.message);
+
+                    // Annuler le rebase si en cours
+                    try {
+                        await execPromise('git rebase --abort');
+                        console.log('🔄 Rebase annulé');
+                    } catch (e) {
+                        // Ignorer si pas de rebase en cours
+                    }
+
                     console.error('⚠️ Les données sont sauvegardées LOCALEMENT uniquement');
-                    return { success: false, message: 'Sauvegarde locale uniquement (divergence Git)' };
+                    return { success: false, message: 'Sauvegarde locale seulement (conflit Git)' };
                 }
             }
 
