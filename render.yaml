@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: somepre-suivi
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    # DÉSACTIVER les déploiements automatiques
+    autoDeploy: false
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
