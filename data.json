@@ -371,7 +371,8 @@
         },
         {
             "id": "1764061151273",
-            "name": "Tournage CN"
+            "name": "Tournage",
+            "isMachine": false
         },
         {
             "id": "1764076202419",
