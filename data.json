@@ -383,6 +383,11 @@
             "id": "1764157949893",
             "name": "\u00c9rosion FIL CN",
             "isMachine": true
+        },
+        {
+            "id": "1764159970592",
+            "name": "test",
+            "isMachine": false
         }
     ],
     "users": [
