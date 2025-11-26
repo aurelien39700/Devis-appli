@@ -1243,6 +1243,10 @@
                         <h3 style="margin-bottom: 15px; color: #2196F3;">🔧 Bibliothèque des Postes de Travail</h3>
                         <div class="add-item-form">
                             <input type="text" id="newPoste" placeholder="Nom du poste">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #555; margin-left: 10px;">
+                                <input type="checkbox" id="newPosteMachine" style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>⚙️ Temps machine</span>
+                            </label>
                             <button class="btn btn-primary" onclick="addPoste()">➕ Ajouter un poste</button>
                         </div>
                         <div id="postesList" class="items-list" style="margin-top: 15px;"></div>
@@ -1324,6 +1328,6 @@
     <div id="modalContainer"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js?v=20251126-7"></script>
+    <script src="app.js?v=20251126-9"></script>
 </body>
 </html>

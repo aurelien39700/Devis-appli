@@ -427,7 +427,8 @@ app.post('/api/postes', async (req, res) => {
         const data = await readData();
         const newPoste = {
             id: Date.now().toString(),
-            name: req.body.name
+            name: req.body.name,
+            isMachine: req.body.isMachine || false
         };
         data.postes.push(newPoste);
         await writeData(data);
@@ -456,6 +457,11 @@ app.put('/api/postes/:id', async (req, res) => {
         // Mettre à jour le taux si fourni
         if (req.body.taux !== undefined) {
             data.postes[posteIndex].taux = req.body.taux;
+        }
+
+        // Mettre à jour isMachine si fourni
+        if (req.body.isMachine !== undefined) {
+            data.postes[posteIndex].isMachine = req.body.isMachine;
         }
 
         await writeData(data);

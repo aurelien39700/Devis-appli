@@ -951,7 +951,6 @@ function renderQuickAccess(grouped) {
                                     border: 1px solid rgba(33, 150, 243, 0.3);
                                     border-radius: 12px;
                                     background: linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(21, 101, 192, 0.08) 100%);
-                                    color: #1565c0;
                                     cursor: pointer;
                                     transition: all 0.2s ease;
                                     font-size: 0.85rem;
@@ -967,7 +966,7 @@ function renderQuickAccess(grouped) {
                                 onmouseout="this.style.background='linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(21, 101, 192, 0.08) 100%)'; this.style.borderColor='rgba(33, 150, 243, 0.3)'; this.style.boxShadow='0 1px 3px rgba(33, 150, 243, 0.1)';"
                             >
                                 <div style="display: flex; align-items: center; gap: 6px; width: 100%;">
-                                    <span>📁 ${escapeHtml(affaire.name)}</span>
+                                    <span style="color: #1565c0;">📁 ${escapeHtml(affaire.name)}</span>
                                     <span style="background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%); padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: white; margin-left: auto; box-shadow: 0 1px 3px rgba(33, 150, 243, 0.3);">${totalHours.toFixed(1)}h</span>
                                 </div>
                                 ${affaire.description ? `<div style="font-size: 0.7rem; color: white; font-style: italic; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(21, 101, 192, 0.7); padding: 2px 6px; border-radius: 6px; margin-top: 2px;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
@@ -1686,7 +1685,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function addPoste() {
     const input = document.getElementById('newPoste');
+    const checkboxMachine = document.getElementById('newPosteMachine');
     const name = input.value.trim();
+    const isMachine = checkboxMachine.checked;
 
     if (!name) {
         alert('Veuillez entrer un nom de poste');
@@ -1697,11 +1698,12 @@ async function addPoste() {
         const response = await fetch(`${API_URL}/postes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name })
+            body: JSON.stringify({ name, isMachine })
         });
 
         if (response.ok) {
             input.value = '';
+            checkboxMachine.checked = false;
             // Recharger toutes les données depuis le serveur
             await loadPostes();
             renderPostes();
@@ -1749,11 +1751,16 @@ function renderPostes() {
             .filter(e => e.posteId === poste.id)
             .reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
 
+        const machineBadge = poste.isMachine
+            ? '<span style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-left: 8px;">⚙️ Machine</span>'
+            : '';
+
         return `
             <div class="admin-card">
                 <div class="item-header">
                     <div class="item-title">
                         <span>🔧 ${escapeHtml(poste.name)}</span>
+                        ${machineBadge}
                     </div>
                 </div>
                 <div class="item-info">
@@ -2019,6 +2026,19 @@ function openRenameModal(type, id, currentName) {
         'user': 'Utilisateur'
     };
 
+    // Pour les postes, récupérer l'information isMachine
+    let machineCheckbox = '';
+    if (type === 'poste') {
+        const poste = postes.find(p => p.id === id);
+        const isChecked = poste && poste.isMachine ? 'checked' : '';
+        machineCheckbox = `
+            <label style="display: flex; align-items: center; gap: 8px; margin-top: 15px; font-size: 0.9rem; color: #bbb;">
+                <input type="checkbox" id="modalMachineCheckbox" ${isChecked} style="width: 18px; height: 18px; cursor: pointer;">
+                <span>⚙️ Temps machine</span>
+            </label>
+        `;
+    }
+
     const modalHTML = `
         <div class="modal-overlay" onclick="closeConfirmModal(event)">
             <div class="modal-box" onclick="event.stopPropagation()">
@@ -2028,6 +2048,7 @@ function openRenameModal(type, id, currentName) {
                 <div class="modal-body">
                     <p>Nouveau nom pour <strong>${currentName}</strong> :</p>
                     <input type="text" class="modal-input" id="modalRenameInput" value="${currentName}" autofocus>
+                    ${machineCheckbox}
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-secondary" onclick="closeConfirmModal()">Annuler</button>
@@ -2096,10 +2117,19 @@ async function confirmRename(type, id) {
         const url = `${API_URL}${endpoints[type]}`;
         console.log('URL:', url);
 
+        // Préparer le body avec le nom et isMachine si c'est un poste
+        let bodyData = { name: newName };
+        if (type === 'poste') {
+            const machineCheckbox = document.getElementById('modalMachineCheckbox');
+            if (machineCheckbox) {
+                bodyData.isMachine = machineCheckbox.checked;
+            }
+        }
+
         const response = await fetch(url, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: newName })
+            body: JSON.stringify(bodyData)
         });
 
         console.log('Response status:', response.status);
