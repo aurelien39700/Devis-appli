@@ -970,7 +970,7 @@ function renderQuickAccess(grouped) {
                                     <span>📁 ${escapeHtml(affaire.name)}</span>
                                     <span style="background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%); padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: white; margin-left: auto; box-shadow: 0 1px 3px rgba(33, 150, 243, 0.3);">${totalHours.toFixed(1)}h</span>
                                 </div>
-                                ${affaire.description ? `<div style="font-size: 0.7rem; color: #1976d2; font-style: italic; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
+                                ${affaire.description ? `<div style="font-size: 0.7rem; color: white; font-style: italic; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(21, 101, 192, 0.7); padding: 2px 6px; border-radius: 6px; margin-top: 2px;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
                             </button>
                         `;
                     }).join('')}
