@@ -313,13 +313,6 @@
             "clientId": "1764014447938",
             "description": "Soudure + reprise erosion",
             "statut": "en_cours"
-        },
-        {
-            "id": "1764147549161",
-            "name": "Test",
-            "clientId": "1764014447938",
-            "description": "",
-            "statut": "en_cours"
         }
     ],
     "postes": [
