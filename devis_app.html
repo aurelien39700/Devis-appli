@@ -1696,9 +1696,206 @@
         }
 
         // Actions
-        function exporterPDF() {
-            alert('📄 Fonctionnalité d\'export PDF en cours de développement!\n\nVous pouvez utiliser Ctrl+P pour imprimer la page.');
-            window.print();
+        async function exporterPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Charger le logo
+                let logoData = null;
+                try {
+                    const response = await fetch('Somepre_Logo_Print_Black.png');
+                    const blob = await response.blob();
+                    logoData = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (error) {
+                    console.log('Logo non chargé:', error);
+                }
+
+                // En-tête avec logo
+                if (logoData) {
+                    doc.addImage(logoData, 'PNG', 15, 10, 40, 15);
+                }
+
+                doc.setFontSize(20);
+                doc.setTextColor(102, 126, 234);
+                doc.text('DEVIS', 105, 20, { align: 'center' });
+
+                // Informations devis
+                doc.setFontSize(11);
+                doc.setTextColor(0, 0, 0);
+                const client = document.getElementById('client').value || 'Non renseigné';
+                const numCommande = document.getElementById('numCommande').value || 'N/A';
+                const affaire = document.getElementById('affaire').value || 'Non renseigné';
+                const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+
+                doc.text(`Date: ${new Date(date).toLocaleDateString('fr-FR')}`, 15, 35);
+                doc.text(`Client: ${client}`, 15, 42);
+                doc.text(`N° Commande: ${numCommande}`, 15, 49);
+                doc.text(`Affaire: ${affaire}`, 15, 56);
+
+                // Ligne de séparation
+                doc.setDrawColor(200, 200, 200);
+                doc.line(15, 62, 195, 62);
+
+                let yPos = 70;
+
+                // MAIN D'ŒUVRE
+                doc.setFontSize(14);
+                doc.setTextColor(102, 126, 234);
+                doc.text('MAIN D\'ŒUVRE', 15, yPos);
+                yPos += 8;
+
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Poste', 15, yPos);
+                doc.text('Heures', 100, yPos, { align: 'center' });
+                doc.text('Taux', 135, yPos, { align: 'center' });
+                doc.text('Montant', 195, yPos, { align: 'right' });
+                yPos += 5;
+
+                doc.setTextColor(0, 0, 0);
+                let totalTravail = 0;
+                data.travail.forEach(poste => {
+                    const totalH = poste.semaines.reduce((a, b) => a + b, 0);
+                    if (totalH > 0) {
+                        const montant = totalH * poste.taux;
+                        totalTravail += montant;
+                        doc.text(poste.nom, 15, yPos);
+                        doc.text(totalH.toFixed(1) + ' h', 100, yPos, { align: 'center' });
+                        doc.text(poste.taux + ' €/h', 135, yPos, { align: 'center' });
+                        doc.text(montant.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                        yPos += 6;
+                    }
+                });
+
+                doc.setFontSize(11);
+                doc.setTextColor(102, 126, 234);
+                doc.text('Total Main d\'œuvre:', 150, yPos, { align: 'right' });
+                doc.text(totalTravail.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 10;
+
+                // MACHINES
+                doc.setFontSize(14);
+                doc.text('MACHINES', 15, yPos);
+                yPos += 8;
+
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Machine', 15, yPos);
+                doc.text('Temps', 100, yPos, { align: 'center' });
+                doc.text('Taux', 135, yPos, { align: 'center' });
+                doc.text('Montant', 195, yPos, { align: 'right' });
+                yPos += 5;
+
+                doc.setTextColor(0, 0, 0);
+                let totalMachine = 0;
+                data.machine.forEach(machine => {
+                    if (machine.temps > 0) {
+                        const montant = machine.temps * machine.taux;
+                        totalMachine += montant;
+                        doc.text(machine.nom, 15, yPos);
+                        doc.text(machine.temps.toFixed(1) + ' h', 100, yPos, { align: 'center' });
+                        doc.text(machine.taux + ' €/h', 135, yPos, { align: 'center' });
+                        doc.text(montant.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                        yPos += 6;
+                    }
+                });
+
+                doc.setFontSize(11);
+                doc.setTextColor(102, 126, 234);
+                doc.text('Total Machines:', 150, yPos, { align: 'right' });
+                doc.text(totalMachine.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 10;
+
+                // ACHATS
+                if (yPos > 240) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+
+                doc.setFontSize(14);
+                doc.text('ACHATS / FOURNITURES', 15, yPos);
+                yPos += 8;
+
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Article', 15, yPos);
+                doc.text('Fournisseur', 80, yPos);
+                doc.text('Qté', 130, yPos, { align: 'center' });
+                doc.text('P.U.', 155, yPos, { align: 'center' });
+                doc.text('Montant', 195, yPos, { align: 'right' });
+                yPos += 5;
+
+                doc.setTextColor(0, 0, 0);
+                let totalAchats = 0;
+                data.achats.forEach(achat => {
+                    const montant = achat.quantite * achat.prixUnit;
+                    if (montant > 0) {
+                        totalAchats += montant;
+                        doc.text(achat.nom, 15, yPos);
+                        doc.text(achat.fournisseur || '-', 80, yPos);
+                        doc.text(achat.quantite.toString(), 130, yPos, { align: 'center' });
+                        doc.text(achat.prixUnit.toFixed(2) + ' €', 155, yPos, { align: 'center' });
+                        doc.text(montant.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                        yPos += 6;
+                    }
+                });
+
+                doc.setFontSize(11);
+                doc.setTextColor(102, 126, 234);
+                doc.text('Total Achats:', 150, yPos, { align: 'right' });
+                doc.text(totalAchats.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 15;
+
+                // RÉCAPITULATIF
+                doc.setDrawColor(102, 126, 234);
+                doc.setLineWidth(0.5);
+                doc.line(15, yPos, 195, yPos);
+                yPos += 8;
+
+                const coutTotal = totalTravail + totalMachine + totalAchats;
+                const coeffMarge = parseFloat(document.getElementById('coeffMarge').value) || 1.3;
+                const prixVente = coutTotal * coeffMarge;
+                const margeEuro = prixVente - coutTotal;
+                const margePourcent = coutTotal > 0 ? (margeEuro / coutTotal) * 100 : 0;
+
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('Coût Total:', 140, yPos, { align: 'right' });
+                doc.text(coutTotal.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 8;
+
+                doc.text('Coefficient:', 140, yPos, { align: 'right' });
+                doc.text(coeffMarge.toFixed(2), 195, yPos, { align: 'right' });
+                yPos += 10;
+
+                doc.setFontSize(14);
+                doc.setTextColor(102, 126, 234);
+                doc.text('Prix de Vente HT:', 140, yPos, { align: 'right' });
+                doc.text(prixVente.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 8;
+
+                doc.setFontSize(11);
+                doc.setTextColor(76, 175, 80);
+                doc.text(`Marge: ${margeEuro.toFixed(2)} € (${margePourcent.toFixed(1)}%)`, 195, yPos, { align: 'right' });
+
+                // Pied de page
+                doc.setFontSize(9);
+                doc.setTextColor(150, 150, 150);
+                doc.text('SOMEPRE - Document généré automatiquement', 105, 285, { align: 'center' });
+
+                // Sauvegarder avec choix de l'emplacement
+                const fileName = `Devis_${client.replace(/[^a-z0-9]/gi, '_')}_${date}.pdf`;
+                doc.save(fileName);
+
+            } catch (error) {
+                console.error('Erreur génération PDF:', error);
+                alert('❌ Erreur lors de la génération du PDF. Vérifiez la console pour plus de détails.');
+            }
         }
 
         function sauvegarder() {
@@ -1751,5 +1948,6 @@
             ajouterEvenementsSauvegarde();
         };
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
