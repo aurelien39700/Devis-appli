@@ -811,7 +811,8 @@ function renderEntries() {
         }
 
         // Les utilisateurs non-admin ne voient que leurs propres entrées
-        if (!isAdmin() && entry.enteredBy !== currentUser.name) {
+        // Accepter aussi les entrées sans enteredBy (anciennes données) pour rétrocompatibilité
+        if (!isAdmin() && entry.enteredBy && entry.enteredBy !== currentUser.name) {
             return;
         }
 
