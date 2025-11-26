@@ -381,7 +381,8 @@
         },
         {
             "id": "1764076202419",
-            "name": "\u00c9rosion CN"
+            "name": "\u00c9rosion CN",
+            "isMachine": true
         }
     ],
     "users": [
