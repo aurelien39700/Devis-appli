@@ -238,7 +238,7 @@
             "name": "RENAULT",
             "clientId": "1764014447938",
             "description": "Plaque centreur conique",
-            "statut": "archivee"
+            "statut": "terminee"
         },
         {
             "id": "1764061252565",
@@ -301,7 +301,7 @@
             "name": "Pliloire 24",
             "clientId": "1764017522395",
             "description": "Soudure au fond des rainure",
-            "statut": "archivee"
+            "statut": "terminee"
         },
         {
             "id": "1764146950018",
@@ -376,6 +376,11 @@
         {
             "id": "1764076202419",
             "name": "\u00c9rosion CN",
+            "isMachine": true
+        },
+        {
+            "id": "1764157949893",
+            "name": "\u00c9rosion FIL CN",
             "isMachine": true
         }
     ],
