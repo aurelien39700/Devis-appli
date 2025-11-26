@@ -129,7 +129,21 @@ async function initDataFile() {
     } catch (error) {
         console.log('❌ Fichier data.json manquant ou corrompu');
 
-        // Essayer de restaurer depuis le backup
+        // PRIORITÉ 1: Essayer de récupérer depuis GitHub
+        console.log('📥 Tentative de récupération depuis GitHub...');
+        const pullResult = await gitPull();
+        if (pullResult.success) {
+            // Vérifier si le fichier existe maintenant
+            try {
+                await fs.access(DATA_FILE);
+                console.log('✅ Données récupérées depuis GitHub !');
+                return;
+            } catch {
+                console.log('⚠️ Git pull réussi mais data.json toujours manquant');
+            }
+        }
+
+        // PRIORITÉ 2: Essayer de restaurer depuis le backup
         try {
             await fs.access(BACKUP_FILE);
             console.log('🔄 Restauration depuis data.backup.json');
