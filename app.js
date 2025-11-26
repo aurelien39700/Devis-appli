@@ -563,27 +563,54 @@ function syncPostesVersDevisApp() {
         const devisData = localStorage.getItem('devis_somepre');
         let devisObj = devisData ? JSON.parse(devisData) : null;
 
-        if (devisObj && devisObj.data && devisObj.data.travail) {
-            // Créer un map des postes existants dans devis pour conserver les heures
-            const postesMap = {};
-            devisObj.data.travail.forEach(p => {
-                postesMap[p.nom] = p;
+        if (devisObj && devisObj.data) {
+            // Créer des maps pour conserver les heures/temps existants
+            const travailMap = {};
+            const machineMap = {};
+
+            if (devisObj.data.travail) {
+                devisObj.data.travail.forEach(p => {
+                    travailMap[p.nom] = p;
+                });
+            }
+
+            if (devisObj.data.machine) {
+                devisObj.data.machine.forEach(m => {
+                    machineMap[m.nom] = m;
+                });
+            }
+
+            // Séparer les postes en deux catégories
+            const postesTravail = [];
+            const postesMachine = [];
+
+            postes.forEach(poste => {
+                if (poste.isMachine) {
+                    // Poste machine : va dans la catégorie machine
+                    const existant = machineMap[poste.name];
+                    postesMachine.push({
+                        nom: poste.name,
+                        taux: poste.taux || 75,
+                        temps: existant ? existant.temps : 0
+                    });
+                } else {
+                    // Poste normal : va dans la catégorie travail
+                    const existant = travailMap[poste.name];
+                    postesTravail.push({
+                        nom: poste.name,
+                        taux: poste.taux || 75,
+                        semaines: existant ? existant.semaines : [0, 0, 0, 0, 0, 0, 0, 0]
+                    });
+                }
             });
 
-            // Mettre à jour la liste des postes avec les données de l'application
-            devisObj.data.travail = postes.map(poste => {
-                const existant = postesMap[poste.name];
-                return {
-                    nom: poste.name,
-                    taux: poste.taux || 75,
-                    // Conserver les heures si le poste existait déjà
-                    semaines: existant ? existant.semaines : [0, 0, 0, 0, 0, 0, 0, 0]
-                };
-            });
+            // Mettre à jour les catégories
+            devisObj.data.travail = postesTravail;
+            devisObj.data.machine = postesMachine;
 
             // Sauvegarder les modifications
             localStorage.setItem('devis_somepre', JSON.stringify(devisObj));
-            console.log('✅ Postes synchronisés vers devis_app');
+            console.log('✅ Postes synchronisés vers devis_app (Travail + Machine)');
         }
 
         // Aussi sauvegarder une copie des postes pour usage futur
@@ -1189,7 +1216,10 @@ function updateSelects() {
         clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
 
     posteSelect.innerHTML = '<option value="">Sélectionner un poste</option>' +
-        postes.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+        postes.map(p => {
+            const machineLabel = p.isMachine ? ' ⚙️ Machine' : '';
+            return `<option value="${p.id}">${escapeHtml(p.name)}${machineLabel}</option>`;
+        }).join('');
 
     newAffaireClientSelect.innerHTML = '<option value="">Sélectionner un client</option>' +
         clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
