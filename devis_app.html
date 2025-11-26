@@ -1128,12 +1128,17 @@
                 tr.innerHTML = `
                     <td class="poste-name">${poste.nom}</td>
                     ${poste.semaines.map((s, i) => `
-                        <td><input type="number" value="${s}" min="0" step="0.5" 
+                        <td><input type="number" value="${s}" min="0" step="0.5"
                             onfocus="this.select()"
                             onchange="updateSemaine(${idx}, ${i}, this.value)"></td>
                     `).join('')}
                     <td style="text-align: center; font-weight: 600;">${totalH.toFixed(2)}</td>
-                    <td class="taux-cell" style="text-align: center;">${poste.taux}</td>
+                    <td class="taux-cell" style="text-align: center;">
+                        <input type="number" value="${poste.taux}" min="0" step="1"
+                            style="width: 70px; text-align: center;"
+                            onfocus="this.select()"
+                            onchange="updateTauxTravail(${idx}, this.value)">
+                    </td>
                     <td class="montant-cell" style="text-align: right;">${montant.toFixed(2)} €</td>
                 `;
                 tbody.appendChild(tr);
@@ -1158,6 +1163,13 @@
             sauvegarderAuto();
         }
 
+        function updateTauxTravail(posteIdx, value) {
+            data.travail[posteIdx].taux = parseFloat(value) || 0;
+            renderTravail();
+            calculer();
+            sauvegarderAuto();
+        }
+
         // Render Machine
         function renderMachine() {
             const tbody = document.getElementById('bodyMachine');
@@ -1175,10 +1187,15 @@
 
                 tr.innerHTML = `
                     <td class="poste-name">${machine.nom}</td>
-                    <td><input type="number" value="${machine.temps}" min="0" step="0.5" 
+                    <td><input type="number" value="${machine.temps}" min="0" step="0.5"
                         onfocus="this.select()"
                         onchange="updateMachine(${idx}, this.value)"></td>
-                    <td class="taux-cell" style="text-align: center;">${machine.taux}</td>
+                    <td class="taux-cell" style="text-align: center;">
+                        <input type="number" value="${machine.taux}" min="0" step="1"
+                            style="width: 70px; text-align: center;"
+                            onfocus="this.select()"
+                            onchange="updateTauxMachine(${idx}, this.value)">
+                    </td>
                     <td class="montant-cell" style="text-align: right;">${montant.toFixed(2)} €</td>
                 `;
                 tbody.appendChild(tr);
@@ -1198,6 +1215,13 @@
 
         function updateMachine(idx, value) {
             data.machine[idx].temps = parseFloat(value) || 0;
+            renderMachine();
+            calculer();
+            sauvegarderAuto();
+        }
+
+        function updateTauxMachine(idx, value) {
+            data.machine[idx].taux = parseFloat(value) || 0;
             renderMachine();
             calculer();
             sauvegarderAuto();
