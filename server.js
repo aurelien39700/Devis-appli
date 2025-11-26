@@ -92,6 +92,14 @@ async function gitCommitAndPush(message) {
 
         await execPromise(`git commit -m "${commitMessage}" || echo "Rien à commiter"`);
 
+        // Pull avant push pour éviter les conflits
+        console.log('📥 Git pull (sync)...');
+        try {
+            await execPromise('git pull origin main --no-rebase');
+        } catch (pullError) {
+            console.warn('⚠️ Pull warning (peut être ignoré):', pullError.message);
+        }
+
         // Push vers GitHub
         console.log('📤 Git push...');
         const { stdout, stderr } = await execPromise('git push origin main');
