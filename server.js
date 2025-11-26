@@ -94,26 +94,47 @@ async function gitCommitAndPush(message) {
         }
 
         // Ajouter data.json uniquement
+        console.log('📝 Git add data.json...');
         await execPromise('git add data.json');
 
         // Créer le commit avec un message descriptif
         const timestamp = new Date().toISOString();
         const commitMessage = `Auto-save: ${message} (${timestamp})`;
 
-        await execPromise(`git commit -m "${commitMessage}" || echo "Rien à commiter"`);
+        console.log('💾 Git commit...');
+        try {
+            const commitResult = await execPromise(`git commit -m "${commitMessage}"`);
+            console.log('✅ Commit créé:', commitResult.stdout.trim());
+        } catch (commitError) {
+            // Si "nothing to commit", ce n'est pas grave
+            if (commitError.message.includes('nothing to commit')) {
+                console.log('ℹ️  Aucun changement à commiter');
+                return { success: true, message: 'Aucun changement' };
+            }
+            throw commitError; // Autre erreur = problème réel
+        }
 
         // Pull avant push pour éviter les conflits
-        console.log('📥 Git pull (sync)...');
+        console.log('📥 Git pull origin main...');
         try {
-            await execPromise('git pull origin main --no-rebase --no-edit');
+            const pullResult = await execPromise('git pull origin main --no-rebase --no-edit');
+            console.log('✅ Pull réussi:', pullResult.stdout.trim());
         } catch (pullError) {
-            console.warn('⚠️ Pull warning (peut être ignoré):', pullError.message);
+            console.error('❌ Pull échoué:', pullError.message);
+            // Si déjà à jour, continuer
+            if (!pullError.message.includes('Already up to date')) {
+                throw pullError;
+            }
         }
 
         // Push vers GitHub
-        console.log('📤 Git push...');
-        const { stdout, stderr } = await execPromise('git push origin main');
-        console.log('✅ Données sauvegardées sur GitHub:', stdout);
+        console.log('📤 Git push origin main...');
+        const pushResult = await execPromise('git push origin main');
+        console.log('✅ Push réussi:', pushResult.stdout.trim() || 'OK');
+
+        if (pushResult.stderr && !pushResult.stderr.includes('up-to-date')) {
+            console.warn('⚠️ Push stderr:', pushResult.stderr);
+        }
 
         return { success: true, message: 'Sauvegardé sur GitHub' };
     } catch (error) {
@@ -245,11 +266,91 @@ async function writeData(data) {
     await fs.writeFile(DATA_FILE, JSON.stringify(validData, null, 2));
 
     // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    console.log('🔄 Tentative de commit et push vers GitHub...');
     try {
-        await gitCommitAndPush('Données mises à jour');
-        console.log('✅ Données sauvegardées et commit\u00e9es sur GitHub');
+        const result = await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.warn('⚠️ Git push échoué, mais données sauvegardées localement');
+        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Stack:', err.stack);
+        console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
+        // Les données sont quand même sauvegardées dans data.json
+    }
+    // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    console.log('🔄 Tentative de commit et push vers GitHub...');
+    try {
+        const result = await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
+    } catch (err) {
+        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Stack:', err.stack);
+        console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
+        // Les données sont quand même sauvegardées dans data.json
+    }
+    // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    console.log('🔄 Tentative de commit et push vers GitHub...');
+    try {
+        const result = await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
+    } catch (err) {
+        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Stack:', err.stack);
+        console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
+        // Les données sont quand même sauvegardées dans data.json
+    }
+    // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    console.log('🔄 Tentative de commit et push vers GitHub...');
+    try {
+        const result = await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
+    } catch (err) {
+        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Stack:', err.stack);
+        console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
+        // Les données sont quand même sauvegardées dans data.json
+    }
+    // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    console.log('🔄 Tentative de commit et push vers GitHub...');
+    try {
+        const result = await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
+    } catch (err) {
+        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Stack:', err.stack);
+        console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
+        // Les données sont quand même sauvegardées dans data.json
+    }
+    // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    console.log('🔄 Tentative de commit et push vers GitHub...');
+    try {
+        const result = await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
+    } catch (err) {
+        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Stack:', err.stack);
+        console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
+        // Les données sont quand même sauvegardées dans data.json
+    }
+    // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    console.log('🔄 Tentative de commit et push vers GitHub...');
+    try {
+        const result = await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
+    } catch (err) {
+        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Stack:', err.stack);
+        console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
+        // Les données sont quand même sauvegardées dans data.json
+    }
+    // Commit et push automatiquement sur Git (BLOQUANT pour garantir la sauvegarde)
+    console.log('🔄 Tentative de commit et push vers GitHub...');
+    try {
+        const result = await gitCommitAndPush('Données mises à jour');
+        console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
+    } catch (err) {
+        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Stack:', err.stack);
+        console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
     }
 }
@@ -683,4 +784,33 @@ async function startServer() {
 startServer().catch(err => {
     console.error('❌ Erreur au démarrage:', err);
     process.exit(1);
+});
+
+// Route de redéploiement manuel (pull + restart)
+app.post('/api/force-update', async (req, res) => {
+    try {
+        console.log('🔄 Force update demandé...');
+        
+        // Pull depuis GitHub
+        const pullResult = await gitPull();
+        
+        res.json({
+            success: true,
+            message: 'Mise à jour effectuée. Redémarrage du serveur dans 3 secondes...',
+            pullResult: pullResult
+        });
+        
+        // Redémarrer après avoir envoyé la réponse
+        setTimeout(() => {
+            console.log('🔄 Redémarrage du serveur...');
+            process.exit(0); // Render va automatiquement redémarrer
+        }, 3000);
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la mise à jour',
+            error: error.message
+        });
+    }
 });
