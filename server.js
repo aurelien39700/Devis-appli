@@ -283,7 +283,7 @@ async function writeData(data) {
         const result = await gitCommitAndPush('Données mises à jour');
         console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Git push ÉCHOUÉ:', err.message);
         console.error('❌ Stack:', err.stack);
         console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
@@ -294,7 +294,7 @@ async function writeData(data) {
         const result = await gitCommitAndPush('Données mises à jour');
         console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Git push ÉCHOUÉ:', err.message);
         console.error('❌ Stack:', err.stack);
         console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
@@ -305,7 +305,7 @@ async function writeData(data) {
         const result = await gitCommitAndPush('Données mises à jour');
         console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Git push ÉCHOUÉ:', err.message);
         console.error('❌ Stack:', err.stack);
         console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
@@ -316,7 +316,7 @@ async function writeData(data) {
         const result = await gitCommitAndPush('Données mises à jour');
         console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Git push ÉCHOUÉ:', err.message);
         console.error('❌ Stack:', err.stack);
         console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
@@ -327,7 +327,7 @@ async function writeData(data) {
         const result = await gitCommitAndPush('Données mises à jour');
         console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Git push ÉCHOUÉ:', err.message);
         console.error('❌ Stack:', err.stack);
         console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
@@ -338,7 +338,7 @@ async function writeData(data) {
         const result = await gitCommitAndPush('Données mises à jour');
         console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Git push ÉCHOUÉ:', err.message);
         console.error('❌ Stack:', err.stack);
         console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
@@ -349,7 +349,7 @@ async function writeData(data) {
         const result = await gitCommitAndPush('Données mises à jour');
         console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Git push ÉCHOUÉ:', err.message);
         console.error('❌ Stack:', err.stack);
         console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
@@ -360,7 +360,7 @@ async function writeData(data) {
         const result = await gitCommitAndPush('Données mises à jour');
         console.log('✅ Données sauvegardées et committées sur GitHub:', result.message);
     } catch (err) {
-        console.error('❌ Git push ÉCHOUÉ:' err.message);
+        console.error('❌ Git push ÉCHOUÉ:', err.message);
         console.error('❌ Stack:', err.stack);
         console.warn('⚠️  Données sauvegardées LOCALEMENT uniquement (risque de perte)');
         // Les données sont quand même sauvegardées dans data.json
