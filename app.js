@@ -932,9 +932,9 @@ function renderQuickAccess(grouped) {
 
         return `
             <div style="margin-bottom: 16px; border-left: 4px solid #2196F3; padding-left: 12px;">
-                <div style="font-weight: 700; color: #0d47a1; margin-bottom: 8px; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                <div style="font-weight: 700; color: #1a1a1a; margin-bottom: 8px; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
                     <span>👥 ${escapeHtml(clientName)}</span>
-                    <span style="background: rgba(33, 150, 243, 0.2); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: #0d47a1;">${totalHeuresClient.toFixed(1)}h</span>
+                    <span style="background: rgba(33, 150, 243, 0.2); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: #1a1a1a;">${totalHeuresClient.toFixed(1)}h</span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 6px; margin-left: 8px;">
                     ${groupe.affaires.map(item => {
