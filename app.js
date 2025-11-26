@@ -783,6 +783,11 @@ function renderEntries() {
             return;
         }
 
+        // Les utilisateurs non-admin ne voient que leurs propres entrées
+        if (!isAdmin() && entry.enteredBy !== currentUser.name) {
+            return;
+        }
+
         totalHours += parseFloat(entry.hours) || 0;
         const key = entry.affaireId;
 
