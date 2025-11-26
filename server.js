@@ -770,6 +770,26 @@ function autoPullFromGit() {
 
 // Démarrer le serveur
 async function startServer() {
+    // 0. Sur Render, se placer sur la branche main (fix detached HEAD)
+    const IS_RENDER = process.env.RENDER === 'true' || !!process.env.RENDER_SERVICE_NAME;
+    if (IS_RENDER) {
+        try {
+            console.log('🔧 Vérification de la branche Git...');
+            const { stdout: currentBranch } = await execPromise('git branch --show-current');
+
+            if (!currentBranch.trim()) {
+                console.log('⚠️ Detached HEAD détecté, passage sur main...');
+                await execPromise('git checkout -B main');
+                await execPromise('git branch --set-upstream-to=origin/main main');
+                console.log('✅ Maintenant sur la branche main');
+            } else {
+                console.log(`✅ Déjà sur la branche: ${currentBranch.trim()}`);
+            }
+        } catch (error) {
+            console.warn('⚠️ Impossible de changer de branche:', error.message);
+        }
+    }
+
     // 1. Initialiser le fichier de données (sans pull - le serveur est la source de vérité)
     console.log('📂 Initialisation des données...');
     await initDataFile();
