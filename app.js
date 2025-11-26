@@ -931,10 +931,10 @@ function renderQuickAccess(grouped) {
         const totalHeuresClient = groupe.affaires.reduce((sum, item) => sum + item.totalHours, 0);
 
         return `
-            <div style="margin-bottom: 16px; border-left: 4px solid #667eea; padding-left: 12px;">
+            <div style="margin-bottom: 16px; border-left: 4px solid #1e88e5; padding-left: 12px;">
                 <div style="font-weight: 800; margin-bottom: 8px; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.05rem;">👥 ${escapeHtml(clientName)}</span>
-                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3px 12px; border-radius: 14px; font-size: 0.75rem; font-weight: 700; color: white; box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);">${totalHeuresClient.toFixed(1)}h</span>
+                    <span style="background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.05rem;">👥 ${escapeHtml(clientName)}</span>
+                    <span style="background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%); padding: 3px 12px; border-radius: 14px; font-size: 0.75rem; font-weight: 700; color: white; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);">${totalHeuresClient.toFixed(1)}h</span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 6px; margin-left: 8px;">
                     ${groupe.affaires.map(item => {
@@ -948,28 +948,29 @@ function renderQuickAccess(grouped) {
                                 title="${escapeHtml(tooltipText)}"
                                 style="
                                     padding: 8px 12px;
-                                    border: 1px solid rgba(33, 150, 243, 0.2);
+                                    border: 1px solid rgba(33, 150, 243, 0.3);
                                     border-radius: 12px;
-                                    background: rgba(33, 150, 243, 0.05);
-                                    color: #2196F3;
+                                    background: linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(21, 101, 192, 0.08) 100%);
+                                    color: #1565c0;
                                     cursor: pointer;
                                     transition: all 0.2s ease;
                                     font-size: 0.85rem;
-                                    font-weight: 500;
+                                    font-weight: 600;
                                     display: flex;
                                     flex-direction: column;
                                     align-items: flex-start;
                                     gap: 3px;
                                     text-align: left;
+                                    box-shadow: 0 1px 3px rgba(33, 150, 243, 0.1);
                                 "
-                                onmouseover="this.style.background='rgba(33, 150, 243, 0.15)'; this.style.borderColor='#2196F3';"
-                                onmouseout="this.style.background='rgba(33, 150, 243, 0.05)'; this.style.borderColor='rgba(33, 150, 243, 0.2)';"
+                                onmouseover="this.style.background='linear-gradient(135deg, rgba(33, 150, 243, 0.18) 0%, rgba(21, 101, 192, 0.18) 100%)'; this.style.borderColor='#2196F3'; this.style.boxShadow='0 2px 6px rgba(33, 150, 243, 0.2)';"
+                                onmouseout="this.style.background='linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(21, 101, 192, 0.08) 100%)'; this.style.borderColor='rgba(33, 150, 243, 0.3)'; this.style.boxShadow='0 1px 3px rgba(33, 150, 243, 0.1)';"
                             >
                                 <div style="display: flex; align-items: center; gap: 6px; width: 100%;">
                                     <span>📁 ${escapeHtml(affaire.name)}</span>
-                                    <span style="background: rgba(33, 150, 243, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: auto;">${totalHours.toFixed(1)}h</span>
+                                    <span style="background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%); padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: white; margin-left: auto; box-shadow: 0 1px 3px rgba(33, 150, 243, 0.3);">${totalHours.toFixed(1)}h</span>
                                 </div>
-                                ${affaire.description ? `<div style="font-size: 0.7rem; color: rgba(33, 150, 243, 0.6); font-style: italic; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
+                                ${affaire.description ? `<div style="font-size: 0.7rem; color: #1976d2; font-style: italic; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
                             </button>
                         `;
                     }).join('')}
