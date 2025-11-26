@@ -332,6 +332,13 @@
       "clientId": "1764014447938",
       "description": "Guidage main de robot",
       "statut": "en_cours"
+    },
+    {
+      "id": "1764198834589",
+      "name": "Test",
+      "clientId": "1764055731886",
+      "description": "",
+      "statut": "en_cours"
     }
   ],
   "postes": [
