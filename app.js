@@ -906,59 +906,79 @@ function renderQuickAccess(grouped) {
         };
     });
 
-    // Trier par nom de client, puis par nom d'affaire
-    affairesToDisplay.sort((a, b) => {
-        const clientNameA = a.client ? a.client.name : '';
-        const clientNameB = b.client ? b.client.name : '';
-
-        // D'abord par client
-        const clientCompare = clientNameA.localeCompare(clientNameB);
-        if (clientCompare !== 0) {
-            return clientCompare;
+    // Grouper par client
+    const affairesParClient = {};
+    affairesToDisplay.forEach(item => {
+        const clientName = item.client ? item.client.name : 'Client inconnu';
+        if (!affairesParClient[clientName]) {
+            affairesParClient[clientName] = {
+                client: item.client,
+                affaires: []
+            };
         }
-
-        // Puis par nom d'affaire
-        return (a.affaire.name || '').localeCompare(b.affaire.name || '');
+        affairesParClient[clientName].affaires.push(item);
     });
 
-    container.innerHTML = affairesToDisplay.map(item => {
-        const { affaire, client, totalHours } = item;
+    // Trier les clients par ordre alphabétique
+    const clientsTriees = Object.keys(affairesParClient).sort((a, b) => a.localeCompare(b));
 
-        // Préparer la description pour l'infobulle (title)
-        const description = affaire.description ? affaire.description : 'Pas de description';
-        const tooltipText = `${client ? client.name : 'Client inconnu'} - ${affaire.name}\n${description}\n${totalHours.toFixed(1)}h enregistrées`;
+    // Générer le HTML groupé par client
+    container.innerHTML = clientsTriees.map(clientName => {
+        const groupe = affairesParClient[clientName];
+
+        // Trier les affaires du client par nom
+        groupe.affaires.sort((a, b) =>
+            (a.affaire.name || '').localeCompare(b.affaire.name || '')
+        );
+
+        // Calculer le total d'heures pour ce client
+        const totalHeuresClient = groupe.affaires.reduce((sum, item) => sum + item.totalHours, 0);
 
         return `
-            <button
-                onclick="quickSelectAffaire('${affaire.clientId}', '${affaire.id}')"
-                title="${escapeHtml(tooltipText)}"
-                style="
-                    padding: 10px 16px;
-                    border: 2px solid rgba(33, 150, 243, 0.3);
-                    border-radius: 20px;
-                    background: rgba(33, 150, 243, 0.1);
-                    color: #2196F3;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    font-size: 0.9rem;
-                    font-weight: 500;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-start;
-                    gap: 4px;
-                    text-align: left;
-                "
-                onmouseover="this.style.background='rgba(33, 150, 243, 0.2)'; this.style.borderColor='#2196F3';"
-                onmouseout="this.style.background='rgba(33, 150, 243, 0.1)'; this.style.borderColor='rgba(33, 150, 243, 0.3)';"
-            >
-                <div style="display: flex; align-items: center; gap: 6px; width: 100%;">
-                    <span>👥 ${escapeHtml(client ? client.name : 'Client inconnu')}</span>
-                    <span style="opacity: 0.7;">•</span>
-                    <span>📁 ${escapeHtml(affaire.name)}</span>
-                    <span style="background: rgba(33, 150, 243, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-left: auto;">${totalHours.toFixed(1)}h</span>
+            <div style="margin-bottom: 16px; border-left: 4px solid #2196F3; padding-left: 12px;">
+                <div style="font-weight: 700; color: #2196F3; margin-bottom: 8px; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                    <span>👥 ${escapeHtml(clientName)}</span>
+                    <span style="background: rgba(33, 150, 243, 0.2); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">${totalHeuresClient.toFixed(1)}h</span>
                 </div>
-                ${affaire.description ? `<div style="font-size: 0.75rem; color: rgba(33, 150, 243, 0.7); font-style: italic; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
-            </button>
+                <div style="display: flex; flex-direction: column; gap: 6px; margin-left: 8px;">
+                    ${groupe.affaires.map(item => {
+                        const { affaire, totalHours } = item;
+                        const description = affaire.description ? affaire.description : 'Pas de description';
+                        const tooltipText = `${affaire.name}\n${description}\n${totalHours.toFixed(1)}h enregistrées`;
+
+                        return `
+                            <button
+                                onclick="quickSelectAffaire('${affaire.clientId}', '${affaire.id}')"
+                                title="${escapeHtml(tooltipText)}"
+                                style="
+                                    padding: 8px 12px;
+                                    border: 1px solid rgba(33, 150, 243, 0.2);
+                                    border-radius: 12px;
+                                    background: rgba(33, 150, 243, 0.05);
+                                    color: #2196F3;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                    font-size: 0.85rem;
+                                    font-weight: 500;
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: flex-start;
+                                    gap: 3px;
+                                    text-align: left;
+                                "
+                                onmouseover="this.style.background='rgba(33, 150, 243, 0.15)'; this.style.borderColor='#2196F3';"
+                                onmouseout="this.style.background='rgba(33, 150, 243, 0.05)'; this.style.borderColor='rgba(33, 150, 243, 0.2)';"
+                            >
+                                <div style="display: flex; align-items: center; gap: 6px; width: 100%;">
+                                    <span>📁 ${escapeHtml(affaire.name)}</span>
+                                    <span style="background: rgba(33, 150, 243, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: auto;">${totalHours.toFixed(1)}h</span>
+                                </div>
+                                ${affaire.description ? `<div style="font-size: 0.7rem; color: rgba(33, 150, 243, 0.6); font-style: italic; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💬 ${escapeHtml(affaire.description)}</div>` : ''}
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
         `;
     }).join('');
 }
