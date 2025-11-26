@@ -80,6 +80,15 @@ async function gitCommitAndPush(message) {
             gitQueue.push({ message, resolve });
         });
     }
+async function gitCommitAndPush() {
+  try {
+     await execPromise('git add data.json');
+     await execPromise('git commit -m "Auto-save"');
+     await execPromise('git push origin main');
+  } catch (error) {
+     console.error(error);
+  }
+}
 
     gitLock = true;
     try {
