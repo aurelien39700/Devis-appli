@@ -1168,6 +1168,45 @@
             renderTravail();
             calculer();
             sauvegarderAuto();
+            syncTauxVersAppPrincipale();
+        }
+
+        // Synchroniser les taux modifiés vers l'application principale
+        async function syncTauxVersAppPrincipale() {
+            try {
+                const postesApp = localStorage.getItem('devis_postes_bibliothèque');
+                if (postesApp) {
+                    const postes = JSON.parse(postesApp);
+
+                    // Mettre à jour les taux des postes qui existent
+                    data.travail.forEach(posteTravail => {
+                        const posteApp = postes.find(p => p.name === posteTravail.nom);
+                        if (posteApp) {
+                            posteApp.taux = posteTravail.taux;
+
+                            // Envoyer la modification au serveur
+                            if (posteApp.id) {
+                                fetch(`/api/postes/${posteApp.id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        name: posteApp.name,
+                                        taux: posteTravail.taux
+                                    })
+                                }).catch(err => {
+                                    console.error('Erreur envoi taux au serveur:', err);
+                                });
+                            }
+                        }
+                    });
+
+                    // Sauvegarder les postes mis à jour en local
+                    localStorage.setItem('devis_postes_bibliothèque', JSON.stringify(postes));
+                    console.log('✅ Taux synchronisés vers l\'application principale et serveur');
+                }
+            } catch (error) {
+                console.error('Erreur synchronisation taux vers app principale:', error);
+            }
         }
 
         // Render Machine

@@ -447,11 +447,16 @@ app.put('/api/postes/:id', async (req, res) => {
             return res.status(404).json({ error: 'Poste non trouvé' });
         }
 
-        // Mettre à jour le nom et conserver les autres propriétés
+        // Mettre à jour le nom et le taux (si fourni)
         data.postes[posteIndex] = {
             ...data.postes[posteIndex],
             name: req.body.name
         };
+
+        // Mettre à jour le taux si fourni
+        if (req.body.taux !== undefined) {
+            data.postes[posteIndex].taux = req.body.taux;
+        }
 
         await writeData(data);
         res.json(data.postes[posteIndex]);
