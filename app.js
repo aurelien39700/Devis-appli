@@ -752,7 +752,6 @@ function exportDataToFile() {
 
 function renderEntries() {
     const container = document.getElementById('entriesList');
-    const totalEl = document.getElementById('totalHours');
 
     if (entries.length === 0) {
         container.innerHTML = `
@@ -767,7 +766,6 @@ function renderEntries() {
                 <p style="font-size: 0.85rem;">Appuyez sur + pour ajouter</p>
             </div>
         `;
-        totalEl.textContent = '0h';
         return;
     }
 
@@ -874,8 +872,6 @@ function renderEntries() {
             </div>
         `;
     }).join('');
-
-    totalEl.textContent = `${totalHours.toFixed(1)}h`;
 
     // Afficher les affaires en cours (accès rapide)
     renderQuickAccess(grouped);
