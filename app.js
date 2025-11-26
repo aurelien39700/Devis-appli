@@ -931,10 +931,10 @@ function renderQuickAccess(grouped) {
         const totalHeuresClient = groupe.affaires.reduce((sum, item) => sum + item.totalHours, 0);
 
         return `
-            <div style="margin-bottom: 16px; border-left: 4px solid #2196F3; padding-left: 12px;">
-                <div style="font-weight: 700; color: #1a1a1a; margin-bottom: 8px; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-                    <span>👥 ${escapeHtml(clientName)}</span>
-                    <span style="background: rgba(33, 150, 243, 0.2); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: #1a1a1a;">${totalHeuresClient.toFixed(1)}h</span>
+            <div style="margin-bottom: 16px; border-left: 4px solid #667eea; padding-left: 12px;">
+                <div style="font-weight: 800; margin-bottom: 8px; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.05rem;">👥 ${escapeHtml(clientName)}</span>
+                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3px 12px; border-radius: 14px; font-size: 0.75rem; font-weight: 700; color: white; box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);">${totalHeuresClient.toFixed(1)}h</span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 6px; margin-left: 8px;">
                     ${groupe.affaires.map(item => {
