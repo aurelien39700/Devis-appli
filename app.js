@@ -545,6 +545,9 @@ async function loadPostes(cacheBuster = '') {
 
             // Sauvegarder seulement les postes, pas tout le localStorage
             localStorage.setItem('affaires_postes', JSON.stringify(postes));
+
+            // Synchroniser vers devis_app
+            syncPostesVersDevisApp();
             return;
         }
     } catch (error) {
@@ -554,6 +557,9 @@ async function loadPostes(cacheBuster = '') {
     // Fallback: charger depuis localStorage
     const saved = localStorage.getItem('affaires_postes');
     postes = saved ? JSON.parse(saved) : [];
+
+    // Synchroniser vers devis_app même en fallback
+    syncPostesVersDevisApp();
 }
 
 // Fonction pour synchroniser les postes vers devis_app
@@ -590,7 +596,7 @@ function syncPostesVersDevisApp() {
                     const existant = machineMap[poste.name];
                     postesMachine.push({
                         nom: poste.name,
-                        taux: poste.taux || 75,
+                        taux: poste.taux || 46,
                         temps: existant ? existant.temps : 0
                     });
                 } else {
