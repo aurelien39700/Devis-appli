@@ -175,6 +175,14 @@
             "hours": "4",
             "enteredBy": "Aur\u00e9lien",
             "date": "2025-11-26T11:55:22.535Z"
+        },
+        {
+            "id": "1764158147896",
+            "affaireId": "1764061438182",
+            "posteId": "1764055164678",
+            "hours": "0.5",
+            "enteredBy": "Aur\u00e9lien",
+            "date": "2025-11-26T11:55:47.555Z"
         }
     ],
     "clients": [
