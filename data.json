@@ -353,7 +353,8 @@
         },
         {
             "id": "1764055523549",
-            "name": "Fraisage CN"
+            "name": "Fraisage CN",
+            "isMachine": true
         },
         {
             "id": "1764060067448",
