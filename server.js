@@ -83,7 +83,17 @@ async function gitCommitAndPush(message) {
             console.log('🔑 GitHub token configuré pour Render');
         }
 
-        // Ajouter data.json
+        // Reset des changements non désirés (node_modules, package-lock.json)
+        try {
+            await execPromise('git reset HEAD node_modules 2>/dev/null || true');
+            await execPromise('git checkout -- node_modules 2>/dev/null || true');
+            await execPromise('git reset HEAD package-lock.json 2>/dev/null || true');
+            await execPromise('git checkout -- package-lock.json 2>/dev/null || true');
+        } catch (e) {
+            // Ignorer les erreurs de reset
+        }
+
+        // Ajouter data.json uniquement
         await execPromise('git add data.json');
 
         // Créer le commit avec un message descriptif
@@ -95,7 +105,7 @@ async function gitCommitAndPush(message) {
         // Pull avant push pour éviter les conflits
         console.log('📥 Git pull (sync)...');
         try {
-            await execPromise('git pull origin main --no-rebase');
+            await execPromise('git pull origin main --no-rebase --no-edit');
         } catch (pullError) {
             console.warn('⚠️ Pull warning (peut être ignoré):', pullError.message);
         }
