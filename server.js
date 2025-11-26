@@ -67,8 +67,21 @@ async function gitPull() {
     }
 }
 
+// Mutex pour éviter les commits concurrents
+let gitLock = false;
+const gitQueue = [];
+
 // Fonction pour commit et push automatiquement (compatible Render)
 async function gitCommitAndPush(message) {
+    // Si un autre commit est en cours, ajouter à la queue
+    if (gitLock) {
+        console.log('⏳ Commit en cours, mise en attente...');
+        return new Promise((resolve) => {
+            gitQueue.push({ message, resolve });
+        });
+    }
+
+    gitLock = true;
     try {
         // Configurer le remote si nécessaire
         await setupGitRemote();
@@ -153,6 +166,16 @@ async function gitCommitAndPush(message) {
         console.error('⚠️ Git push erreur:', error.message);
         // Ne pas bloquer l'app si git échoue
         return { success: false, message: error.message };
+    } finally {
+        // Libérer le verrou
+        gitLock = false;
+
+        // Traiter le prochain dans la queue
+        if (gitQueue.length > 0) {
+            const next = gitQueue.shift();
+            console.log('🔄 Traitement du commit en attente...');
+            gitCommitAndPush(next.message).then(next.resolve);
+        }
     }
 }
 
