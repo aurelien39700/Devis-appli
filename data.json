@@ -1,13 +1,78 @@
 {
     "entries": [],
-    "clients": [],
+    "clients": [
+        {
+            "id": "1764014447938",
+            "name": "NP JURA"
+        },
+        {
+            "id": "1764014732621",
+            "name": "PLASTIGRAY"
+        },
+        {
+            "id": "1764014760229",
+            "name": "NMBP"
+        },
+        {
+            "id": "1764015790842",
+            "name": "TYCO"
+        },
+        {
+            "id": "1764016652926",
+            "name": "EUROMECA"
+        },
+        {
+            "id": "1764017522395",
+            "name": "PLASTILYS"
+        },
+        {
+            "id": "1764017522512",
+            "name": "PLASTILYS"
+        }
+    ],
     "affaires": [],
-    "postes": [],
+    "postes": [
+        {
+            "id": "1764014781418",
+            "name": "Soudure"
+        },
+        {
+            "id": "1764014788537",
+            "name": "Fraisage"
+        },
+        {
+            "id": "1764014806191",
+            "name": "Ajustage"
+        },
+        {
+            "id": "1764018748947",
+            "name": "Erosion"
+        },
+        {
+            "id": "1764019427786",
+            "name": "Erosion FIL"
+        }
+    ],
     "users": [
         {
             "id": "1",
             "name": "Admin",
             "password": "ADMIN"
+        },
+        {
+            "id": "1764015215742",
+            "name": "Aur\u00e9lien",
+            "password": "Kenfuck39"
+        },
+        {
+            "id": "1764017886342",
+            "name": "Quentin",
+            "password": "caca"
+        },
+        {
+            "id": "1764018442182",
+            "name": "Christophe",
+            "password": "Somepre@21"
         }
     ]
 }
