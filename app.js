@@ -596,7 +596,8 @@ function syncPostesVersDevisApp() {
                     const existant = machineMap[poste.name];
                     postesMachine.push({
                         nom: poste.name,
-                        taux: poste.taux || 46,
+                        // PRIORITÉ: taux personnalisé existant > taux du serveur > défaut
+                        taux: existant ? existant.taux : (poste.taux || 46),
                         temps: existant ? existant.temps : 0
                     });
                 } else {
@@ -604,7 +605,8 @@ function syncPostesVersDevisApp() {
                     const existant = travailMap[poste.name];
                     postesTravail.push({
                         nom: poste.name,
-                        taux: poste.taux || 75,
+                        // PRIORITÉ: taux personnalisé existant > taux du serveur > défaut
+                        taux: existant ? existant.taux : (poste.taux || 75),
                         semaines: existant ? existant.semaines : [0, 0, 0, 0, 0, 0, 0, 0]
                     });
                 }
@@ -613,6 +615,17 @@ function syncPostesVersDevisApp() {
             // Mettre à jour les catégories
             devisObj.data.travail = postesTravail;
             devisObj.data.machine = postesMachine;
+
+            // Préserver les fournisseurs existants
+            if (!devisObj.fournisseurs || devisObj.fournisseurs.length === 0) {
+                devisObj.fournisseurs = [
+                    'Fournisseur A',
+                    'Fournisseur B',
+                    'Fournisseur C',
+                    'Sous-traitant X',
+                    'Sous-traitant Y'
+                ];
+            }
 
             // Sauvegarder les modifications
             localStorage.setItem('devis_somepre', JSON.stringify(devisObj));
