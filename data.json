@@ -295,7 +295,7 @@
             "name": "3165",
             "clientId": "1764014732621",
             "description": "Noyau moule Bi mati\u00e8re",
-            "statut": "en_cours"
+            "statut": "terminee"
         },
         {
             "id": "1764082722139",
@@ -345,8 +345,7 @@
         },
         {
             "id": "1764019427786",
-            "name": "\u00c9rosion FIL",
-            "isMachine": true
+            "name": "\u00c9rosion FIL"
         },
         {
             "id": "1764055164678",
@@ -383,8 +382,7 @@
         },
         {
             "id": "1764076202419",
-            "name": "\u00c9rosion CN",
-            "isMachine": true
+            "name": "\u00c9rosion CN"
         }
     ],
     "users": [
