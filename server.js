@@ -184,6 +184,32 @@ async function gitCommitAndPush() {
         } catch (pushError) {
             console.error('❌ GIT PUSH A ÉCHOUÉ!');
             console.error('❌ Push error message:', pushError.message);
+
+            // Détecter si c'est un problème de non-fast-forward
+            const isNonFastForward = pushError.message.includes('non-fast-forward') ||
+                                     pushError.message.includes('rejected');
+
+            if (isNonFastForward) {
+                console.error('⚠️ DIVERGENCE: Le serveur est en retard par rapport à GitHub');
+                console.error('🔄 Tentative de pull + rebase automatique...');
+
+                try {
+                    // Essayer de fetch et rebase
+                    await execPromise('git fetch origin main');
+                    await execPromise('git rebase origin/main');
+
+                    // Retry le push
+                    console.log('🔄 Nouvelle tentative de push...');
+                    await execPromise('git push origin main');
+                    console.log('✅ Push réussi après rebase!');
+                    return { success: true, message: 'Sauvegardé sur GitHub (après rebase)' };
+                } catch (rebaseError) {
+                    console.error('❌ Échec du rebase automatique:', rebaseError.message);
+                    console.error('⚠️ Les données sont sauvegardées LOCALEMENT uniquement');
+                    return { success: false, message: 'Sauvegarde locale uniquement (divergence Git)' };
+                }
+            }
+
             if (pushError.stdout) {
                 console.error('❌ Push stdout:', pushError.stdout);
             }
@@ -201,7 +227,7 @@ async function gitCommitAndPush() {
                 // Ignorer les erreurs de diagnostic
             }
 
-            throw pushError; // Re-throw pour être capturé par le catch externe
+            return { success: false, message: 'Échec du push: ' + pushError.message };
         }
     } catch (error) {
         console.error('⚠️ Erreur globale git:', error.message);
