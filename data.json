@@ -313,6 +313,13 @@
             "clientId": "1764014447938",
             "description": "Soudure + reprise erosion",
             "statut": "en_cours"
+        },
+        {
+            "id": "1764150341419",
+            "name": "MG4476",
+            "clientId": "1764014447938",
+            "description": "Guidage main de robot",
+            "statut": "en_cours"
         }
     ],
     "postes": [
