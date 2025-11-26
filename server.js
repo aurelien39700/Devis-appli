@@ -154,16 +154,48 @@ async function gitCommitAndPush(message) {
 
         // Push vers GitHub
         console.log('📤 Git push origin main...');
-        const pushResult = await execPromise('git push origin main');
-        console.log('✅ Push réussi:', pushResult.stdout.trim() || 'OK');
+        try {
+            const pushResult = await execPromise('git push origin main');
+            console.log('✅ Push réussi!');
 
-        if (pushResult.stderr && !pushResult.stderr.includes('up-to-date')) {
-            console.warn('⚠️ Push stderr:', pushResult.stderr);
+            if (pushResult.stdout) {
+                console.log('📤 Push stdout:', pushResult.stdout.trim());
+            }
+            if (pushResult.stderr) {
+                console.log('📤 Push stderr:', pushResult.stderr.trim());
+            }
+
+            // Vérifier que le commit est bien sur le remote
+            console.log('🔍 Vérification commit distant...');
+            const { stdout: remoteInfo } = await execPromise('git ls-remote origin main');
+            const remoteCommit = remoteInfo.trim().substring(0, 7);
+            console.log('✅ Commit distant:', remoteCommit);
+
+            return { success: true, message: 'Sauvegardé sur GitHub' };
+        } catch (pushError) {
+            console.error('❌ GIT PUSH A ÉCHOUÉ!');
+            console.error('❌ Push error message:', pushError.message);
+            if (pushError.stdout) {
+                console.error('❌ Push stdout:', pushError.stdout);
+            }
+            if (pushError.stderr) {
+                console.error('❌ Push stderr:', pushError.stderr);
+            }
+
+            // Afficher l'état git pour diagnostic
+            try {
+                const { stdout: gitStatus } = await execPromise('git status --porcelain');
+                console.error('📊 Git status:', gitStatus || '(clean)');
+                const { stdout: gitLog } = await execPromise('git log --oneline -3');
+                console.error('📜 Derniers commits:', gitLog);
+            } catch (e) {
+                // Ignorer les erreurs de diagnostic
+            }
+
+            throw pushError; // Re-throw pour être capturé par le catch externe
         }
-
-        return { success: true, message: 'Sauvegardé sur GitHub' };
     } catch (error) {
-        console.error('⚠️ Git push erreur:', error.message);
+        console.error('⚠️ Erreur globale git:', error.message);
         // Ne pas bloquer l'app si git échoue
         return { success: false, message: error.message };
     } finally {
