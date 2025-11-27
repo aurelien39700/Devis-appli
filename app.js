@@ -1402,6 +1402,9 @@ function renderClients() {
     }).join('');
 
     container.innerHTML = html;
+
+    // Mettre à jour les selects de clients dans la modal
+    updateAffaireModalClients();
 }
 
 async function addAffaire() {
@@ -1625,6 +1628,9 @@ let currentAffaireFilter = 'all';
 let currentSearchTerm = '';
 
 function renderAffaires() {
+    // Rendre les statistiques
+    renderAffairesStats();
+
     const container = document.getElementById('affairesList');
     if (!affaires || affaires.length === 0) {
         container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Aucune affaire créée</p>';
@@ -1632,12 +1638,10 @@ function renderAffaires() {
     }
 
     // Filtrer par statut
+    const filterValue = document.getElementById('filterStatut')?.value || 'en_cours';
     let filtered = affaires;
-    if (currentAffaireFilter !== 'all') {
-        filtered = affaires.filter(a => (a.statut || 'en_cours') === currentAffaireFilter);
-    } else {
-        // Dans "Toutes", exclure les affaires archivées
-        filtered = affaires.filter(a => (a.statut || 'en_cours') !== 'archivee');
+    if (filterValue !== 'all') {
+        filtered = affaires.filter(a => (a.statut || 'en_cours') === filterValue);
     }
 
     // Filtrer par recherche
@@ -1656,74 +1660,151 @@ function renderAffaires() {
         return;
     }
 
-    const html = filtered.map(affaire => {
-        const client = clients.find(c => c.id === affaire.clientId);
-        const statut = affaire.statut || 'en_cours';
-        const statutLabel = statut === 'en_cours' ? 'En cours' : statut === 'terminee' ? 'Terminée' : 'Archivée';
-        const badgeClass = `badge-${statut}`;
+    // Tri
+    const sortValue = document.getElementById('sortAffaires')?.value || 'recent';
+    if (sortValue === 'name') {
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortValue === 'hours') {
+        filtered.sort((a, b) => {
+            const hoursA = entries.filter(e => e.affaireId === a.id).reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
+            const hoursB = entries.filter(e => e.affaireId === b.id).reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
+            return hoursB - hoursA;
+        });
+    }
 
-        // Compter les heures
-        const heuresTotal = entries
-            .filter(e => e.affaireId === affaire.id)
-            .reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
+    // Grouper par client
+    const groupedByClient = {};
+    filtered.forEach(affaire => {
+        const clientId = affaire.clientId || 'no-client';
+        if (!groupedByClient[clientId]) {
+            groupedByClient[clientId] = [];
+        }
+        groupedByClient[clientId].push(affaire);
+    });
 
-        return `
-            <div class="admin-card">
-                <div class="item-header">
-                    <div class="item-title">
-                        <span>${escapeHtml(affaire.name)}</span>
-                        <span class="item-badge ${badgeClass}">${statutLabel}</span>
+    // Générer le HTML
+    let html = '';
+    Object.keys(groupedByClient).forEach(clientId => {
+        const client = clients.find(c => c.id === clientId);
+        const clientName = client ? client.name : 'Sans client';
+        const clientAffaires = groupedByClient[clientId];
+
+        html += `
+            <div class="client-group">
+                <div class="client-group-header">
+                    <div class="client-group-title">
+                        🏢 ${escapeHtml(clientName)}
+                        <span class="client-group-count">${clientAffaires.length}</span>
                     </div>
                 </div>
-                <div class="item-info">
-                    <strong>Client:</strong> ${client ? escapeHtml(client.name) : 'Non défini'}
-                </div>
-                ${affaire.description ? `<div class="item-info"><strong>Description:</strong> ${escapeHtml(affaire.description)}</div>` : ''}
-                <div class="item-info">
-                    <strong>Heures totales:</strong> ${heuresTotal.toFixed(2)}h
-                </div>
-                <div class="item-actions">
-                    <button class="btn btn-secondary" onclick="openRenameModal('affaire', '${affaire.id}', '${escapeHtml(affaire.name).replace(/'/g, "\\'")}')">
-                        ✏️ Renommer
-                    </button>
-                    ${statut === 'en_cours' ? `
-                        <button class="btn btn-success" onclick="changeAffaireStatut('${affaire.id}', 'terminee')">
-                            ✓ Terminer
-                        </button>
-                    ` : statut === 'terminee' ? `
-                        <button class="btn btn-secondary" onclick="changeAffaireStatut('${affaire.id}', 'en_cours')">
-                            ↺ Réactiver
-                        </button>
-                        <button class="btn" style="background: rgba(255,152,0,0.2); color: #ff9800;" onclick="changeAffaireStatut('${affaire.id}', 'archivee')">
-                            📦 Archiver
-                        </button>
-                    ` : `
-                        <button class="btn btn-secondary" onclick="changeAffaireStatut('${affaire.id}', 'en_cours')">
-                            ↺ Réactiver
-                        </button>
-                    `}
-                    <button class="btn btn-danger" onclick="openDeleteModal('affaire', '${affaire.id}', '${escapeHtml(affaire.name).replace(/'/g, "\\'")}')">
-                        🗑️ Supprimer
-                    </button>
+                <div class="affaires-grid">
+                    ${clientAffaires.map(affaire => renderAffaireCard(affaire)).join('')}
                 </div>
             </div>
         `;
-    }).join('');
+    });
 
     container.innerHTML = html;
 }
 
-function filterAffaires(filter, event) {
-    currentAffaireFilter = filter;
+function renderAffaireCard(affaire) {
+    const statut = affaire.statut || 'en_cours';
+    const statutLabel = statut === 'en_cours' ? '✅ En cours' : statut === 'terminee' ? '✓ Terminée' : '📦 Archivée';
 
-    // Mise à jour des boutons actifs
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    if (event && event.target) {
-        event.target.classList.add('active');
-    }
+    // Compter les heures
+    const heuresTotal = entries
+        .filter(e => e.affaireId === affaire.id)
+        .reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
 
+    return `
+        <div class="affaire-card" id="affaire-${affaire.id}">
+            <div class="affaire-card-header">
+                <div style="flex: 1;">
+                    <div class="affaire-card-title">${escapeHtml(affaire.name)}</div>
+                    <span class="affaire-card-badge ${statut}">${statutLabel}</span>
+                </div>
+            </div>
+            ${affaire.description ? `
+                <div class="affaire-card-description">${escapeHtml(affaire.description)}</div>
+            ` : ''}
+            <div class="affaire-card-hours">
+                ⏱️ ${heuresTotal.toFixed(2)}h
+            </div>
+            <div class="affaire-card-actions">
+                <button class="affaire-card-btn affaire-card-btn-primary" onclick="preparerDevisApp('${affaire.id}')">
+                    📄 Devis
+                </button>
+                <button class="affaire-card-btn affaire-card-btn-menu" onclick="toggleAffaireMenu(event, '${affaire.id}')">
+                    ⋮
+                </button>
+            </div>
+            ${renderAffaireMenu(affaire)}
+        </div>
+    `;
+}
+
+function renderAffaireMenu(affaire) {
+    const statut = affaire.statut || 'en_cours';
+    return `
+        <div class="affaire-menu" id="menu-${affaire.id}">
+            <div class="affaire-menu-item" onclick="openEditAffaireModal('${affaire.id}')">
+                ✏️ Modifier
+            </div>
+            ${statut === 'en_cours' ? `
+                <div class="affaire-menu-item" onclick="changeAffaireStatut('${affaire.id}', 'terminee')">
+                    ✓ Terminer
+                </div>
+            ` : statut === 'terminee' ? `
+                <div class="affaire-menu-item" onclick="changeAffaireStatut('${affaire.id}', 'en_cours')">
+                    ↺ Réactiver
+                </div>
+                <div class="affaire-menu-item" onclick="changeAffaireStatut('${affaire.id}', 'archivee')">
+                    📦 Archiver
+                </div>
+            ` : `
+                <div class="affaire-menu-item" onclick="changeAffaireStatut('${affaire.id}', 'en_cours')">
+                    ↺ Réactiver
+                </div>
+            `}
+            <div class="affaire-menu-item danger" onclick="confirmDeleteAffaire('${affaire.id}')">
+                🗑️ Supprimer
+            </div>
+        </div>
+    `;
+}
+
+function renderAffairesStats() {
+    const statsContainer = document.getElementById('affairesStats');
+    if (!statsContainer) return;
+
+    // Calculer les statistiques
+    const enCours = affaires.filter(a => (a.statut || 'en_cours') === 'en_cours').length;
+    const terminees = affaires.filter(a => a.statut === 'terminee').length;
+    const archivees = affaires.filter(a => a.statut === 'archivee').length;
+    const totalHeures = entries.reduce((sum, e) => sum + parseFloat(e.hours || 0), 0);
+
+    statsContainer.innerHTML = `
+        <div class="stat-card">
+            <span class="stat-value">${enCours}</span>
+            <span class="stat-label">✅ En cours</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">${terminees}</span>
+            <span class="stat-label">✓ Terminées</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">${archivees}</span>
+            <span class="stat-label">📦 Archivées</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">${totalHeures.toFixed(0)}h</span>
+            <span class="stat-label">⏱️ Total</span>
+        </div>
+    `;
+}
+
+function filterAffaires(filter) {
+    // La fonction est maintenant appelée par le select, pas besoin de gérer les boutons
     renderAffaires();
 }
 
@@ -1735,6 +1816,195 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSearchTerm = e.target.value;
             renderAffaires();
         });
+    }
+
+    // Populer le select client dans la modal
+    updateAffaireModalClients();
+});
+
+// ===== FONCTIONS MODAL AFFAIRE =====
+
+function openAffaireModal() {
+    const modal = document.getElementById('affaireModal');
+    const title = document.getElementById('affaireModalTitle');
+    const submitText = document.getElementById('affaireModalSubmitText');
+
+    // Réinitialiser le formulaire
+    document.getElementById('affaireModalId').value = '';
+    document.getElementById('affaireModalName').value = '';
+    document.getElementById('affaireModalClient').value = '';
+    document.getElementById('affaireModalDescription').value = '';
+
+    // Mettre à jour les textes
+    title.textContent = '➕ Nouvelle affaire';
+    submitText.textContent = 'Créer';
+
+    // Afficher la modal
+    modal.classList.add('active');
+}
+
+function openEditAffaireModal(affaireId) {
+    const affaire = affaires.find(a => a.id === affaireId);
+    if (!affaire) return;
+
+    const modal = document.getElementById('affaireModal');
+    const title = document.getElementById('affaireModalTitle');
+    const submitText = document.getElementById('affaireModalSubmitText');
+
+    // Remplir le formulaire
+    document.getElementById('affaireModalId').value = affaire.id;
+    document.getElementById('affaireModalName').value = affaire.name;
+    document.getElementById('affaireModalClient').value = affaire.clientId || '';
+    document.getElementById('affaireModalDescription').value = affaire.description || '';
+
+    // Mettre à jour les textes
+    title.textContent = '✏️ Modifier l\'affaire';
+    submitText.textContent = 'Modifier';
+
+    // Fermer le menu
+    closeAllMenus();
+
+    // Afficher la modal
+    modal.classList.add('active');
+}
+
+function closeAffaireModal() {
+    const modal = document.getElementById('affaireModal');
+    modal.classList.remove('active');
+}
+
+function updateAffaireModalClients() {
+    const select = document.getElementById('affaireModalClient');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Sélectionner un client</option>';
+    clients.forEach(client => {
+        const option = document.createElement('option');
+        option.value = client.id;
+        option.textContent = client.name;
+        select.appendChild(option);
+    });
+
+    // Aussi mettre à jour l'ancien select si il existe
+    const oldSelect = document.getElementById('newAffaireClient');
+    if (oldSelect) {
+        oldSelect.innerHTML = '<option value="">Sélectionner un client</option>';
+        clients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client.id;
+            option.textContent = client.name;
+            oldSelect.appendChild(option);
+        });
+    }
+}
+
+async function saveAffaire(event) {
+    event.preventDefault();
+
+    const id = document.getElementById('affaireModalId').value;
+    const name = document.getElementById('affaireModalName').value.trim();
+    const clientId = document.getElementById('affaireModalClient').value;
+    const description = document.getElementById('affaireModalDescription').value.trim();
+
+    if (!clientId) {
+        alert('Veuillez sélectionner un client');
+        return;
+    }
+
+    if (!name) {
+        alert('Veuillez saisir un nom d\'affaire');
+        return;
+    }
+
+    try {
+        if (id) {
+            // Modification
+            const affaire = affaires.find(a => a.id === id);
+            if (affaire) {
+                affaire.name = name;
+                affaire.clientId = clientId;
+                affaire.description = description;
+
+                // Sauvegarder sur le serveur
+                await fetch(`${API_URL}/affaires/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(affaire)
+                });
+            }
+        } else {
+            // Création
+            const newAffaire = {
+                id: Date.now().toString(),
+                name,
+                clientId,
+                description,
+                statut: 'en_cours'
+            };
+
+            affaires.push(newAffaire);
+
+            // Sauvegarder sur le serveur
+            await fetch(`${API_URL}/affaires`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newAffaire)
+            });
+        }
+
+        // Recharger et rafraîchir
+        await loadAffaires();
+        renderAffaires();
+        updateSelects();
+        closeAffaireModal();
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde:', error);
+        alert('Erreur lors de la sauvegarde de l\'affaire');
+    }
+}
+
+// ===== FONCTIONS MENU CONTEXTUEL =====
+
+function toggleAffaireMenu(event, affaireId) {
+    event.stopPropagation();
+
+    // Fermer tous les autres menus
+    document.querySelectorAll('.affaire-menu').forEach(menu => {
+        if (menu.id !== `menu-${affaireId}`) {
+            menu.classList.remove('active');
+        }
+    });
+
+    // Toggle le menu actuel
+    const menu = document.getElementById(`menu-${affaireId}`);
+    if (menu) {
+        menu.classList.toggle('active');
+    }
+}
+
+function closeAllMenus() {
+    document.querySelectorAll('.affaire-menu').forEach(menu => {
+        menu.classList.remove('active');
+    });
+}
+
+function confirmDeleteAffaire(affaireId) {
+    closeAllMenus();
+    deleteAffaire(affaireId);
+}
+
+// Fermer les menus quand on clique ailleurs
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('.affaire-card-btn-menu')) {
+        closeAllMenus();
+    }
+});
+
+// Fermer la modal en cliquant à l'extérieur
+document.addEventListener('click', (event) => {
+    const modal = document.getElementById('affaireModal');
+    if (event.target === modal) {
+        closeAffaireModal();
     }
 });
 
