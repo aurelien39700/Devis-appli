@@ -93,7 +93,8 @@ async function gitCommitAndPush(message) {
         if (IS_RENDER) {
             await execPromise('git config user.email "app@render.com" || true');
             await execPromise('git config user.name "Render App" || true');
-            console.log('🔑 GitHub token configuré pour Render');
+            await execPromise('git config commit.gpgsign false || true');
+            console.log('🔑 Git configuré pour Render (GPG désactivé)');
         }
 
         // Reset des changements non désirés (node_modules, package-lock.json)
@@ -116,7 +117,8 @@ async function gitCommitAndPush(message) {
 
         console.log('💾 Git commit...');
         try {
-            const commitResult = await execPromise(`git commit -m "${commitMessage}"`);
+            // Désactiver la signature GPG pour éviter les erreurs d'authentification
+            const commitResult = await execPromise(`git commit --no-gpg-sign -m "${commitMessage}"`);
             console.log('✅ Commit créé:', commitResult.stdout.trim());
         } catch (commitError) {
             // Si "nothing to commit", ce n'est pas grave
