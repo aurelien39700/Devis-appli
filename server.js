@@ -107,9 +107,9 @@ async function gitCommitAndPush(message) {
             // Ignorer les erreurs de reset
         }
 
-        // Ajouter data.json uniquement
-        console.log('📝 Git add data.json...');
-        await execPromise('git add data.json');
+        // Ajouter data.json et devis_app.html
+        console.log('📝 Git add data.json devis_app.html...');
+        await execPromise('git add data.json devis_app.html');
 
         // Créer le commit avec un message descriptif
         const timestamp = new Date().toISOString();
