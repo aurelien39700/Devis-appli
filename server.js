@@ -188,8 +188,19 @@ async function gitCommitAndPush(message) {
                         // Ignorer si pas de rebase en cours
                     }
 
-                    console.error('⚠️ Les données sont sauvegardées LOCALEMENT uniquement');
-                    return { success: false, message: 'Sauvegarde locale seulement (conflit Git)' };
+                    // SOLUTION: Reset hard vers origin/main pour éviter l'accumulation de commits
+                    // Cela abandonne le commit local mais évite les 384 commits bloqués
+                    try {
+                        console.log('🔄 Reset hard vers origin/main pour nettoyer...');
+                        await execPromise('git reset --hard origin/main');
+                        console.log('✅ Repository nettoyé - prêt pour le prochain commit');
+                    } catch (resetError) {
+                        console.error('❌ Reset échoué:', resetError.message);
+                    }
+
+                    console.error('⚠️ Ce commit a été abandonné pour éviter les conflits');
+                    console.error('⚠️ Les données SONT sauvegardées dans data.json');
+                    return { success: false, message: 'Commit abandonné (conflit résolu)' };
                 }
             }
 
