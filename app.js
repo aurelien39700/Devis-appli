@@ -997,7 +997,7 @@ function renderQuickAccess(grouped) {
                         return `
                             <button
                                 onclick="quickSelectAffaire('${affaire.clientId}', '${affaire.id}')"
-                                title="${escapeHtml(tooltipText)}"
+                                title="${tooltipText.replace(/"/g, '&quot;')}"
                                 style="
                                     padding: 8px 12px;
                                     border: 1px solid rgba(33, 150, 243, 0.3);
