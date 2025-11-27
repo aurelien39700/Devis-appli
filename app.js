@@ -1232,24 +1232,34 @@ function updateSelects() {
     const posteSelect = document.getElementById('poste');
     const newAffaireClientSelect = document.getElementById('newAffaireClient');
 
-    clientSelect.innerHTML = '<option value="">Sélectionner un client</option>' +
-        clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+    if (clientSelect) {
+        clientSelect.innerHTML = '<option value="">Sélectionner un client</option>' +
+            clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+    }
 
-    posteSelect.innerHTML = '<option value="">Sélectionner un poste</option>' +
-        postes.map(p => {
-            const machineLabel = p.isMachine ? ' ⚙️ Machine' : '';
-            return `<option value="${p.id}">${escapeHtml(p.name)}${machineLabel}</option>`;
-        }).join('');
+    if (posteSelect) {
+        posteSelect.innerHTML = '<option value="">Sélectionner un poste</option>' +
+            postes.map(p => {
+                const machineLabel = p.isMachine ? ' ⚙️ Machine' : '';
+                return `<option value="${p.id}">${escapeHtml(p.name)}${machineLabel}</option>`;
+            }).join('');
+    }
 
-    newAffaireClientSelect.innerHTML = '<option value="">Sélectionner un client</option>' +
-        clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+    if (newAffaireClientSelect) {
+        newAffaireClientSelect.innerHTML = '<option value="">Sélectionner un client</option>' +
+            clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+    }
 
     updateAffairesSelect();
 }
 
 function updateAffairesSelect() {
-    const clientId = document.getElementById('client').value;
+    const clientSelect = document.getElementById('client');
     const affaireSelect = document.getElementById('affaire');
+
+    if (!clientSelect || !affaireSelect) return;
+
+    const clientId = clientSelect.value;
 
     if (!clientId) {
         affaireSelect.innerHTML = '<option value="">Sélectionner d\'abord un client</option>';
