@@ -820,10 +820,19 @@ function renderEntries() {
     let totalHours = 0;
 
     entries.forEach(entry => {
-        // Les utilisateurs non-admin ne voient que leurs propres entrées
-        // Accepter aussi les entrées sans enteredBy (anciennes données) pour rétrocompatibilité
-        if (!isAdmin() && entry.enteredBy && entry.enteredBy !== currentUser.name) {
-            return;
+        const affaire = affaires.find(a => a.id === entry.affaireId);
+        const isArchived = affaire && (affaire.statut === 'archivee' || affaire.statut === 'terminee');
+
+        // Pour ADMIN : voir tout SAUF les affaires archivées/terminées
+        if (isAdmin()) {
+            if (isArchived) {
+                return; // Ne pas afficher les affaires archivées pour l'admin
+            }
+        } else {
+            // Pour UTILISATEURS : voir uniquement leurs propres entrées (toutes affaires confondues)
+            if (entry.enteredBy && entry.enteredBy !== currentUser.name) {
+                return;
+            }
         }
 
         totalHours += parseFloat(entry.hours) || 0;
