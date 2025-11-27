@@ -4,16 +4,16 @@
         {
             "label": "Auto-Sync GitHub",
             "type": "shell",
-            "command": "${workspaceFolder}/auto-sync-hybrid.sh",
+            "command": "${workspaceFolder}/auto-push.sh",
             "runOptions": {
                 "runOn": "folderOpen"
             },
             "presentation": {
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "showReuseMessage": false,
                 "clear": false,
-                "echo": true,
+                "echo": false,
                 "focus": false
             },
             "isBackground": true,
