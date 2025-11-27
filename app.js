@@ -820,15 +820,6 @@ function renderEntries() {
     let totalHours = 0;
 
     entries.forEach(entry => {
-        // Filtrer les entrées des affaires archivées ou terminées (pour tous les utilisateurs)
-        const affaire = affaires.find(a => a.id === entry.affaireId);
-        const isArchived = affaire && (affaire.statut === 'archivee' || affaire.statut === 'terminee');
-
-        // Personne ne voit les affaires archivées/terminées dans la liste principale (elles sont dans les archives)
-        if (isArchived) {
-            return;
-        }
-
         // Les utilisateurs non-admin ne voient que leurs propres entrées
         // Accepter aussi les entrées sans enteredBy (anciennes données) pour rétrocompatibilité
         if (!isAdmin() && entry.enteredBy && entry.enteredBy !== currentUser.name) {
