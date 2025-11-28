@@ -439,7 +439,8 @@
     {
       "id": "1764055164678",
       "name": "Montage / Demontage",
-      "tauxHoraire": 55
+      "tauxHoraire": 80,
+      "isMachine": false
     },
     {
       "id": "1764055523549",
