@@ -1020,8 +1020,9 @@
             try {
                 console.log('📥 Chargement des postes depuis le serveur...');
                 const response = await fetch('/api/postes');
-                const postes = await response.json();
-                console.log('✅ Postes chargés depuis le serveur:', postes);
+                const data = await response.json();
+                const postes = data.postes || [];
+                console.log('✅ Postes chargés depuis le serveur:', postes.length, 'postes');
 
                 // Sauvegarder dans localStorage pour synchronisation
                 localStorage.setItem('devis_postes_bibliothèque', JSON.stringify(postes));
@@ -1214,13 +1215,14 @@
             renderTravail();
             calculer();
             sauvegarderAuto();
-            
+
             // Récupérer tous les postes depuis le serveur et mettre à jour
             try {
                 const response = await fetch('/api/postes');
-                const postes = await response.json();
+                const responseData = await response.json();
+                const postes = responseData.postes || [];
                 const poste = postes.find(p => p.name === data.travail[posteIdx].nom && !p.isMachine);
-                
+
                 if (poste && poste.id) {
                     console.log(`📝 Mise à jour taux de "${poste.name}": ${nouveauTaux}€/h`);
                     await fetch(`/api/postes/${poste.id}`, {
@@ -1296,13 +1298,14 @@
             renderMachine();
             calculer();
             sauvegarderAuto();
-            
+
             // Récupérer tous les postes depuis le serveur et mettre à jour
             try {
                 const response = await fetch('/api/postes');
-                const postes = await response.json();
+                const responseData = await response.json();
+                const postes = responseData.postes || [];
                 const machine = postes.find(p => p.name === data.machine[idx].nom && p.isMachine);
-                
+
                 if (machine && machine.id) {
                     console.log(`📝 Mise à jour taux de "${machine.name}": ${nouveauTaux}€/h`);
                     await fetch(`/api/postes/${machine.id}`, {
