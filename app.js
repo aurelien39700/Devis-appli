@@ -823,16 +823,14 @@ function renderEntries() {
         const affaire = affaires.find(a => a.id === entry.affaireId);
         const isArchived = affaire && (affaire.statut === 'archivee' || affaire.statut === 'terminee');
 
-        // Pour ADMIN : voir tout SAUF les affaires archivées/terminées
-        if (isAdmin()) {
-            if (isArchived) {
-                return; // Ne pas afficher les affaires archivées pour l'admin
-            }
-        } else {
-            // Pour UTILISATEURS : voir uniquement leurs propres entrées (toutes affaires confondues)
-            if (entry.enteredBy && entry.enteredBy !== currentUser.name) {
-                return;
-            }
+        // Ne jamais afficher les affaires archivées/terminées pour personne
+        if (isArchived) {
+            return;
+        }
+
+        // Pour UTILISATEURS : voir uniquement leurs propres entrées
+        if (!isAdmin() && entry.enteredBy && entry.enteredBy !== currentUser.name) {
+            return;
         }
 
         totalHours += parseFloat(entry.hours) || 0;
