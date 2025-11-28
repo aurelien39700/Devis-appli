@@ -1,23 +1,4 @@
 {
     "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Auto-Sync GitHub",
-            "type": "shell",
-            "command": "${workspaceFolder}/auto-push.sh",
-            "runOptions": {
-                "runOn": "folderOpen"
-            },
-            "presentation": {
-                "reveal": "silent",
-                "panel": "dedicated",
-                "showReuseMessage": false,
-                "clear": false,
-                "echo": false,
-                "focus": false
-            },
-            "isBackground": true,
-            "problemMatcher": []
-        }
-    ]
+    "tasks": []
 }
