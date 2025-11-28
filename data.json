@@ -388,6 +388,13 @@
       "clientId": "1764014447938",
       "description": "Guidage main de robot",
       "statut": "en_cours"
+    },
+    {
+      "id": "1764319423764",
+      "name": "MB4901",
+      "clientId": "1764014447938",
+      "description": "Soudure empreinte engrenage",
+      "statut": "en_cours"
     }
   ],
   "postes": [
