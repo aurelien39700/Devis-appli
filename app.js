@@ -597,7 +597,7 @@ function syncPostesVersDevisApp() {
                     postesMachine.push({
                         nom: poste.name,
                         // PRIORITÉ: taux personnalisé existant > taux du serveur > défaut
-                        taux: existant ? existant.taux : (poste.taux || 46),
+                        taux: existant ? existant.taux : (poste.tauxHoraire || 46),
                         temps: existant ? existant.temps : 0
                     });
                 } else {
@@ -606,7 +606,7 @@ function syncPostesVersDevisApp() {
                     postesTravail.push({
                         nom: poste.name,
                         // PRIORITÉ: taux personnalisé existant > taux du serveur > défaut
-                        taux: existant ? existant.taux : (poste.taux || 75),
+                        taux: existant ? existant.taux : (poste.tauxHoraire || 75),
                         semaines: existant ? existant.semaines : [0, 0, 0, 0, 0, 0, 0, 0]
                     });
                 }

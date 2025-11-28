@@ -1026,7 +1026,7 @@
                         .filter(p => !p.isMachine)
                         .map(p => ({
                             nom: p.name,
-                            taux: p.taux || 75
+                            taux: p.tauxHoraire || 75
                         }));
                 } catch (error) {
                     console.error('Erreur chargement postes synchronisés:', error);
@@ -1058,7 +1058,7 @@
                         .filter(p => p.isMachine)
                         .map(p => ({
                             nom: p.name,
-                            taux: p.taux || 46
+                            taux: p.tauxHoraire || 46
                         }));
 
                     // Si des machines sont trouvées, les retourner
