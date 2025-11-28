@@ -415,12 +415,13 @@
     {
       "id": "1764014788537",
       "name": "Fraisage",
-      "tauxHoraire": 75
+      "tauxHoraire": 80,
+      "isMachine": false
     },
     {
       "id": "1764014806191",
       "name": "Ajustage",
-      "tauxHoraire": 500,
+      "tauxHoraire": 80,
       "isMachine": false
     },
     {
