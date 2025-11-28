@@ -488,13 +488,13 @@
       "id": "1764076202419",
       "name": "Érosion CN",
       "isMachine": true,
-      "tauxHoraire": 50
+      "tauxHoraire": 46
     },
     {
       "id": "1764157949893",
       "name": "Érosion FIL CN",
       "isMachine": true,
-      "tauxHoraire": 50
+      "tauxHoraire": 46
     }
   ],
   "users": [
