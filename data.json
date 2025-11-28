@@ -470,6 +470,11 @@
       "name": "Érosion FIL CN",
       "isMachine": true,
       "tauxHoraire": 46
+    },
+    {
+      "id": "1764319224811",
+      "name": "test",
+      "isMachine": false
     }
   ],
   "users": [
