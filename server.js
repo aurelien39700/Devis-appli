@@ -580,7 +580,8 @@ app.post('/api/postes', async (req, res) => {
         const newPoste = {
             id: Date.now().toString(),
             name: req.body.name,
-            isMachine: req.body.isMachine || false
+            isMachine: req.body.isMachine || false,
+            tauxHoraire: req.body.tauxHoraire || 75
         };
         data.postes.push(newPoste);
         await writeData(data);
@@ -600,15 +601,15 @@ app.put('/api/postes/:id', async (req, res) => {
             return res.status(404).json({ error: 'Poste non trouvé' });
         }
 
-        // Mettre à jour le nom et le taux (si fourni)
+        // Mettre à jour le nom
         data.postes[posteIndex] = {
             ...data.postes[posteIndex],
             name: req.body.name
         };
 
-        // Mettre à jour le taux si fourni
-        if (req.body.taux !== undefined) {
-            data.postes[posteIndex].taux = req.body.taux;
+        // Mettre à jour le taux horaire si fourni
+        if (req.body.tauxHoraire !== undefined) {
+            data.postes[posteIndex].tauxHoraire = req.body.tauxHoraire;
         }
 
         // Mettre à jour isMachine si fourni
