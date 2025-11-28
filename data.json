@@ -426,7 +426,8 @@
     {
       "id": "1764018748947",
       "name": "Erosion",
-      "tauxHoraire": 75
+      "tauxHoraire": 70,
+      "isMachine": false
     },
     {
       "id": "1764019427786",
