@@ -451,7 +451,8 @@
     {
       "id": "1764060067448",
       "name": "Étude",
-      "tauxHoraire": 65
+      "tauxHoraire": 80,
+      "isMachine": false
     },
     {
       "id": "1764060071044",
