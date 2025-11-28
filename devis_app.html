@@ -1208,10 +1208,12 @@
                     data.travail.forEach(posteTravail => {
                         const posteApp = postes.find(p => p.name === posteTravail.nom && !p.isMachine);
                         if (posteApp) {
+                            console.log(`📝 Sync poste "${posteTravail.nom}": ${posteTravail.taux}€/h`);
                             posteApp.tauxHoraire = posteTravail.taux;
 
                             // Envoyer la modification au serveur
                             if (posteApp.id) {
+                                console.log(`📤 Envoi PUT /api/postes/${posteApp.id}`, { name: posteApp.name, tauxHoraire: posteTravail.taux });
                                 fetch(`/api/postes/${posteApp.id}`, {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
@@ -1219,10 +1221,17 @@
                                         name: posteApp.name,
                                         tauxHoraire: posteTravail.taux
                                     })
-                                }).catch(err => {
-                                    console.error('Erreur envoi taux au serveur:', err);
+                                })
+                                .then(res => res.json())
+                                .then(data => console.log(`✅ Poste "${posteTravail.nom}" mis à jour:`, data))
+                                .catch(err => {
+                                    console.error('❌ Erreur envoi taux au serveur:', err);
                                 });
+                            } else {
+                                console.warn(`⚠️ Pas d'ID pour le poste "${posteTravail.nom}"`);
                             }
+                        } else {
+                            console.warn(`⚠️ Poste "${posteTravail.nom}" non trouvé dans la bibliothèque`);
                         }
                     });
 
@@ -1230,10 +1239,12 @@
                     data.machine.forEach(machine => {
                         const machineApp = postes.find(p => p.name === machine.nom && p.isMachine);
                         if (machineApp) {
+                            console.log(`📝 Sync machine "${machine.nom}": ${machine.taux}€/h`);
                             machineApp.tauxHoraire = machine.taux;
 
                             // Envoyer la modification au serveur
                             if (machineApp.id) {
+                                console.log(`📤 Envoi PUT /api/postes/${machineApp.id}`, { name: machineApp.name, tauxHoraire: machine.taux });
                                 fetch(`/api/postes/${machineApp.id}`, {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
@@ -1241,10 +1252,17 @@
                                         name: machineApp.name,
                                         tauxHoraire: machine.taux
                                     })
-                                }).catch(err => {
-                                    console.error('Erreur envoi taux machine au serveur:', err);
+                                })
+                                .then(res => res.json())
+                                .then(data => console.log(`✅ Machine "${machine.nom}" mise à jour:`, data))
+                                .catch(err => {
+                                    console.error('❌ Erreur envoi taux machine au serveur:', err);
                                 });
+                            } else {
+                                console.warn(`⚠️ Pas d'ID pour la machine "${machine.nom}"`);
                             }
+                        } else {
+                            console.warn(`⚠️ Machine "${machine.nom}" non trouvée dans la bibliothèque`);
                         }
                     });
 

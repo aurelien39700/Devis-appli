@@ -594,22 +594,26 @@ app.post('/api/postes', async (req, res) => {
 // PUT - Mettre à jour un poste
 app.put('/api/postes/:id', async (req, res) => {
     try {
+        console.log(`📝 PUT /api/postes/${req.params.id}`, req.body);
         const data = await readData();
         const posteIndex = data.postes.findIndex(p => p.id === req.params.id);
 
         if (posteIndex === -1) {
+            console.error(`❌ Poste ${req.params.id} non trouvé`);
             return res.status(404).json({ error: 'Poste non trouvé' });
         }
 
-        // Mettre à jour le nom
-        data.postes[posteIndex] = {
-            ...data.postes[posteIndex],
-            name: req.body.name
-        };
+        console.log(`📊 Poste avant:`, data.postes[posteIndex]);
+
+        // Mettre à jour le nom si fourni
+        if (req.body.name !== undefined) {
+            data.postes[posteIndex].name = req.body.name;
+        }
 
         // Mettre à jour le taux horaire si fourni
         if (req.body.tauxHoraire !== undefined) {
             data.postes[posteIndex].tauxHoraire = req.body.tauxHoraire;
+            console.log(`✅ Taux horaire mis à jour: ${req.body.tauxHoraire}`);
         }
 
         // Mettre à jour isMachine si fourni
@@ -617,9 +621,12 @@ app.put('/api/postes/:id', async (req, res) => {
             data.postes[posteIndex].isMachine = req.body.isMachine;
         }
 
+        console.log(`📊 Poste après:`, data.postes[posteIndex]);
+
         await writeData(data);
         res.json(data.postes[posteIndex]);
     } catch (error) {
+        console.error('❌ Erreur PUT /api/postes:', error);
         res.status(500).json({ error: 'Erreur de mise à jour' });
     }
 });
