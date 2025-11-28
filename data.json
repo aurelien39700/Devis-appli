@@ -457,7 +457,8 @@
     {
       "id": "1764060071044",
       "name": "Ébauche",
-      "tauxHoraire": 75
+      "tauxHoraire": 80,
+      "isMachine": false
     },
     {
       "id": "1764060074533",
