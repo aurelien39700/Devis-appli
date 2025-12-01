@@ -504,35 +504,35 @@
       "name": "Soudure",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 6
+      "order": 10
     },
     {
       "id": "1764014788537",
       "name": "Fraisage",
       "tauxHoraire": 90,
       "isMachine": false,
-      "order": 3
+      "order": 7
     },
     {
       "id": "1764014806191",
       "name": "Ajustage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 5
+      "order": 8
     },
     {
       "id": "1764018748947",
       "name": "Erosion",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 7
+      "order": 6
     },
     {
       "id": "1764019427786",
       "name": "Érosion FIL",
       "isMachine": false,
       "tauxHoraire": 90,
-      "order": 8
+      "order": 5
     },
     {
       "id": "1764055164678",
@@ -546,7 +546,7 @@
       "name": "Fraisage CN",
       "isMachine": true,
       "tauxHoraire": 46,
-      "order": 11
+      "order": 13
     },
     {
       "id": "1764060067448",
@@ -574,7 +574,7 @@
       "name": "Microperçage",
       "tauxHoraire": 70,
       "isMachine": false,
-      "order": 9
+      "order": 4
     },
     {
       "id": "1764061108386",
@@ -588,14 +588,14 @@
       "name": "Tournage",
       "isMachine": false,
       "tauxHoraire": 80,
-      "order": 12
+      "order": 11
     },
     {
       "id": "1764076202419",
       "name": "Érosion CN",
       "isMachine": true,
       "tauxHoraire": 46,
-      "order": 13
+      "order": 12
     },
     {
       "id": "1764157949893",
