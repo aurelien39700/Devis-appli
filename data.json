@@ -518,7 +518,7 @@
       "name": "Ajustage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 4
+      "order": 5
     },
     {
       "id": "1764018748947",
@@ -581,7 +581,7 @@
       "name": "Rectification",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 6
+      "order": 4
     },
     {
       "id": "1764061151273",
