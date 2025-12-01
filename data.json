@@ -594,7 +594,8 @@
       "id": "1764076202419",
       "name": "Érosion CN",
       "isMachine": true,
-      "tauxHoraire": 46
+      "tauxHoraire": 46,
+      "order": 13
     },
     {
       "id": "1764157949893",
