@@ -511,14 +511,14 @@
       "name": "Fraisage",
       "tauxHoraire": 90,
       "isMachine": false,
-      "order": 1
+      "order": 2
     },
     {
       "id": "1764014806191",
       "name": "Ajustage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 2
+      "order": 3
     },
     {
       "id": "1764018748947",
@@ -560,7 +560,7 @@
       "name": "Ébauche",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 5
+      "order": 1
     },
     {
       "id": "1764060074533",
