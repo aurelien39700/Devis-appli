@@ -517,7 +517,8 @@
       "id": "1764014806191",
       "name": "Ajustage",
       "tauxHoraire": 75,
-      "isMachine": false
+      "isMachine": false,
+      "order": 2
     },
     {
       "id": "1764018748947",
