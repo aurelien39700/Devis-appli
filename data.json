@@ -539,14 +539,14 @@
       "name": "Montage / Demontage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 8
+      "order": 9
     },
     {
       "id": "1764055523549",
       "name": "Fraisage CN",
       "isMachine": true,
       "tauxHoraire": 46,
-      "order": 8
+      "order": 10
     },
     {
       "id": "1764060067448",
@@ -581,7 +581,7 @@
       "name": "Rectification",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 11
+      "order": 8
     },
     {
       "id": "1764061151273",
