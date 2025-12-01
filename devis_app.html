@@ -441,6 +441,28 @@
             transform: scale(1.05);
         }
 
+        .btn-move {
+            background: #17a2b8;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-move:hover {
+            background: #138496;
+            transform: scale(1.05);
+        }
+
+        .btn-move:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
         .btn-add-item {
             background: #28a745;
             color: white;
@@ -1042,12 +1064,18 @@
                 try {
                     const postes = JSON.parse(postesSync);
                     // Filtrer uniquement les postes qui ne sont PAS des machines
-                    return postes
+                    const postesFiltres = postes
                         .filter(p => !p.isMachine)
                         .map(p => ({
                             nom: p.name,
-                            taux: p.tauxHoraire || 75
+                            taux: p.tauxHoraire || 75,
+                            order: p.order !== undefined ? p.order : 999
                         }));
+
+                    // Trier par ordre
+                    postesFiltres.sort((a, b) => a.order - b.order);
+
+                    return postesFiltres;
                 } catch (error) {
                     console.error('Erreur chargement postes synchronisés:', error);
                 }
@@ -1078,11 +1106,13 @@
                         .filter(p => p.isMachine)
                         .map(p => ({
                             nom: p.name,
-                            taux: p.tauxHoraire || 46
+                            taux: p.tauxHoraire || 46,
+                            order: p.order !== undefined ? p.order : 999
                         }));
 
-                    // Si des machines sont trouvées, les retourner
+                    // Si des machines sont trouvées, les trier par ordre et retourner
                     if (machines.length > 0) {
+                        machines.sort((a, b) => a.order - b.order);
                         return machines;
                     }
                 } catch (error) {
@@ -1120,6 +1150,43 @@
             'Sous-traitant X',
             'Sous-traitant Y'
         ];
+
+        // Charger les fournisseurs depuis le serveur
+        async function chargerFournisseursDepuisServeur() {
+            try {
+                console.log('📥 Chargement des fournisseurs depuis le serveur...');
+                const response = await fetch('/api/fournisseurs');
+                if (!response.ok) {
+                    console.log('⚠️ Endpoint fournisseurs non disponible, utilisation des fournisseurs par défaut');
+                    return fournisseurs;
+                }
+                const data = await response.json();
+                const fournisseursServeur = data.fournisseurs || [];
+                console.log('✅ Fournisseurs chargés depuis le serveur:', fournisseursServeur.length, 'fournisseurs');
+                return fournisseursServeur;
+            } catch (error) {
+                console.error('❌ Erreur chargement fournisseurs depuis serveur:', error);
+                return fournisseurs;
+            }
+        }
+
+        // Sauvegarder les fournisseurs vers le serveur
+        async function sauvegarderFournisseursVersServeur() {
+            try {
+                console.log('💾 Sauvegarde des fournisseurs vers le serveur...');
+                const response = await fetch('/api/fournisseurs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fournisseurs: fournisseurs })
+                });
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ${response.status}`);
+                }
+                console.log('✅ Fournisseurs sauvegardés sur le serveur');
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde fournisseurs vers serveur:', error);
+            }
+        }
 
         let data = {
             travail: postesTravail.map(p => ({ 
@@ -1590,7 +1657,7 @@
         function afficherListeBibliotheque() {
             const liste = document.getElementById('listeBibliotheque');
             liste.innerHTML = '';
-            
+
             let items = [];
             if (typeBibliotheque === 'travail') {
                 items = data.travail;
@@ -1601,22 +1668,38 @@
             } else if (typeBibliotheque === 'fournisseurs') {
                 items = fournisseurs.map(f => ({ nom: f }));
             }
-            
+
             items.forEach((item, idx) => {
                 const div = document.createElement('div');
                 div.className = 'bibliotheque-item';
-                
+
                 let tauxText = '';
                 if (typeBibliotheque === 'travail' || typeBibliotheque === 'machine') {
                     tauxText = `<div class="item-taux">Taux: ${item.taux} €/h</div>`;
                 }
-                
+
+                // Boutons de réorganisation pour postes et machines uniquement
+                let orderButtons = '';
+                if (typeBibliotheque === 'travail' || typeBibliotheque === 'machine') {
+                    const disableUp = idx === 0 ? 'disabled' : '';
+                    const disableDown = idx === items.length - 1 ? 'disabled' : '';
+                    orderButtons = `
+                        <button class="btn-move" ${disableUp} onclick="deplacerItem(${idx}, -1)" title="Monter">
+                            ⬆️
+                        </button>
+                        <button class="btn-move" ${disableDown} onclick="deplacerItem(${idx}, 1)" title="Descendre">
+                            ⬇️
+                        </button>
+                    `;
+                }
+
                 div.innerHTML = `
                     <div class="item-info">
                         <div class="item-name">${item.nom}</div>
                         ${tauxText}
                     </div>
                     <div class="item-actions">
+                        ${orderButtons}
                         <button class="btn-icon btn-edit" onclick="editerItem(${idx})">
                             ✏️ Modifier
                         </button>
@@ -1734,6 +1817,7 @@
                     });
                 } else if (typeBibliotheque === 'fournisseurs') {
                     fournisseurs.push(nom);
+                    await sauvegarderFournisseursVersServeur();
                 }
             } else {
                 // Modification
@@ -1753,6 +1837,7 @@
                     data.achats[indexEdition].nom = nom;
                 } else if (typeBibliotheque === 'fournisseurs') {
                     fournisseurs[indexEdition] = nom;
+                    await sauvegarderFournisseursVersServeur();
                 }
             }
 
@@ -1799,6 +1884,89 @@
             }
         }
 
+        async function deplacerItem(idx, direction) {
+            let items;
+            if (typeBibliotheque === 'travail') {
+                items = data.travail;
+            } else if (typeBibliotheque === 'machine') {
+                items = data.machine;
+            } else {
+                return;
+            }
+
+            const newIdx = idx + direction;
+            if (newIdx < 0 || newIdx >= items.length) return;
+
+            // Échanger les éléments
+            [items[idx], items[newIdx]] = [items[newIdx], items[idx]];
+
+            // Mettre à jour l'affichage
+            afficherListeBibliotheque();
+            if (typeBibliotheque === 'travail') {
+                renderTravail();
+            } else if (typeBibliotheque === 'machine') {
+                renderMachine();
+            }
+
+            calculer();
+            sauvegarderAuto();
+
+            // Envoyer l'ordre au serveur
+            await synchroniserOrdreVersServeur();
+        }
+
+        // Synchroniser l'ordre des postes vers le serveur
+        async function synchroniserOrdreVersServeur() {
+            try {
+                console.log('🔄 Synchronisation de l\'ordre des postes...');
+                const response = await fetch('/api/postes');
+                const responseData = await response.json();
+                const postesServeur = responseData.postes || [];
+
+                // Mettre à jour l'ordre pour les postes de travail
+                for (let i = 0; i < data.travail.length; i++) {
+                    const poste = data.travail[i];
+                    const posteServeur = postesServeur.find(p => p.name === poste.nom && !p.isMachine);
+
+                    if (posteServeur && posteServeur.id) {
+                        await fetch(`/api/postes/${posteServeur.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: posteServeur.name,
+                                tauxHoraire: posteServeur.tauxHoraire,
+                                isMachine: false,
+                                order: i
+                            })
+                        });
+                    }
+                }
+
+                // Mettre à jour l'ordre pour les machines
+                for (let i = 0; i < data.machine.length; i++) {
+                    const machine = data.machine[i];
+                    const machineServeur = postesServeur.find(p => p.name === machine.nom && p.isMachine);
+
+                    if (machineServeur && machineServeur.id) {
+                        await fetch(`/api/postes/${machineServeur.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: machineServeur.name,
+                                tauxHoraire: machineServeur.tauxHoraire,
+                                isMachine: true,
+                                order: i
+                            })
+                        });
+                    }
+                }
+
+                console.log('✅ Ordre synchronisé avec le serveur');
+            } catch (error) {
+                console.error('❌ Erreur synchronisation ordre:', error);
+            }
+        }
+
         function supprimerItem(idx) {
             let item, message;
             if (typeBibliotheque === 'travail') {
@@ -1814,7 +1982,7 @@
                 item = { nom: fournisseurs[idx] };
                 message = `Voulez-vous vraiment supprimer "${item.nom}" de la liste des fournisseurs ?`;
             }
-            
+
             if (confirm(message)) {
                 if (typeBibliotheque === 'travail') {
                     data.travail.splice(idx, 1);
@@ -1827,9 +1995,10 @@
                     renderAchats();
                 } else if (typeBibliotheque === 'fournisseurs') {
                     fournisseurs.splice(idx, 1);
+                    sauvegarderFournisseursVersServeur(); // Sauvegarder sur le serveur
                     renderAchats(); // Rafraîchir les achats
                 }
-                
+
                 calculer();
                 sauvegarderAuto();
                 afficherListeBibliotheque();
@@ -2137,7 +2306,11 @@
             console.log('📊 Postes chargés:', postesTravail.length);
             console.log('🏭 Machines chargées:', machines.length);
 
-            // 2. Initialiser les données avec les postes/machines depuis data.json
+            // 2. Charger les fournisseurs depuis le serveur
+            fournisseurs = await chargerFournisseursDepuisServeur();
+            console.log('📋 Fournisseurs chargés:', fournisseurs.length);
+
+            // 3. Initialiser les données avec les postes/machines depuis data.json
             data.travail = postesTravail.map(p => ({
                 ...p,
                 semaines: [0, 0, 0, 0, 0, 0, 0, 0]
@@ -2148,15 +2321,15 @@
                 temps: 0
             }));
 
-            // 3. Charger la sauvegarde du devis (heures, quantités, infos client)
+            // 4. Charger la sauvegarde du devis (heures, quantités, infos client)
             chargerSauvegarde();
 
-            // 4. Synchroniser les taux depuis data.json (écrase les anciens taux)
+            // 5. Synchroniser les taux depuis data.json (écrase les anciens taux)
             await synchroniserTauxDepuisServeur();
 
             console.log('✅ Application initialisée avec les données de data.json');
 
-            // 5. Initialiser l'interface
+            // 6. Initialiser l'interface
             init();
             ajouterEvenementsSauvegarde();
         };
