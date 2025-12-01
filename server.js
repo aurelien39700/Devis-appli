@@ -621,6 +621,12 @@ app.put('/api/postes/:id', async (req, res) => {
             data.postes[posteIndex].isMachine = req.body.isMachine;
         }
 
+        // Mettre à jour order si fourni
+        if (req.body.order !== undefined) {
+            data.postes[posteIndex].order = req.body.order;
+            console.log(`✅ Ordre mis à jour: ${req.body.order}`);
+        }
+
         console.log(`📊 Poste après:`, data.postes[posteIndex]);
 
         await writeData(data);
@@ -640,6 +646,30 @@ app.delete('/api/postes/:id', async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: 'Erreur de suppression' });
+    }
+});
+
+// ===== Routes pour les Fournisseurs =====
+
+// GET - Récupérer tous les fournisseurs
+app.get('/api/fournisseurs', async (req, res) => {
+    try {
+        const data = await readData();
+        res.json({ fournisseurs: data.fournisseurs || [] });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// POST - Sauvegarder la liste des fournisseurs
+app.post('/api/fournisseurs', async (req, res) => {
+    try {
+        const data = await readData();
+        data.fournisseurs = req.body.fournisseurs || [];
+        await writeData(data);
+        res.json({ success: true, fournisseurs: data.fournisseurs });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de sauvegarde' });
     }
 });
 

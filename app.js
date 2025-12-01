@@ -543,6 +543,13 @@ async function loadPostes(cacheBuster = '') {
             // PRIORITÉ AU SERVEUR : écraser complètement
             postes = serverPostes;
 
+            // Trier les postes par ordre
+            postes.sort((a, b) => {
+                const orderA = a.order !== undefined ? a.order : 999;
+                const orderB = b.order !== undefined ? b.order : 999;
+                return orderA - orderB;
+            });
+
             // Sauvegarder seulement les postes, pas tout le localStorage
             localStorage.setItem('affaires_postes', JSON.stringify(postes));
 
@@ -2070,6 +2077,48 @@ async function deletePoste(id) {
     }
 }
 
+// Déplacer un poste dans l'ordre
+async function movePoste(posteId, direction) {
+    const index = postes.findIndex(p => p.id === posteId);
+    if (index === -1) return;
+
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= postes.length) return;
+
+    // Échanger les éléments
+    [postes[index], postes[newIndex]] = [postes[newIndex], postes[index]];
+
+    // Mettre à jour les champs 'order' de tous les postes
+    for (let i = 0; i < postes.length; i++) {
+        postes[i].order = i;
+    }
+
+    // Sauvegarder l'ordre sur le serveur
+    try {
+        for (let i = 0; i < postes.length; i++) {
+            const poste = postes[i];
+            await fetch(`${API_URL}/postes/${poste.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: poste.name,
+                    tauxHoraire: poste.tauxHoraire,
+                    isMachine: poste.isMachine,
+                    order: i
+                })
+            });
+        }
+        console.log('✅ Ordre des postes sauvegardé sur le serveur');
+    } catch (error) {
+        console.error('❌ Erreur sauvegarde ordre postes:', error);
+    }
+
+    // Mettre à jour l'affichage et synchroniser
+    localStorage.setItem('affaires_postes', JSON.stringify(postes));
+    syncPostesVersDevisApp();
+    renderPostes();
+}
+
 function renderPostes() {
     const container = document.getElementById('postesList');
     if (!postes || postes.length === 0) {
@@ -2077,7 +2126,7 @@ function renderPostes() {
         return;
     }
 
-    const html = postes.map(poste => {
+    const html = postes.map((poste, index) => {
         // Compter le nombre d'entrées pour ce poste
         const nbEntries = entries.filter(e => e.posteId === poste.id).length;
         const totalHeures = entries
@@ -2087,6 +2136,20 @@ function renderPostes() {
         const machineBadge = poste.isMachine
             ? '<span style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-left: 8px;">⚙️ Machine</span>'
             : '';
+
+        // Boutons de déplacement
+        const isFirst = index === 0;
+        const isLast = index === postes.length - 1;
+        const moveButtons = `
+            <button class="btn btn-secondary" onclick="movePoste('${poste.id}', -1)" ${isFirst ? 'disabled' : ''}
+                style="padding: 8px 12px; ${isFirst ? 'opacity: 0.5; cursor: not-allowed;' : ''}" title="Monter">
+                ⬆️
+            </button>
+            <button class="btn btn-secondary" onclick="movePoste('${poste.id}', 1)" ${isLast ? 'disabled' : ''}
+                style="padding: 8px 12px; ${isLast ? 'opacity: 0.5; cursor: not-allowed;' : ''}" title="Descendre">
+                ⬇️
+            </button>
+        `;
 
         return `
             <div class="admin-card">
@@ -2100,6 +2163,7 @@ function renderPostes() {
                     <strong>Entrées:</strong> ${nbEntries} | <strong>Total heures:</strong> ${totalHeures.toFixed(2)}h
                 </div>
                 <div class="item-actions">
+                    ${moveButtons}
                     <button class="btn btn-secondary" onclick="openRenameModal('poste', '${poste.id}', '${escapeHtml(poste.name).replace(/'/g, "\\'")}')">
                         ✏️ Renommer
                     </button>
