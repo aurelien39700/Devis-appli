@@ -279,6 +279,14 @@
       "hours": "5.5",
       "enteredBy": "Jojo",
       "date": "2025-12-01T08:40:37.403Z"
+    },
+    {
+      "id": "1764583166479",
+      "affaireId": "1764583163223",
+      "posteId": "1764014781418",
+      "hours": "1.5",
+      "enteredBy": "Thomas",
+      "date": "2025-12-01T09:59:27.448Z"
     }
   ],
   "clients": [
@@ -430,6 +438,13 @@
     },
     {
       "id": "1764583163223",
+      "name": "MG2508",
+      "clientId": "1764014447938",
+      "description": "",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764583165379",
       "name": "MG2508",
       "clientId": "1764014447938",
       "description": "",
