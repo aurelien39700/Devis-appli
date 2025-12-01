@@ -311,6 +311,14 @@
       "hours": "4",
       "enteredBy": "Henri",
       "date": "2025-12-01T14:37:08.692Z"
+    },
+    {
+      "id": "1764600039007",
+      "affaireId": "1764600037606",
+      "posteId": "1764014781418",
+      "hours": "1.5",
+      "enteredBy": "Thomas",
+      "date": "2025-12-01T14:40:39.929Z"
     }
   ],
   "clients": [
