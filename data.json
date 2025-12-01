@@ -525,21 +525,21 @@
       "name": "Erosion",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 5
+      "order": 6
     },
     {
       "id": "1764019427786",
       "name": "Érosion FIL",
       "isMachine": false,
       "tauxHoraire": 90,
-      "order": 6
+      "order": 7
     },
     {
       "id": "1764055164678",
       "name": "Montage / Demontage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 7
+      "order": 8
     },
     {
       "id": "1764055523549",
