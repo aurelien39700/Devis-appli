@@ -510,7 +510,8 @@
       "id": "1764014788537",
       "name": "Fraisage",
       "tauxHoraire": 90,
-      "isMachine": false
+      "isMachine": false,
+      "order": 1
     },
     {
       "id": "1764014806191",
