@@ -504,7 +504,7 @@
       "name": "Soudure",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 3
+      "order": 5
     },
     {
       "id": "1764014788537",
@@ -518,7 +518,7 @@
       "name": "Ajustage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 3
+      "order": 4
     },
     {
       "id": "1764018748947",
@@ -567,7 +567,7 @@
       "name": "Carcasse",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 8
+      "order": 4
     },
     {
       "id": "1764060086821",
