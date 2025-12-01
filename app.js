@@ -1120,14 +1120,23 @@ function editEntry(id) {
 async function handleSubmit(e) {
     e.preventDefault();
 
-    // Vérifier que l'utilisateur peut modifier cette entrée
-    if (editingId) {
-        const entry = entries.find(e => e.id === editingId);
-        if (entry && !isAdmin() && entry.enteredBy !== currentUser.name) {
-            alert('Vous ne pouvez modifier que vos propres saisies');
-            return;
+    // Désactiver le bouton de soumission et afficher un indicateur de chargement
+    const submitBtn = document.querySelector('#entryForm button[type="submit"]');
+    const submitBtnText = document.getElementById('submitBtnText');
+    const originalText = submitBtnText.textContent;
+
+    submitBtn.disabled = true;
+    submitBtnText.innerHTML = '⏳ Enregistrement...';
+
+    try {
+        // Vérifier que l'utilisateur peut modifier cette entrée
+        if (editingId) {
+            const entry = entries.find(e => e.id === editingId);
+            if (entry && !isAdmin() && entry.enteredBy !== currentUser.name) {
+                alert('Vous ne pouvez modifier que vos propres saisies');
+                return;
+            }
         }
-    }
 
     let affaireId = document.getElementById('affaire').value;
     let isNewSoudureAffaire = false;
@@ -1216,19 +1225,27 @@ async function handleSubmit(e) {
     console.log('📝 Création entrée:', entryData);
     console.log('📁 Affaire sélectionnée:', affaires.find(a => a.id === affaireId));
 
-    if (editingId) {
-        await updateEntry(editingId, entryData);
-        closeModal();
-    } else {
-        const success = await saveEntry(entryData);
-        if (success) {
-            // Attendre un peu que le serveur traite complètement la requête
-            await new Promise(resolve => setTimeout(resolve, 300));
-        }
-        closeModal();
+        if (editingId) {
+            await updateEntry(editingId, entryData);
+            closeModal();
+        } else {
+            const success = await saveEntry(entryData);
+            if (success) {
+                // Attendre un peu que le serveur traite complètement la requête
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            closeModal();
 
-        // Afficher une notification de succès
-        showNotification('✅ Entrée ajoutée avec succès', 'success');
+            // Afficher une notification de succès
+            showNotification('✅ Entrée ajoutée avec succès', 'success');
+        }
+    } catch (error) {
+        console.error('❌ Erreur lors de la soumission:', error);
+        alert('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+        // Réactiver le bouton et restaurer le texte
+        submitBtn.disabled = false;
+        submitBtnText.textContent = originalText;
     }
 }
 
@@ -2093,30 +2110,42 @@ async function movePoste(posteId, direction) {
         postes[i].order = i;
     }
 
-    // Sauvegarder l'ordre sur le serveur
+    // Mettre à jour l'affichage immédiatement pour la réactivité
+    renderPostes();
+    localStorage.setItem('affaires_postes', JSON.stringify(postes));
+    syncPostesVersDevisApp();
+
+    // Sauvegarder l'ordre sur le serveur en arrière-plan (optimisé - seulement les deux postes échangés)
     try {
-        for (let i = 0; i < postes.length; i++) {
-            const poste = postes[i];
-            await fetch(`${API_URL}/postes/${poste.id}`, {
+        // Sauvegarder seulement les deux postes concernés pour réduire la latence
+        const updates = [
+            fetch(`${API_URL}/postes/${postes[index].id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: poste.name,
-                    tauxHoraire: poste.tauxHoraire,
-                    isMachine: poste.isMachine,
-                    order: i
+                    name: postes[index].name,
+                    tauxHoraire: postes[index].tauxHoraire,
+                    isMachine: postes[index].isMachine,
+                    order: index
                 })
-            });
-        }
+            }),
+            fetch(`${API_URL}/postes/${postes[newIndex].id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: postes[newIndex].name,
+                    tauxHoraire: postes[newIndex].tauxHoraire,
+                    isMachine: postes[newIndex].isMachine,
+                    order: newIndex
+                })
+            })
+        ];
+
+        await Promise.all(updates);
         console.log('✅ Ordre des postes sauvegardé sur le serveur');
     } catch (error) {
         console.error('❌ Erreur sauvegarde ordre postes:', error);
     }
-
-    // Mettre à jour l'affichage et synchroniser
-    localStorage.setItem('affaires_postes', JSON.stringify(postes));
-    syncPostesVersDevisApp();
-    renderPostes();
 }
 
 function renderPostes() {
@@ -2137,16 +2166,16 @@ function renderPostes() {
             ? '<span style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-left: 8px;">⚙️ Machine</span>'
             : '';
 
-        // Boutons de déplacement
+        // Boutons de déplacement discrets
         const isFirst = index === 0;
         const isLast = index === postes.length - 1;
         const moveButtons = `
             <button class="btn btn-secondary" onclick="movePoste('${poste.id}', -1)" ${isFirst ? 'disabled' : ''}
-                style="padding: 8px 12px; ${isFirst ? 'opacity: 0.5; cursor: not-allowed;' : ''}" title="Monter">
+                style="padding: 4px 8px; font-size: 0.85rem; min-width: 32px; ${isFirst ? 'opacity: 0.5; cursor: not-allowed;' : ''}" title="Monter">
                 ⬆️
             </button>
             <button class="btn btn-secondary" onclick="movePoste('${poste.id}', 1)" ${isLast ? 'disabled' : ''}
-                style="padding: 8px 12px; ${isLast ? 'opacity: 0.5; cursor: not-allowed;' : ''}" title="Descendre">
+                style="padding: 4px 8px; font-size: 0.85rem; min-width: 32px; ${isLast ? 'opacity: 0.5; cursor: not-allowed;' : ''}" title="Descendre">
                 ⬇️
             </button>
         `;
