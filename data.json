@@ -511,7 +511,7 @@
       "name": "Fraisage",
       "tauxHoraire": 90,
       "isMachine": false,
-      "order": 2
+      "order": 3
     },
     {
       "id": "1764014806191",
@@ -567,7 +567,7 @@
       "name": "Carcasse",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 4
+      "order": 2
     },
     {
       "id": "1764060086821",
