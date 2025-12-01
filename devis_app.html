@@ -1702,15 +1702,15 @@
             document.getElementById('modalEdition').style.display = 'none';
         }
 
-        function sauvegarderEdition() {
+        async function sauvegarderEdition() {
             const nom = document.getElementById('editNom').value.trim();
             if (!nom) {
                 alert('⚠️ Le nom est obligatoire');
                 return;
             }
-            
+
             const taux = parseInt(document.getElementById('editTaux').value) || 0;
-            
+
             if (indexEdition === -1) {
                 // Ajout
                 if (typeBibliotheque === 'travail') {
@@ -1740,16 +1740,22 @@
                 if (typeBibliotheque === 'travail') {
                     data.travail[indexEdition].nom = nom;
                     data.travail[indexEdition].taux = taux;
+
+                    // Envoyer la modification au serveur
+                    await envoyerTauxAuServeur(nom, taux, false);
                 } else if (typeBibliotheque === 'machine') {
                     data.machine[indexEdition].nom = nom;
                     data.machine[indexEdition].taux = taux;
+
+                    // Envoyer la modification au serveur
+                    await envoyerTauxAuServeur(nom, taux, true);
                 } else if (typeBibliotheque === 'achats') {
                     data.achats[indexEdition].nom = nom;
                 } else if (typeBibliotheque === 'fournisseurs') {
                     fournisseurs[indexEdition] = nom;
                 }
             }
-            
+
             // Mettre à jour l'affichage
             if (typeBibliotheque === 'travail') {
                 renderTravail();
@@ -1760,11 +1766,37 @@
             } else if (typeBibliotheque === 'fournisseurs') {
                 renderAchats(); // Rafraîchir les achats pour mettre à jour les datalists
             }
-            
+
             calculer();
             sauvegarderAuto();
             afficherListeBibliotheque();
             fermerEdition();
+        }
+
+        // Fonction utilitaire pour envoyer le taux au serveur
+        async function envoyerTauxAuServeur(nomPoste, nouveauTaux, isMachine) {
+            try {
+                const response = await fetch('/api/postes');
+                const responseData = await response.json();
+                const postes = responseData.postes || [];
+                const poste = postes.find(p => p.name === nomPoste && p.isMachine === isMachine);
+
+                if (poste && poste.id) {
+                    console.log(`📝 Mise à jour taux de "${poste.name}": ${nouveauTaux}€/h`);
+                    await fetch(`/api/postes/${poste.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: poste.name,
+                            tauxHoraire: nouveauTaux,
+                            isMachine: isMachine
+                        })
+                    });
+                    console.log(`✅ Taux mis à jour pour "${poste.name}"`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur mise à jour taux:', error);
+            }
         }
 
         function supprimerItem(idx) {
@@ -2050,6 +2082,38 @@
             }
         }
 
+        // Synchroniser les taux depuis le serveur vers les données chargées
+        async function synchroniserTauxDepuisServeur() {
+            try {
+                console.log('🔄 Synchronisation des taux depuis le serveur...');
+                const response = await fetch('/api/postes');
+                const responseData = await response.json();
+                const postesServeur = responseData.postes || [];
+
+                // Mettre à jour les taux des postes de travail
+                data.travail.forEach(poste => {
+                    const posteServeur = postesServeur.find(p => p.name === poste.nom && !p.isMachine);
+                    if (posteServeur) {
+                        console.log(`✅ Mise à jour taux "${poste.nom}": ${poste.taux} → ${posteServeur.tauxHoraire}€/h`);
+                        poste.taux = posteServeur.tauxHoraire;
+                    }
+                });
+
+                // Mettre à jour les taux des machines
+                data.machine.forEach(machine => {
+                    const machineServeur = postesServeur.find(p => p.name === machine.nom && p.isMachine);
+                    if (machineServeur) {
+                        console.log(`✅ Mise à jour taux "${machine.nom}": ${machine.taux} → ${machineServeur.tauxHoraire}€/h`);
+                        machine.taux = machineServeur.tauxHoraire;
+                    }
+                });
+
+                console.log('✅ Synchronisation des taux terminée');
+            } catch (error) {
+                console.error('❌ Erreur synchronisation taux:', error);
+            }
+        }
+
         // Ajouter les événements de sauvegarde automatique aux champs
         function ajouterEvenementsSauvegarde() {
             document.getElementById('client').addEventListener('input', sauvegarderAuto);
@@ -2064,10 +2128,35 @@
 
         // Lancement
         window.onload = async function() {
-            // Charger les postes depuis le serveur d'abord
-            await chargerPostesDepuisServeur();
+            console.log('🚀 Démarrage de l\'application devis_app...');
 
+            // 1. Charger les postes et machines depuis data.json (source de vérité)
+            const postesTravail = await chargerPostesBibliotheque();
+            const machines = await chargerMachinesBibliotheque();
+
+            console.log('📊 Postes chargés:', postesTravail.length);
+            console.log('🏭 Machines chargées:', machines.length);
+
+            // 2. Initialiser les données avec les postes/machines depuis data.json
+            data.travail = postesTravail.map(p => ({
+                ...p,
+                semaines: [0, 0, 0, 0, 0, 0, 0, 0]
+            }));
+
+            data.machine = machines.map(m => ({
+                ...m,
+                temps: 0
+            }));
+
+            // 3. Charger la sauvegarde du devis (heures, quantités, infos client)
             chargerSauvegarde();
+
+            // 4. Synchroniser les taux depuis data.json (écrase les anciens taux)
+            await synchroniserTauxDepuisServeur();
+
+            console.log('✅ Application initialisée avec les données de data.json');
+
+            // 5. Initialiser l'interface
             init();
             ajouterEvenementsSauvegarde();
         };
