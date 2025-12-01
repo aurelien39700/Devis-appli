@@ -531,7 +531,8 @@
       "id": "1764019427786",
       "name": "Érosion FIL",
       "isMachine": false,
-      "tauxHoraire": 90
+      "tauxHoraire": 90,
+      "order": 4
     },
     {
       "id": "1764055164678",
