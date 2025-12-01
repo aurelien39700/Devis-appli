@@ -574,7 +574,7 @@
       "name": "Microperçage",
       "tauxHoraire": 70,
       "isMachine": false,
-      "order": 10
+      "order": 9
     },
     {
       "id": "1764061108386",
@@ -642,4 +642,5 @@
       "password": "henri60"
     }
   ]
+}
 }
