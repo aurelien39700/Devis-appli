@@ -580,7 +580,8 @@
       "id": "1764061108386",
       "name": "Rectification",
       "tauxHoraire": 80,
-      "isMachine": false
+      "isMachine": false,
+      "order": 11
     },
     {
       "id": "1764061151273",
