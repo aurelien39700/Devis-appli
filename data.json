@@ -546,7 +546,7 @@
       "name": "Fraisage CN",
       "isMachine": true,
       "tauxHoraire": 46,
-      "order": 10
+      "order": 11
     },
     {
       "id": "1764060067448",
@@ -574,7 +574,7 @@
       "name": "Microperçage",
       "tauxHoraire": 70,
       "isMachine": false,
-      "order": 11
+      "order": 10
     },
     {
       "id": "1764061108386",
