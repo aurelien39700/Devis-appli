@@ -427,6 +427,13 @@
       "clientId": "1764014447938",
       "description": "Soudure empreinte engrenage",
       "statut": "en_cours"
+    },
+    {
+      "id": "1764583163223",
+      "name": "MG2508",
+      "clientId": "1764014447938",
+      "description": "",
+      "statut": "en_cours"
     }
   ],
   "postes": [
