@@ -702,6 +702,30 @@ app.post('/api/fournisseurs', async (req, res) => {
     }
 });
 
+// ===== Routes pour les Achats =====
+
+// GET - Récupérer tous les achats de la bibliothèque
+app.get('/api/achats', async (req, res) => {
+    try {
+        const data = await readData();
+        res.json({ achats: data.achats || [] });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// POST - Sauvegarder la liste des achats
+app.post('/api/achats', async (req, res) => {
+    try {
+        const data = await readData();
+        data.achats = req.body.achats || [];
+        await writeData(data);
+        res.json({ success: true, achats: data.achats });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de sauvegarde' });
+    }
+});
+
 // ===== Routes pour les Utilisateurs =====
 
 // GET - Récupérer tous les utilisateurs

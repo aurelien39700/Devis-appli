@@ -1110,7 +1110,7 @@
         const postesTravail = chargerPostesBibliotheque();
         const machines = chargerMachinesBibliotheque();
 
-        const achatsItems = [
+        let achatsItems = [
             'Carcasse',
             'Éléments carcasse',
             'Matière première',
@@ -1163,6 +1163,43 @@
                 console.log('✅ Fournisseurs sauvegardés sur le serveur');
             } catch (error) {
                 console.error('❌ Erreur sauvegarde fournisseurs vers serveur:', error);
+            }
+        }
+
+        // Charger les achats depuis le serveur
+        async function chargerAchatsDepuisServeur() {
+            try {
+                console.log('📥 Chargement des achats depuis le serveur...');
+                const response = await fetch('/api/achats');
+                if (!response.ok) {
+                    console.log('⚠️ Endpoint achats non disponible, utilisation des achats par défaut');
+                    return achatsItems;
+                }
+                const data = await response.json();
+                const achatsServeur = data.achats || [];
+                console.log('✅ Achats chargés depuis le serveur:', achatsServeur.length, 'achats');
+                return achatsServeur.length > 0 ? achatsServeur : achatsItems;
+            } catch (error) {
+                console.error('❌ Erreur chargement achats depuis serveur:', error);
+                return achatsItems;
+            }
+        }
+
+        // Sauvegarder les achats vers le serveur
+        async function sauvegarderAchatsVersServeur() {
+            try {
+                console.log('💾 Sauvegarde des achats vers le serveur...');
+                const response = await fetch('/api/achats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ achats: achatsItems })
+                });
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ${response.status}`);
+                }
+                console.log('✅ Achats sauvegardés sur le serveur');
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde achats vers serveur:', error);
             }
         }
 
@@ -1771,6 +1808,8 @@
                         temps: 0
                     });
                 } else if (typeBibliotheque === 'achats') {
+                    achatsItems.push(nom);
+                    await sauvegarderAchatsVersServeur();
                     data.achats.push({
                         nom: nom,
                         fournisseur: '',
@@ -1796,6 +1835,8 @@
                     // Envoyer la modification au serveur
                     await envoyerTauxAuServeur(nom, taux, true);
                 } else if (typeBibliotheque === 'achats') {
+                    achatsItems[indexEdition] = nom;
+                    await sauvegarderAchatsVersServeur();
                     data.achats[indexEdition].nom = nom;
                 } else if (typeBibliotheque === 'fournisseurs') {
                     fournisseurs[indexEdition] = nom;
@@ -1870,6 +1911,8 @@
                     data.machine.splice(idx, 1);
                     renderMachine();
                 } else if (typeBibliotheque === 'achats') {
+                    achatsItems.splice(idx, 1);
+                    sauvegarderAchatsVersServeur(); // Sauvegarder sur le serveur
                     data.achats.splice(idx, 1);
                     renderAchats();
                 } else if (typeBibliotheque === 'fournisseurs') {
@@ -2185,9 +2228,12 @@
             console.log('📊 Postes chargés:', postesTravail.length);
             console.log('🏭 Machines chargées:', machines.length);
 
-            // 2. Charger les fournisseurs depuis le serveur
+            // 2. Charger les fournisseurs et achats depuis le serveur
             fournisseurs = await chargerFournisseursDepuisServeur();
             console.log('📋 Fournisseurs chargés:', fournisseurs.length);
+
+            achatsItems = await chargerAchatsDepuisServeur();
+            console.log('🛒 Achats chargés:', achatsItems.length);
 
             // 3. Initialiser les données avec les postes/machines depuis data.json
             data.travail = postesTravail.map(p => ({
