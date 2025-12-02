@@ -364,7 +364,7 @@
       "id": "1764679704122",
       "affaireId": "1764061701442",
       "posteId": "1764157949893",
-      "hours": "0.5",
+      "hours": "1.5",
       "enteredBy": "Aurélien",
       "date": "2025-12-02T12:48:24.344Z"
     },
@@ -383,6 +383,14 @@
       "hours": "0.5",
       "enteredBy": "Administrateur",
       "date": "2025-12-02T13:55:51.942Z"
+    },
+    {
+      "id": "1764685255118",
+      "affaireId": "1764150341419",
+      "posteId": "1764055164678",
+      "hours": "2",
+      "enteredBy": "Jojo",
+      "date": "2025-12-02T14:20:55.190Z"
     }
   ],
   "clients": [
