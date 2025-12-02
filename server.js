@@ -315,7 +315,9 @@ async function readData() {
             clients: parsed.clients || [],
             affaires: parsed.affaires || [],
             postes: parsed.postes || [],
-            users: parsed.users || []
+            users: parsed.users || [],
+            achats: parsed.achats || [],
+            fournisseurs: parsed.fournisseurs || []
         };
     } catch (error) {
         return {
@@ -323,7 +325,9 @@ async function readData() {
             clients: [],
             affaires: [],
             postes: [],
-            users: []
+            users: [],
+            achats: [],
+            fournisseurs: []
         };
     }
 }
