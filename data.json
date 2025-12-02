@@ -681,5 +681,7 @@
       "name": "Henri",
       "password": "henri60"
     }
-  ]
+  ],
+  "achats": [],
+  "fournisseurs": []
 }
