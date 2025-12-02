@@ -1601,10 +1601,11 @@
                 affaire: document.getElementById('affaire').value,
                 date: document.getElementById('date').value,
                 coeffMarge: document.getElementById('coeffMarge').value,
-                data: data,
-                fournisseurs: fournisseurs
+                data: data
+                // Note: fournisseurs et achats ne sont PAS sauvegardés ici
+                // car ce sont des bibliothèques globales gérées par le serveur
             };
-            
+
             localStorage.setItem('devis_somepre', JSON.stringify(devisData));
         }
 
@@ -2167,9 +2168,8 @@
                 if (devisData.data) {
                     data = devisData.data;
                 }
-                if (devisData.fournisseurs) {
-                    fournisseurs = devisData.fournisseurs;
-                }
+                // Note: fournisseurs et achats ne sont PAS chargés depuis localStorage
+                // car ils proviennent toujours du serveur (source de vérité)
             }
         }
 
