@@ -696,9 +696,13 @@ app.get('/api/fournisseurs', async (req, res) => {
 app.post('/api/fournisseurs', async (req, res) => {
     try {
         const data = await readData();
-        data.fournisseurs = req.body.fournisseurs || [];
-        await writeData(data);
-        res.json({ success: true, fournisseurs: data.fournisseurs });
+        // Préserver les autres champs en fusionnant les données
+        const updatedData = {
+            ...data,
+            fournisseurs: req.body.fournisseurs || []
+        };
+        await writeData(updatedData);
+        res.json({ success: true, fournisseurs: updatedData.fournisseurs });
     } catch (error) {
         res.status(500).json({ error: 'Erreur de sauvegarde' });
     }
@@ -720,9 +724,13 @@ app.get('/api/achats', async (req, res) => {
 app.post('/api/achats', async (req, res) => {
     try {
         const data = await readData();
-        data.achats = req.body.achats || [];
-        await writeData(data);
-        res.json({ success: true, achats: data.achats });
+        // Préserver les autres champs en fusionnant les données
+        const updatedData = {
+            ...data,
+            achats: req.body.achats || []
+        };
+        await writeData(updatedData);
+        res.json({ success: true, achats: updatedData.achats });
     } catch (error) {
         res.status(500).json({ error: 'Erreur de sauvegarde' });
     }
