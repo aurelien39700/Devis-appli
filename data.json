@@ -1,13 +1,646 @@
 {
-  "entries": [],
-  "clients": [],
-  "affaires": [],
-  "postes": [],
+  "entries": [
+    {
+      "id": "1764060234537",
+      "affaireId": "1764060146963",
+      "posteId": "1764055164678",
+      "hours": "9",
+      "enteredBy": "Quentin",
+      "date": "2025-11-25T08:43:54.738Z"
+    },
+    {
+      "id": "1764061062438",
+      "affaireId": "1764060146963",
+      "posteId": "1764014781418",
+      "hours": "2.5",
+      "enteredBy": "Thomas",
+      "date": "2025-11-25T08:57:41.204Z"
+    },
+    {
+      "id": "1764061150349",
+      "affaireId": "1764060146963",
+      "posteId": "1764061108386",
+      "hours": "1.5",
+      "enteredBy": "Thomas",
+      "date": "2025-11-25T08:59:09.037Z"
+    },
+    {
+      "id": "1764061196959",
+      "affaireId": "1764060146963",
+      "posteId": "1764060074533",
+      "hours": "2",
+      "enteredBy": "Henri",
+      "date": "2025-11-25T08:59:57.779Z"
+    },
+    {
+      "id": "1764061613394",
+      "affaireId": "1764061178087",
+      "posteId": "1764055523549",
+      "hours": "1.25",
+      "enteredBy": "Jojo",
+      "date": "2025-11-25T09:06:53.647Z"
+    },
+    {
+      "id": "1764061722550",
+      "affaireId": "1764061701442",
+      "posteId": "1764061151273",
+      "hours": "11",
+      "enteredBy": "Henri",
+      "date": "2025-11-25T09:08:44.005Z"
+    },
+    {
+      "id": "1764061767006",
+      "affaireId": "1764061127262",
+      "posteId": "1764060067448",
+      "hours": "35",
+      "enteredBy": "Quentin",
+      "date": "2025-11-25T09:09:27.182Z"
+    },
+    {
+      "id": "1764061790511",
+      "affaireId": "1764061701442",
+      "posteId": "1764060067448",
+      "hours": "1",
+      "enteredBy": "Quentin",
+      "date": "2025-11-25T09:09:50.687Z"
+    },
+    {
+      "id": "1764061807747",
+      "affaireId": "1764061283933",
+      "posteId": "1764055164678",
+      "hours": "2",
+      "enteredBy": "Quentin",
+      "date": "2025-11-25T09:10:07.928Z"
+    },
+    {
+      "id": "1764061828469",
+      "affaireId": "1764061394216",
+      "posteId": "1764055164678",
+      "hours": "2",
+      "enteredBy": "Quentin",
+      "date": "2025-11-25T09:10:28.643Z"
+    },
+    {
+      "id": "1764064883624",
+      "affaireId": "1764061252565",
+      "posteId": "1764061151273",
+      "hours": "13",
+      "enteredBy": "Henri",
+      "date": "2025-11-25T10:01:24.464Z"
+    },
+    {
+      "id": "1764068981123",
+      "affaireId": "1764062109157",
+      "posteId": "1764061108386",
+      "hours": "2",
+      "enteredBy": "Thomas",
+      "date": "2025-11-25T11:09:39.821Z"
+    },
+    {
+      "id": "1764069061241",
+      "affaireId": "1764061283933",
+      "posteId": "1764014781418",
+      "hours": "0.75",
+      "enteredBy": "Thomas",
+      "date": "2025-11-25T11:10:59.920Z"
+    },
+    {
+      "id": "1764074442390",
+      "affaireId": "1764062109157",
+      "posteId": "1764055523549",
+      "hours": "4",
+      "enteredBy": "Jojo",
+      "date": "2025-11-25T12:40:42.444Z"
+    },
+    {
+      "id": "1764074472261",
+      "affaireId": "1764062109157",
+      "posteId": "1764014788537",
+      "hours": "1",
+      "enteredBy": "Jojo",
+      "date": "2025-11-25T12:41:12.320Z"
+    },
+    {
+      "id": "1764079998711",
+      "affaireId": "1764061438182",
+      "posteId": "1764060067448",
+      "hours": "1",
+      "enteredBy": "Quentin",
+      "date": "2025-11-25T14:13:18.877Z"
+    },
+    {
+      "id": "1764080100537",
+      "affaireId": "1764061107990",
+      "posteId": "1764061108386",
+      "hours": "1.5",
+      "enteredBy": "Thomas",
+      "date": "2025-11-25T14:14:59.302Z"
+    },
+    {
+      "id": "1764082746894",
+      "affaireId": "1764082722139",
+      "posteId": "1764061151273",
+      "hours": "2",
+      "enteredBy": "Henri",
+      "date": "2025-11-25T14:59:07.508Z"
+    },
+    {
+      "id": "1764086838806",
+      "affaireId": "1764062109157",
+      "posteId": "1764014788537",
+      "hours": "4",
+      "enteredBy": "Jojo",
+      "date": "2025-11-25T16:07:18.986Z"
+    },
+    {
+      "id": "1764086864425",
+      "affaireId": "1764062109157",
+      "posteId": "1764055523549",
+      "hours": "39",
+      "enteredBy": "Jojo",
+      "date": "2025-11-25T16:07:44.562Z"
+    },
+    {
+      "id": "1764087073172",
+      "affaireId": "1764087070809",
+      "posteId": "1764014781418",
+      "hours": "0.75",
+      "enteredBy": "Thomas",
+      "date": "2025-11-25T16:11:11.811Z"
+    },
+    {
+      "id": "1764159520275",
+      "affaireId": "1764061283933",
+      "posteId": "1764055164678",
+      "hours": "6",
+      "enteredBy": "Aurélien",
+      "date": "2025-11-26T12:18:39.948Z"
+    },
+    {
+      "id": "1764170169585",
+      "affaireId": "1764061438182",
+      "posteId": "1764014788537",
+      "hours": "7.5",
+      "enteredBy": "Jojo",
+      "date": "2025-11-26T15:16:09.713Z"
+    },
+    {
+      "id": "1764171105894",
+      "affaireId": "1764061283933",
+      "posteId": "1764014788537",
+      "hours": "2",
+      "enteredBy": "Jojo",
+      "date": "2025-11-26T15:31:46.111Z"
+    },
+    {
+      "id": "1764234060727",
+      "affaireId": "1764062065991",
+      "posteId": "1764014806191",
+      "hours": "0.5",
+      "enteredBy": "Aurélien",
+      "date": "2025-11-27T09:01:00.947Z"
+    },
+    {
+      "id": "1764239955202",
+      "affaireId": "1764062065991",
+      "posteId": "1764055523549",
+      "hours": "3",
+      "enteredBy": "Jojo",
+      "date": "2025-11-27T10:39:15.391Z"
+    },
+    {
+      "id": "1764239971066",
+      "affaireId": "1764062065991",
+      "posteId": "1764014788537",
+      "hours": "1",
+      "enteredBy": "Jojo",
+      "date": "2025-11-27T10:39:31.368Z"
+    },
+    {
+      "id": "1764240432093",
+      "affaireId": "1764062065991",
+      "posteId": "1764014781418",
+      "hours": "13",
+      "enteredBy": "Thomas",
+      "date": "2025-11-27T10:47:10.524Z"
+    },
+    {
+      "id": "1764240454498",
+      "affaireId": "1764062065991",
+      "posteId": "1764061108386",
+      "hours": "0.5",
+      "enteredBy": "Thomas",
+      "date": "2025-11-27T10:47:32.846Z"
+    },
+    {
+      "id": "1764246658299",
+      "affaireId": "1764061283933",
+      "posteId": "1764014788537",
+      "hours": "3",
+      "enteredBy": "Henri",
+      "date": "2025-11-27T12:30:58.490Z"
+    },
+    {
+      "id": "1764259556536",
+      "affaireId": "1764061283933",
+      "posteId": "1764055164678",
+      "hours": "1",
+      "enteredBy": "Administrateur",
+      "date": "2025-11-27T16:05:56.596Z"
+    },
+    {
+      "id": "1764319426044",
+      "affaireId": "1764319423764",
+      "posteId": "1764014781418",
+      "hours": "1.25",
+      "enteredBy": "Aurélien",
+      "date": "2025-11-28T08:43:46.215Z"
+    },
+    {
+      "id": "1764574654580",
+      "affaireId": "1764061107990",
+      "posteId": "1764055523549",
+      "hours": "0.5",
+      "enteredBy": "Jojo",
+      "date": "2025-12-01T07:37:34.909Z"
+    },
+    {
+      "id": "1764578420451",
+      "affaireId": "1764146950018",
+      "posteId": "1764014788537",
+      "hours": "1",
+      "enteredBy": "Jojo",
+      "date": "2025-12-01T08:40:20.765Z"
+    },
+    {
+      "id": "1764578437084",
+      "affaireId": "1764146950018",
+      "posteId": "1764055523549",
+      "hours": "5.5",
+      "enteredBy": "Jojo",
+      "date": "2025-12-01T08:40:37.403Z"
+    },
+    {
+      "id": "1764583168862",
+      "affaireId": "1764583165379",
+      "posteId": "1764014781418",
+      "hours": "1.5",
+      "enteredBy": "Thomas",
+      "date": "2025-12-01T09:59:29.833Z"
+    },
+    {
+      "id": "1764583203553",
+      "affaireId": "1764146950018",
+      "posteId": "1764014781418",
+      "hours": "2",
+      "enteredBy": "Thomas",
+      "date": "2025-12-01T10:00:04.659Z"
+    },
+    {
+      "id": "1764583674729",
+      "affaireId": "1764061438182",
+      "posteId": "1764055164678",
+      "hours": "0.5",
+      "enteredBy": "Aurélien",
+      "date": "2025-12-01T10:07:54.805Z"
+    },
+    {
+      "id": "1764599828811",
+      "affaireId": "1764082722139",
+      "posteId": "1764061151273",
+      "hours": "4",
+      "enteredBy": "Henri",
+      "date": "2025-12-01T14:37:08.692Z"
+    },
+    {
+      "id": "1764600039007",
+      "affaireId": "1764600037606",
+      "posteId": "1764014781418",
+      "hours": "1.5",
+      "enteredBy": "Thomas",
+      "date": "2025-12-01T14:40:39.929Z"
+    },
+    {
+      "id": "1764601829752",
+      "affaireId": "1764584483786",
+      "posteId": "1764060067448",
+      "hours": "2",
+      "enteredBy": "Administrateur",
+      "date": "2025-12-01T15:10:29.842Z"
+    }
+  ],
+  "clients": [
+    {
+      "id": "1764014447938",
+      "name": "NP JURA"
+    },
+    {
+      "id": "1764014732621",
+      "name": "PLASTIGRAY"
+    },
+    {
+      "id": "1764014760229",
+      "name": "NMBP"
+    },
+    {
+      "id": "1764015790842",
+      "name": "TYCO"
+    },
+    {
+      "id": "1764016652926",
+      "name": "EUROMECA"
+    },
+    {
+      "id": "1764017522395",
+      "name": "PLASTILYS"
+    },
+    {
+      "id": "1764055731886",
+      "name": "PROFIL C"
+    },
+    {
+      "id": "1764152110558",
+      "name": "C&K"
+    }
+  ],
+  "affaires": [
+    {
+      "id": "1764060146963",
+      "name": "428",
+      "clientId": "1764014732621",
+      "description": "Remise en état",
+      "statut": "archivee"
+    },
+    {
+      "id": "1764061107990",
+      "name": "3075",
+      "clientId": "1764014732621",
+      "description": "Noyau PM",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764061127262",
+      "name": "P2 MK3",
+      "clientId": "1764015790842",
+      "description": "Moule Bi matière",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764061178087",
+      "name": "RENAULT",
+      "clientId": "1764014447938",
+      "description": "Plaque centreur conique",
+      "statut": "archivee"
+    },
+    {
+      "id": "1764061252565",
+      "name": "Bali 12",
+      "clientId": "1764014760229",
+      "description": "Noyau en 140 Kg",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764061283933",
+      "name": "MD1178",
+      "clientId": "1764014447938",
+      "description": "Moule avec les 3 vérins (Goupilles à réparer)",
+      "statut": "archivee"
+    },
+    {
+      "id": "1764061394216",
+      "name": "MF9632",
+      "clientId": "1764014447938",
+      "description": "Noyau décentré (Grand vérin)",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764061438182",
+      "name": "MD7106",
+      "clientId": "1764014447938",
+      "description": "Réfection fixation Strack",
+      "statut": "archivee"
+    },
+    {
+      "id": "1764061701442",
+      "name": "MZF9537",
+      "clientId": "1764014447938",
+      "description": "Noyau Pin Point",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764062065991",
+      "name": "Moule 6",
+      "clientId": "1764014760229",
+      "description": "Soudure 0.04mm sur gros noyau + 2 noyaux soudure rerpise",
+      "statut": "archivee"
+    },
+    {
+      "id": "1764062109157",
+      "name": "3165",
+      "clientId": "1764014732621",
+      "description": "Noyau moule Bi matière",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764082722139",
+      "name": "Buse presse",
+      "clientId": "1764014447938",
+      "description": "",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764087070809",
+      "name": "Pliloire 24",
+      "clientId": "1764017522395",
+      "description": "Soudure au fond des rainure",
+      "statut": "archivee"
+    },
+    {
+      "id": "1764146950018",
+      "name": "MD1284",
+      "clientId": "1764014447938",
+      "description": "Soudure + reprise erosion",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764150341419",
+      "name": "MG4476",
+      "clientId": "1764014447938",
+      "description": "Guidage main de robot",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764319423764",
+      "name": "MB4901",
+      "clientId": "1764014447938",
+      "description": "Soudure empreinte engrenage",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764583165379",
+      "name": "MG2508",
+      "clientId": "1764014447938",
+      "description": "",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764584483786",
+      "name": "2976",
+      "clientId": "1764014732621",
+      "description": "Modif empreinte ajour Rayon de 0.5",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1764600037606",
+      "name": "MF9409",
+      "clientId": "1764014447938",
+      "description": "Soudure sur élément rapporté et deux broches",
+      "statut": "en_cours"
+    }
+  ],
+  "postes": [
+    {
+      "id": "1764014781418",
+      "name": "Soudure",
+      "tauxHoraire": 80,
+      "isMachine": false,
+      "order": 10
+    },
+    {
+      "id": "1764014788537",
+      "name": "Fraisage",
+      "tauxHoraire": 90,
+      "isMachine": false,
+      "order": 7
+    },
+    {
+      "id": "1764014806191",
+      "name": "Ajustage",
+      "tauxHoraire": 75,
+      "isMachine": false,
+      "order": 8
+    },
+    {
+      "id": "1764018748947",
+      "name": "Erosion",
+      "tauxHoraire": 80,
+      "isMachine": false,
+      "order": 6
+    },
+    {
+      "id": "1764019427786",
+      "name": "Érosion FIL",
+      "isMachine": false,
+      "tauxHoraire": 90,
+      "order": 5
+    },
+    {
+      "id": "1764055164678",
+      "name": "Montage / Demontage",
+      "tauxHoraire": 75,
+      "isMachine": false,
+      "order": 9
+    },
+    {
+      "id": "1764055523549",
+      "name": "Fraisage CN",
+      "isMachine": true,
+      "tauxHoraire": 46,
+      "order": 13
+    },
+    {
+      "id": "1764060067448",
+      "name": "Étude",
+      "tauxHoraire": 80,
+      "isMachine": false,
+      "order": 0
+    },
+    {
+      "id": "1764060071044",
+      "name": "Ébauche",
+      "tauxHoraire": 80,
+      "isMachine": false,
+      "order": 1
+    },
+    {
+      "id": "1764060074533",
+      "name": "Carcasse",
+      "tauxHoraire": 80,
+      "isMachine": false,
+      "order": 2
+    },
+    {
+      "id": "1764060086821",
+      "name": "Microperçage",
+      "tauxHoraire": 70,
+      "isMachine": false,
+      "order": 4
+    },
+    {
+      "id": "1764061108386",
+      "name": "Rectification",
+      "tauxHoraire": 80,
+      "isMachine": false,
+      "order": 3
+    },
+    {
+      "id": "1764061151273",
+      "name": "Tournage",
+      "isMachine": false,
+      "tauxHoraire": 80,
+      "order": 11
+    },
+    {
+      "id": "1764076202419",
+      "name": "Érosion CN",
+      "isMachine": true,
+      "tauxHoraire": 46,
+      "order": 12
+    },
+    {
+      "id": "1764157949893",
+      "name": "Érosion FIL CN",
+      "isMachine": true,
+      "tauxHoraire": 46,
+      "order": 14
+    }
+  ],
   "users": [
     {
-      "id": "1764668186267",
+      "id": "1",
       "name": "Admin",
       "password": "ADMIN"
+    },
+    {
+      "id": "1764015215742",
+      "name": "Aurélien",
+      "password": "Kenfuck39"
+    },
+    {
+      "id": "1764017886342",
+      "name": "Quentin",
+      "password": "caca"
+    },
+    {
+      "id": "1764018442182",
+      "name": "Christophe",
+      "password": "Somepre@21"
+    },
+    {
+      "id": "1764060383113",
+      "name": "Thomas",
+      "password": "Somepre2004"
+    },
+    {
+      "id": "1764060402075",
+      "name": "jojo",
+      "password": "C4i+m6pl"
+    },
+    {
+      "id": "1764061084451",
+      "name": "Henri",
+      "password": "henri60"
     }
   ]
+}
 }
