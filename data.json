@@ -682,7 +682,15 @@
       "password": "henri60"
     }
   ],
-  "achats": [],
+  "achats": [
+    "Carcasse",
+    "Éléments carcasse",
+    "Matière première",
+    "Traitement thermique",
+    "Bloc chaud",
+    "Sous-traitance",
+    "Transport"
+  ],
   "fournisseurs": [
     "MEUSBURGER"
   ]
