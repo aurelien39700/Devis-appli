@@ -682,9 +682,14 @@
       "password": "henri60"
     }
   ],
-  "achats": [],
-  "fournisseurs": [
-    "HASCO",
-    "MEUSBURGER"
-  ]
+  "achats": [
+    "Carcasse",
+    "Éléments carcasse",
+    "Matière première",
+    "Traitement thermique",
+    "Bloc chaud",
+    "Sous-traitance",
+    "Transport"
+  ],
+  "fournisseurs": []
 }
