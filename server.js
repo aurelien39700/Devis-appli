@@ -637,6 +637,35 @@ app.put('/api/postes/:id', async (req, res) => {
     }
 });
 
+// POST - Réordonner tous les postes (opération atomique)
+app.post('/api/postes/reorder', async (req, res) => {
+    try {
+        console.log('📝 POST /api/postes/reorder', req.body);
+        const { postesOrder } = req.body;
+
+        if (!Array.isArray(postesOrder)) {
+            return res.status(400).json({ error: 'postesOrder doit être un tableau' });
+        }
+
+        const data = await readData();
+
+        postesOrder.forEach(({ id, order }) => {
+            const poste = data.postes.find(p => p.id === id);
+            if (poste) {
+                poste.order = order;
+                console.log(`✅ Ordre mis à jour pour poste ${poste.name}: ${order}`);
+            }
+        });
+
+        await writeData(data);
+        console.log('✅ Réordonnancement des postes sauvegardé');
+        res.json({ success: true, message: 'Ordre des postes mis à jour' });
+    } catch (error) {
+        console.error('❌ Erreur POST /api/postes/reorder:', error);
+        res.status(500).json({ error: 'Erreur de réordonnancement' });
+    }
+});
+
 // DELETE - Supprimer un poste
 app.delete('/api/postes/:id', async (req, res) => {
     try {

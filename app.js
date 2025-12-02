@@ -2115,33 +2115,19 @@ async function movePoste(posteId, direction) {
     localStorage.setItem('affaires_postes', JSON.stringify(postes));
     syncPostesVersDevisApp();
 
-    // Sauvegarder l'ordre sur le serveur en arrière-plan (optimisé - seulement les deux postes échangés)
+    // Sauvegarder TOUS les ordres en une seule requête atomique pour éviter la corruption
     try {
-        // Sauvegarder seulement les deux postes concernés pour réduire la latence
-        const updates = [
-            fetch(`${API_URL}/postes/${postes[index].id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: postes[index].name,
-                    tauxHoraire: postes[index].tauxHoraire,
-                    isMachine: postes[index].isMachine,
-                    order: index
-                })
-            }),
-            fetch(`${API_URL}/postes/${postes[newIndex].id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: postes[newIndex].name,
-                    tauxHoraire: postes[newIndex].tauxHoraire,
-                    isMachine: postes[newIndex].isMachine,
-                    order: newIndex
-                })
-            })
-        ];
+        const postesOrder = postes.map(p => ({ id: p.id, order: p.order }));
+        const response = await fetch(`${API_URL}/postes/reorder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ postesOrder })
+        });
 
-        await Promise.all(updates);
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP ${response.status}`);
+        }
+
         console.log('✅ Ordre des postes sauvegardé sur le serveur');
     } catch (error) {
         console.error('❌ Erreur sauvegarde ordre postes:', error);
