@@ -525,7 +525,7 @@
       "name": "Erosion",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 4
+      "order": 5
     },
     {
       "id": "1764019427786",
@@ -574,7 +574,7 @@
       "name": "Microperçage",
       "tauxHoraire": 70,
       "isMachine": false,
-      "order": 5
+      "order": 4
     },
     {
       "id": "1764061108386",
