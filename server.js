@@ -336,7 +336,9 @@ async function writeData(data) {
         clients: Array.isArray(data.clients) ? data.clients : [],
         affaires: Array.isArray(data.affaires) ? data.affaires : [],
         postes: Array.isArray(data.postes) ? data.postes : [],
-        users: Array.isArray(data.users) ? data.users : []
+        users: Array.isArray(data.users) ? data.users : [],
+        achats: Array.isArray(data.achats) ? data.achats : [],
+        fournisseurs: Array.isArray(data.fournisseurs) ? data.fournisseurs : []
     };
 
     // S'assurer que l'admin existe toujours
