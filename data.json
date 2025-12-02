@@ -683,6 +683,12 @@
       "isMachine": true,
       "tauxHoraire": 46,
       "order": 14
+    },
+    {
+      "id": "1764692708887",
+      "name": "TEST",
+      "isMachine": false,
+      "tauxHoraire": 75
     }
   ],
   "users": [
