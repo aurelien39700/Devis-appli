@@ -249,14 +249,6 @@
       "date": "2025-11-27T16:05:56.596Z"
     },
     {
-      "id": "1764319426044",
-      "affaireId": "1764319423764",
-      "posteId": "1764014781418",
-      "hours": "1.25",
-      "enteredBy": "Aurélien",
-      "date": "2025-11-28T08:43:46.215Z"
-    },
-    {
       "id": "1764574654580",
       "affaireId": "1764061107990",
       "posteId": "1764055523549",
@@ -539,13 +531,6 @@
       "name": "MG4476",
       "clientId": "1764014447938",
       "description": "Guidage main de robot",
-      "statut": "en_cours"
-    },
-    {
-      "id": "1764319423764",
-      "name": "MB4901",
-      "clientId": "1764014447938",
-      "description": "Soudure empreinte engrenage",
       "statut": "en_cours"
     },
     {
