@@ -554,6 +554,13 @@
       "clientId": "1764014447938",
       "description": "Soudure sur élément rapporté et deux broches",
       "statut": "en_cours"
+    },
+    {
+      "id": "1764752168086",
+      "name": "MD5961",
+      "clientId": "1764014447938",
+      "description": "Modif groove sur 4 tiroirs",
+      "statut": "en_cours"
     }
   ],
   "postes": [
