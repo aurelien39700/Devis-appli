@@ -688,6 +688,13 @@
       "clientId": "1764015790842",
       "description": "Event",
       "statut": "en_cours"
+    },
+    {
+      "id": "1764839479670",
+      "name": "Cartouche de graisse, moule 6",
+      "clientId": "1764014760229",
+      "description": "Soudure, reprise fraisage noyaux central",
+      "statut": "en_cours"
     }
   ],
   "postes": [
