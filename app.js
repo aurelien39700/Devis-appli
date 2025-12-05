@@ -1254,9 +1254,18 @@ function updateSelects() {
     const posteSelect = document.getElementById('poste');
     const newAffaireClientSelect = document.getElementById('newAffaireClient');
 
+    // Sauvegarder les valeurs actuellement sélectionnées
+    const savedClientValue = clientSelect ? clientSelect.value : '';
+    const savedPosteValue = posteSelect ? posteSelect.value : '';
+    const savedNewAffaireClientValue = newAffaireClientSelect ? newAffaireClientSelect.value : '';
+
     if (clientSelect) {
         clientSelect.innerHTML = '<option value="">Sélectionner un client</option>' +
             clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        // Restaurer la valeur sélectionnée si elle existe toujours
+        if (savedClientValue && clients.some(c => c.id === savedClientValue)) {
+            clientSelect.value = savedClientValue;
+        }
     }
 
     if (posteSelect) {
@@ -1265,11 +1274,19 @@ function updateSelects() {
                 const machineLabel = p.isMachine ? ' ⚙️ Machine' : '';
                 return `<option value="${p.id}">${escapeHtml(p.name)}${machineLabel}</option>`;
             }).join('');
+        // Restaurer la valeur sélectionnée si elle existe toujours
+        if (savedPosteValue && postes.some(p => p.id === savedPosteValue)) {
+            posteSelect.value = savedPosteValue;
+        }
     }
 
     if (newAffaireClientSelect) {
         newAffaireClientSelect.innerHTML = '<option value="">Sélectionner un client</option>' +
             clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        // Restaurer la valeur sélectionnée si elle existe toujours
+        if (savedNewAffaireClientValue && clients.some(c => c.id === savedNewAffaireClientValue)) {
+            newAffaireClientSelect.value = savedNewAffaireClientValue;
+        }
     }
 
     updateAffairesSelect();
@@ -1280,6 +1297,9 @@ function updateAffairesSelect() {
     const affaireSelect = document.getElementById('affaire');
 
     if (!clientSelect || !affaireSelect) return;
+
+    // Sauvegarder la valeur actuellement sélectionnée
+    const savedAffaireValue = affaireSelect.value;
 
     const clientId = clientSelect.value;
 
@@ -1316,6 +1336,11 @@ function updateAffairesSelect() {
     }
 
     affaireSelect.innerHTML = optionsHTML;
+
+    // Restaurer la valeur sélectionnée si elle existe toujours pour ce client
+    if (savedAffaireValue && (savedAffaireValue === '__new__' || clientAffaires.some(a => a.id === savedAffaireValue))) {
+        affaireSelect.value = savedAffaireValue;
+    }
 }
 
 // ===== GESTION (ADMIN) =====
@@ -1504,35 +1529,44 @@ function preparerDevisApp(affaireId) {
         heuresParPoste[posteName].totalHeures += parseFloat(entry.hours) || 0;
     });
 
+    // Récupérer les machines depuis les postes avec isMachine: true
+    const machines = postes
+        .filter(p => p.isMachine)
+        .sort((a, b) => (a.order || 999) - (b.order || 999))
+        .map(machine => ({
+            nom: machine.name,
+            taux: machine.tauxHoraire || 46,
+            temps: 0
+        }));
+
     // Préparer les données pour devis_app avec la structure exacte attendue
     const devisData = {
         client: client ? client.name : '',
         numCommande: '',
         affaire: affaire.name,
         date: new Date().toISOString().split('T')[0],
-        coeffMarge: 1.30,
+        coeffMarge: 1.20,
         data: {
-            travail: postes.map(poste => {
-                const heures = heuresParPoste[poste.name];
-                return {
-                    nom: poste.name,
-                    taux: poste.taux || 75,
-                    semaines: heures ? [heures.totalHeures, 0, 0, 0, 0, 0, 0, 0] : [0, 0, 0, 0, 0, 0, 0, 0]
-                };
-            }),
-            machine: [
-                { nom: 'Fraisage CN', taux: 46, temps: 0 },
-                { nom: 'Découpe Fil', taux: 46, temps: 0 },
-                { nom: 'Érosion', taux: 46, temps: 0 }
-            ],
+            travail: postes
+                .filter(p => !p.isMachine)
+                .sort((a, b) => (a.order || 999) - (b.order || 999))
+                .map(poste => {
+                    const heures = heuresParPoste[poste.name];
+                    return {
+                        nom: poste.name,
+                        taux: poste.tauxHoraire || 75,
+                        semaines: heures ? [heures.totalHeures, 0, 0, 0, 0, 0, 0, 0] : [0, 0, 0, 0, 0, 0, 0, 0]
+                    };
+                }),
+            machine: machines,
             achats: [
-                { nom: 'Carcasse', fournisseur: '', quantite: 0, prixUnit: 0 },
-                { nom: 'Éléments carcasse', fournisseur: '', quantite: 0, prixUnit: 0 },
-                { nom: 'Matière première', fournisseur: '', quantite: 0, prixUnit: 0 },
-                { nom: 'Traitement thermique', fournisseur: '', quantite: 0, prixUnit: 0 },
-                { nom: 'Bloc chaud', fournisseur: '', quantite: 0, prixUnit: 0 },
-                { nom: 'Sous-traitance', fournisseur: '', quantite: 0, prixUnit: 0 },
-                { nom: 'Transport', fournisseur: '', quantite: 0, prixUnit: 0 }
+                { nom: 'Carcasse', fournisseur: '', quantite: 1, prixUnit: 0 },
+                { nom: 'Éléments carcasse', fournisseur: '', quantite: 1, prixUnit: 0 },
+                { nom: 'Matière première', fournisseur: '', quantite: 1, prixUnit: 0 },
+                { nom: 'Traitement thermique', fournisseur: '', quantite: 1, prixUnit: 0 },
+                { nom: 'Bloc chaud', fournisseur: '', quantite: 1, prixUnit: 0 },
+                { nom: 'Sous-traitance', fournisseur: '', quantite: 1, prixUnit: 0 },
+                { nom: 'Transport', fournisseur: '', quantite: 1, prixUnit: 0 }
             ]
         },
         fournisseurs: [

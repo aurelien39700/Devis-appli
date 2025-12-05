@@ -1209,11 +1209,11 @@
                 semaines: [0, 0, 0, 0, 0, 0, 0, 0] 
             })),
             machine: machines.map(m => ({ ...m, temps: 0 })),
-            achats: achatsItems.map(a => ({ 
-                nom: a, 
-                fournisseur: '', 
-                quantite: 0, 
-                prixUnit: 0 
+            achats: achatsItems.map(a => ({
+                nom: a,
+                fournisseur: '',
+                quantite: 1,
+                prixUnit: 0
             }))
         };
 
@@ -1621,7 +1621,7 @@
                 document.getElementById('numCommande').value = '';
                 document.getElementById('affaire').value = '';
                 document.getElementById('date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('coeffMarge').value = 1.30;
+                document.getElementById('coeffMarge').value = 1.20;
                 
                 // Réinitialiser les heures/quantités mais garder la structure
                 data.travail.forEach(poste => {
@@ -1632,7 +1632,7 @@
                 });
                 data.achats.forEach(achat => {
                     achat.fournisseur = '';
-                    achat.quantite = 0;
+                    achat.quantite = 1;
                     achat.prixUnit = 0;
                 });
                 
@@ -1814,7 +1814,7 @@
                     data.achats.push({
                         nom: nom,
                         fournisseur: '',
-                        quantite: 0,
+                        quantite: 1,
                         prixUnit: 0
                     });
                 } else if (typeBibliotheque === 'fournisseurs') {
@@ -2164,7 +2164,7 @@
                 document.getElementById('numCommande').value = devisData.numCommande || '';
                 document.getElementById('affaire').value = devisData.affaire || '';
                 document.getElementById('date').value = devisData.date || '';
-                document.getElementById('coeffMarge').value = devisData.coeffMarge || 1.30;
+                document.getElementById('coeffMarge').value = devisData.coeffMarge || 1.20;
                 if (devisData.data) {
                     data = devisData.data;
                 }
