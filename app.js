@@ -1513,30 +1513,44 @@ function preparerDevisApp(affaireId) {
     // Récupérer toutes les entrées de cette affaire
     const affaireEntries = entries.filter(e => e.affaireId === affaireId);
 
-    // Grouper les heures par poste
+    // Grouper les heures par poste (travail)
     const heuresParPoste = {};
     affaireEntries.forEach(entry => {
         const poste = postes.find(p => p.id === entry.posteId);
-        const posteName = poste ? poste.name : 'Poste inconnu';
-
-        if (!heuresParPoste[posteName]) {
-            heuresParPoste[posteName] = {
-                nom: posteName,
-                taux: poste ? (poste.taux || 75) : 75,
-                totalHeures: 0
-            };
+        if (poste && !poste.isMachine) {
+            const posteName = poste.name;
+            if (!heuresParPoste[posteName]) {
+                heuresParPoste[posteName] = {
+                    nom: posteName,
+                    taux: poste.tauxHoraire || 75,
+                    totalHeures: 0
+                };
+            }
+            heuresParPoste[posteName].totalHeures += parseFloat(entry.hours) || 0;
         }
-        heuresParPoste[posteName].totalHeures += parseFloat(entry.hours) || 0;
     });
 
-    // Récupérer les machines depuis les postes avec isMachine: true
+    // Grouper les heures par machine
+    const heuresParMachine = {};
+    affaireEntries.forEach(entry => {
+        const poste = postes.find(p => p.id === entry.posteId);
+        if (poste && poste.isMachine) {
+            const machineName = poste.name;
+            if (!heuresParMachine[machineName]) {
+                heuresParMachine[machineName] = 0;
+            }
+            heuresParMachine[machineName] += parseFloat(entry.hours) || 0;
+        }
+    });
+
+    // Récupérer les machines depuis les postes avec isMachine: true et leurs heures réelles
     const machines = postes
         .filter(p => p.isMachine)
         .sort((a, b) => (a.order || 999) - (b.order || 999))
         .map(machine => ({
             nom: machine.name,
             taux: machine.tauxHoraire || 46,
-            temps: 0
+            temps: heuresParMachine[machine.name] || 0
         }));
 
     // Préparer les données pour devis_app avec la structure exacte attendue
