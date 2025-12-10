@@ -751,6 +751,14 @@
       "hours": "0.75",
       "enteredBy": "Administrateur",
       "date": "2025-12-10T10:46:48.900Z"
+    },
+    {
+      "id": "1765382971367",
+      "affaireId": "1764061127262",
+      "posteId": "1764055523549",
+      "hours": "5",
+      "enteredBy": "Jojo",
+      "date": "2025-12-10T16:09:31.614Z"
     }
   ],
   "clients": [
