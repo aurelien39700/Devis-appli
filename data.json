@@ -933,6 +933,13 @@
       "clientId": "1764014447938",
       "description": "Goupille carré assemblage éléments",
       "statut": "en_cours"
+    },
+    {
+      "id": "1765363586855",
+      "name": "MB9430",
+      "clientId": "1764014447938",
+      "description": "Lame à modifier",
+      "statut": "en_cours"
     }
   ],
   "postes": [
