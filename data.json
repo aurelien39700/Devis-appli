@@ -727,6 +727,14 @@
       "hours": "5",
       "enteredBy": "Henri",
       "date": "2025-12-09T14:44:26.038Z"
+    },
+    {
+      "id": "1765350687337",
+      "affaireId": "1765203157741",
+      "posteId": "1764060067448",
+      "hours": "0.5",
+      "enteredBy": "Administrateur",
+      "date": "2025-12-10T07:11:27.664Z"
     }
   ],
   "clients": [
