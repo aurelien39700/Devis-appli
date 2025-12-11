@@ -956,6 +956,13 @@
       "clientId": "1764014447938",
       "description": "Lame à modifier",
       "statut": "en_cours"
+    },
+    {
+      "id": "1765443332804",
+      "name": "MF9430",
+      "clientId": "1764014447938",
+      "description": "Soudure ajout forme + reprise érosion",
+      "statut": "en_cours"
     }
   ],
   "postes": [
