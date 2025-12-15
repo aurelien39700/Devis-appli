@@ -1041,6 +1041,13 @@
       "clientId": "1764014760229",
       "description": "Reprise de cône en érosion pour ajustage",
       "statut": "en_cours"
+    },
+    {
+      "id": "1765790545276",
+      "name": "Moule 2",
+      "clientId": "1764014760229",
+      "description": "Soudure + reprise fond d'empreinte",
+      "statut": "en_cours"
     }
   ],
   "postes": [
