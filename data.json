@@ -1034,6 +1034,13 @@
       "clientId": "1764014447938",
       "description": "MAP outil pignon",
       "statut": "en_cours"
+    },
+    {
+      "id": "1765790513290",
+      "name": "Moule 6",
+      "clientId": "1764014760229",
+      "description": "Reprise de cône en érosion pour ajustage",
+      "statut": "en_cours"
     }
   ],
   "postes": [
