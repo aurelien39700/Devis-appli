@@ -1106,6 +1106,13 @@
       "clientId": "1764014760229",
       "description": "Soudure + reprise fond d'empreinte",
       "statut": "en_cours"
+    },
+    {
+      "id": "1766044654974",
+      "name": "1842",
+      "clientId": "1764014732621",
+      "description": "Empreinte à renvoyer au traitement\nprépa / traitement / transport / remontage",
+      "statut": "en_cours"
     }
   ],
   "postes": [
