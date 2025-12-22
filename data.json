@@ -1209,6 +1209,13 @@
       "clientId": "1764014732621",
       "description": "Empreinte à renvoyer au traitement\nprépa / traitement / transport / remontage",
       "statut": "en_cours"
+    },
+    {
+      "id": "1766403022300",
+      "name": "MOULE 6 Carcasse",
+      "clientId": "1764014760229",
+      "description": "Reprise carcasse",
+      "statut": "en_cours"
     }
   ],
   "postes": [
