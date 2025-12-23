@@ -713,14 +713,6 @@
       "date": "2025-12-10T10:03:43.875Z"
     },
     {
-      "id": "1765363608633",
-      "affaireId": "1765363586855",
-      "posteId": "1764060067448",
-      "hours": "0.75",
-      "enteredBy": "Administrateur",
-      "date": "2025-12-10T10:46:48.900Z"
-    },
-    {
       "id": "1765382971367",
       "affaireId": "1764061127262",
       "posteId": "1764055523549",
@@ -1205,13 +1197,6 @@
       "name": "MF9409",
       "clientId": "1764014447938",
       "description": "Goupille carré assemblage éléments",
-      "statut": "en_cours"
-    },
-    {
-      "id": "1765363586855",
-      "name": "MB9430",
-      "clientId": "1764014447938",
-      "description": "Lame à modifier",
       "statut": "en_cours"
     },
     {
