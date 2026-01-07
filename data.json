@@ -1256,13 +1256,6 @@
       "clientId": "1764015790842",
       "description": "Réparation lame cassé",
       "statut": "en_cours"
-    },
-    {
-      "id": "1767800006788",
-      "name": "SIPC1000",
-      "clientId": "1764015790842",
-      "description": "Réparation lame",
-      "statut": "en_cours"
     }
   ],
   "postes": [
