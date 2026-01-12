@@ -601,14 +601,6 @@
       "date": "2025-12-08T14:12:46.872Z"
     },
     {
-      "id": "1765203177532",
-      "affaireId": "1765203157741",
-      "posteId": "1764060067448",
-      "hours": "1",
-      "enteredBy": "Administrateur",
-      "date": "2025-12-08T14:12:57.564Z"
-    },
-    {
       "id": "1765203761191",
       "affaireId": "1765203731467",
       "posteId": "1764060067448",
@@ -687,14 +679,6 @@
       "hours": "5",
       "enteredBy": "Henri",
       "date": "2025-12-09T14:44:26.038Z"
-    },
-    {
-      "id": "1765350687337",
-      "affaireId": "1765203157741",
-      "posteId": "1764060067448",
-      "hours": "0.5",
-      "enteredBy": "Administrateur",
-      "date": "2025-12-10T07:11:27.664Z"
     },
     {
       "id": "1765361023222",
@@ -801,28 +785,12 @@
       "date": "2025-12-16T14:09:44.522Z"
     },
     {
-      "id": "1765900842520",
-      "affaireId": "1765203157741",
-      "posteId": "1764061108386",
-      "hours": "1",
-      "enteredBy": "Thomas",
-      "date": "2025-12-16T16:00:42.203Z"
-    },
-    {
       "id": "1765974697321",
       "affaireId": "1765790545276",
       "posteId": "1764014781418",
       "hours": "2",
       "enteredBy": "Thomas",
       "date": "2025-12-17T12:31:36.802Z"
-    },
-    {
-      "id": "1765974730478",
-      "affaireId": "1765203157741",
-      "posteId": "1764055523549",
-      "hours": "7",
-      "enteredBy": "Jojo",
-      "date": "2025-12-17T12:32:10.617Z"
     },
     {
       "id": "1765983403288",
@@ -1345,13 +1313,6 @@
       "clientId": "1764014760229",
       "description": "Soudure, reprise fraisage noyaux central",
       "statut": "archivee"
-    },
-    {
-      "id": "1765203157741",
-      "name": "3078",
-      "clientId": "1764014732621",
-      "description": "Modif sur grosse empreinte + 8 broches",
-      "statut": "en_cours"
     },
     {
       "id": "1765203731467",
