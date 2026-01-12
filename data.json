@@ -81,14 +81,6 @@
       "date": "2025-11-25T09:10:28.643Z"
     },
     {
-      "id": "1764064883624",
-      "affaireId": "1764061252565",
-      "posteId": "1764061151273",
-      "hours": "13",
-      "enteredBy": "Henri",
-      "date": "2025-11-25T10:01:24.464Z"
-    },
-    {
       "id": "1764068981123",
       "affaireId": "1764062109157",
       "posteId": "1764061108386",
@@ -1248,13 +1240,6 @@
       "clientId": "1764014447938",
       "description": "Plaque centreur conique",
       "statut": "archivee"
-    },
-    {
-      "id": "1764061252565",
-      "name": "Bali 12",
-      "clientId": "1764014760229",
-      "description": "Noyau en 140 Kg",
-      "statut": "en_cours"
     },
     {
       "id": "1764061283933",
