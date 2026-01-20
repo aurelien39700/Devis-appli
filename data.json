@@ -1615,6 +1615,13 @@
       "clientId": "1768815035991",
       "description": "MAP01",
       "statut": "en_cours"
+    },
+    {
+      "id": "1768898463088",
+      "name": "MOULE 2",
+      "clientId": "1764014760229",
+      "description": "Reprise ajustage",
+      "statut": "en_cours"
     }
   ],
   "postes": [
