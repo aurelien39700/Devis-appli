@@ -1439,6 +1439,14 @@
       "hours": "14.5",
       "enteredBy": "Aurélien",
       "date": "2026-01-22T07:48:11.157Z"
+    },
+    {
+      "id": "1769071769011",
+      "affaireId": "1768815055414",
+      "posteId": "1764060067448",
+      "hours": "1",
+      "enteredBy": "Administrateur",
+      "date": "2026-01-22T08:49:29.258Z"
     }
   ],
   "clients": [
