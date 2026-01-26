@@ -1249,14 +1249,6 @@
       "date": "2026-01-14T09:09:45.457Z"
     },
     {
-      "id": "1768388863365",
-      "affaireId": "1768224164936",
-      "posteId": "1764060067448",
-      "hours": "1",
-      "enteredBy": "Administrateur",
-      "date": "2026-01-14T11:07:43.422Z"
-    },
-    {
       "id": "1768388873921",
       "affaireId": "1765790513290",
       "posteId": "1764060067448",
@@ -1844,13 +1836,6 @@
       "clientId": "1764014447938",
       "description": "Moule gros vérin",
       "statut": "terminee"
-    },
-    {
-      "id": "1768224164936",
-      "name": "P3 MK1",
-      "clientId": "1764015790842",
-      "description": "Remise en état canal",
-      "statut": "en_cours"
     },
     {
       "id": "1768293940161",
