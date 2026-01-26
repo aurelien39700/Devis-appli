@@ -1843,6 +1843,13 @@
       "clientId": "1764014447938",
       "description": "Pavé neuf",
       "statut": "en_cours"
+    },
+    {
+      "id": "1769423756138",
+      "name": "0552",
+      "clientId": "1764014447938",
+      "description": "Rondelle de centrage",
+      "statut": "en_cours"
     }
   ],
   "postes": [
