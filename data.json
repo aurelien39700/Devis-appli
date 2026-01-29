@@ -1743,6 +1743,14 @@
       "hours": "1.5",
       "enteredBy": "Administrateur",
       "date": "2026-01-29T07:37:09.200Z"
+    },
+    {
+      "id": "1769693647256",
+      "affaireId": "1766044654974",
+      "posteId": "1764055523549",
+      "hours": "1",
+      "enteredBy": "jojo",
+      "date": "2026-01-29T13:34:07.659Z"
     }
   ],
   "clients": [
