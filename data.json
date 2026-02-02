@@ -2169,6 +2169,13 @@
       "clientId": "1768815035991",
       "description": "Empreinte neuve",
       "statut": "en_cours"
+    },
+    {
+      "id": "1770016328856",
+      "name": "MG4477",
+      "clientId": "1764014447938",
+      "description": "Reprise soudure",
+      "statut": "en_cours"
     }
   ],
   "postes": [
