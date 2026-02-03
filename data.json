@@ -2007,6 +2007,14 @@
       "hours": "2.5",
       "enteredBy": "Aurélien",
       "date": "2026-02-03T11:09:42.974Z"
+    },
+    {
+      "id": "1770117007609",
+      "affaireId": "1764061127262",
+      "posteId": "1764018748947",
+      "hours": "4",
+      "enteredBy": "Aurélien",
+      "date": "2026-02-03T11:10:07.698Z"
     }
   ],
   "clients": [
