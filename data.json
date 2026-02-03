@@ -2015,6 +2015,14 @@
       "hours": "4",
       "enteredBy": "Aurélien",
       "date": "2026-02-03T11:10:07.698Z"
+    },
+    {
+      "id": "1770117023825",
+      "affaireId": "1764061127262",
+      "posteId": "1764076202419",
+      "hours": "24",
+      "enteredBy": "Aurélien",
+      "date": "2026-02-03T11:10:23.873Z"
     }
   ],
   "clients": [
