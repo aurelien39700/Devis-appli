@@ -1991,6 +1991,14 @@
       "hours": "2",
       "enteredBy": "Aurélien",
       "date": "2026-02-03T11:09:13.484Z"
+    },
+    {
+      "id": "1770116964769",
+      "affaireId": "1769616047379",
+      "posteId": "1764157949893",
+      "hours": "4",
+      "enteredBy": "Aurélien",
+      "date": "2026-02-03T11:09:24.815Z"
     }
   ],
   "clients": [
