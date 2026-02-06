@@ -2239,6 +2239,14 @@
       "hours": "1.5",
       "enteredBy": "Thomas",
       "date": "2026-02-06T08:54:57.685Z"
+    },
+    {
+      "id": "1770370998837",
+      "affaireId": "1764061127262",
+      "posteId": "1764018748947",
+      "hours": "3",
+      "enteredBy": "Administrateur",
+      "date": "2026-02-06T09:43:19.075Z"
     }
   ],
   "clients": [
