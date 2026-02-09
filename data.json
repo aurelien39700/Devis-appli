@@ -2311,6 +2311,14 @@
       "hours": "2",
       "enteredBy": "jojo",
       "date": "2026-02-09T16:26:45.443Z"
+    },
+    {
+      "id": "1770654858410",
+      "affaireId": "1770654827565",
+      "posteId": "1764060067448",
+      "hours": "1",
+      "enteredBy": "Administrateur",
+      "date": "2026-02-09T16:34:18.515Z"
     }
   ],
   "clients": [
@@ -2655,6 +2663,20 @@
     },
     {
       "id": "1770654827565",
+      "name": "MG0036",
+      "clientId": "1764014447938",
+      "description": "Réparation bavures",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1770654836749",
+      "name": "MG0036",
+      "clientId": "1764014447938",
+      "description": "Réparation bavures",
+      "statut": "en_cours"
+    },
+    {
+      "id": "1770654847880",
       "name": "MG0036",
       "clientId": "1764014447938",
       "description": "Réparation bavures",
