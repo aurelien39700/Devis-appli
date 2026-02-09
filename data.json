@@ -2597,6 +2597,13 @@
       "clientId": "1764014732621",
       "description": "soudure+ reprise tiroir",
       "statut": "en_cours"
+    },
+    {
+      "id": "1770635482361",
+      "name": "MD1437",
+      "clientId": "1764014447938",
+      "description": "Noyau neuf",
+      "statut": "en_cours"
     }
   ],
   "postes": [
