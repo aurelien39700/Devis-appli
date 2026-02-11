@@ -2383,6 +2383,14 @@
       "hours": "4",
       "enteredBy": "Aurélien",
       "date": "2026-02-11T09:47:27.349Z"
+    },
+    {
+      "id": "1770804229912",
+      "affaireId": "1770804206423",
+      "posteId": "1764060067448",
+      "hours": "1",
+      "enteredBy": "Administrateur",
+      "date": "2026-02-11T10:03:50.121Z"
     }
   ],
   "clients": [
