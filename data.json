@@ -2863,6 +2863,14 @@
       "hours": "3",
       "enteredBy": "Thomas",
       "date": "2026-02-18T07:38:42.435Z"
+    },
+    {
+      "id": "1771400337457",
+      "affaireId": "1770877379864",
+      "posteId": "1764061108386",
+      "hours": "10",
+      "enteredBy": "Thomas",
+      "date": "2026-02-18T07:38:57.443Z"
     }
   ],
   "clients": [
