@@ -3664,6 +3664,13 @@
       "clientId": "1764014760229",
       "description": "Remplacement empreinte HS",
       "statut": "terminee"
+    },
+    {
+      "id": "1771949533268",
+      "name": "Moule blister",
+      "clientId": "1764017522395",
+      "description": "étude + dessin + 4 ouverture pavé + 4 ouverture empreintes",
+      "statut": "en_cours"
     }
   ],
   "postes": [
