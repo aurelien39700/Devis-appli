@@ -3983,6 +3983,14 @@
       "hours": "1",
       "enteredBy": "Henri",
       "date": "2026-03-12T08:45:49.992Z"
+    },
+    {
+      "id": "1773306763223",
+      "affaireId": "1773233162478",
+      "posteId": "1764060067448",
+      "hours": "2.5",
+      "enteredBy": "Administrateur",
+      "date": "2026-03-12T09:12:43.440Z"
     }
   ],
   "clients": [
