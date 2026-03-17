@@ -4183,6 +4183,14 @@
       "hours": "8",
       "enteredBy": "Administrateur",
       "date": "2026-03-16T16:52:50.629Z"
+    },
+    {
+      "id": "1773738695587",
+      "affaireId": "1773311286824",
+      "posteId": "1764061151273",
+      "hours": "2.50",
+      "enteredBy": "Henri",
+      "date": "2026-03-17T09:11:36.455Z"
     }
   ],
   "clients": [
