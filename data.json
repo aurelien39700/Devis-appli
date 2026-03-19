@@ -4815,6 +4815,13 @@
       "clientId": "1764014447938",
       "description": "Passage compression en injection",
       "statut": "terminee"
+    },
+    {
+      "id": "1773907112429",
+      "name": "MOULE 2 Empilage fermeture",
+      "clientId": "1764014760229",
+      "description": "Soudure + reprise fermeture",
+      "statut": "en_cours"
     }
   ],
   "postes": [
