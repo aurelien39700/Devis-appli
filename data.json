@@ -4343,6 +4343,14 @@
       "hours": "7",
       "enteredBy": "Thomas",
       "date": "2026-03-19T14:19:38.590Z"
+    },
+    {
+      "id": "1773930107730",
+      "affaireId": "1773233123336",
+      "posteId": "1764061151273",
+      "hours": "15",
+      "enteredBy": "Henri",
+      "date": "2026-03-19T14:21:47.630Z"
     }
   ],
   "clients": [
