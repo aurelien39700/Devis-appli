@@ -4934,6 +4934,13 @@
       "clientId": "1764014760229",
       "description": "Soudure + reprise fermeture",
       "statut": "terminee"
+    },
+    {
+      "id": "1774256649979",
+      "name": "Moule 6",
+      "clientId": "1764014760229",
+      "description": "Refection cone fermeture",
+      "statut": "en_cours"
     }
   ],
   "postes": [
