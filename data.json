@@ -4415,6 +4415,14 @@
       "hours": "2",
       "enteredBy": "Thomas",
       "date": "2026-03-23T08:31:50.177Z"
+    },
+    {
+      "id": "1774254770644",
+      "affaireId": "1772621022222",
+      "posteId": "1764018748947",
+      "hours": "1",
+      "enteredBy": "Aurélien",
+      "date": "2026-03-23T08:32:50.807Z"
     }
   ],
   "clients": [
