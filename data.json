@@ -4535,6 +4535,14 @@
       "hours": "32.75",
       "enteredBy": "Fabrice",
       "date": "2026-03-23T16:13:27.519Z"
+    },
+    {
+      "id": "1774282435861",
+      "affaireId": "1764061127262",
+      "posteId": "1764061108386",
+      "hours": "38",
+      "enteredBy": "Fabrice",
+      "date": "2026-03-23T16:13:55.938Z"
     }
   ],
   "clients": [
