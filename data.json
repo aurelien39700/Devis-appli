@@ -3745,14 +3745,6 @@
       "date": "2026-03-05T16:32:03.273Z"
     },
     {
-      "id": "1772728329675",
-      "affaireId": "1771486287986",
-      "posteId": "1764061108386",
-      "hours": "2",
-      "enteredBy": "Administrateur",
-      "date": "2026-03-05T16:32:10.052Z"
-    },
-    {
       "id": "1772728333112",
       "affaireId": "1772444792258",
       "posteId": "1764157949893",
@@ -5136,13 +5128,6 @@
       "clientId": "1764014447938",
       "description": "Refaire 2 tiroirs à fil",
       "statut": "terminee"
-    },
-    {
-      "id": "1771486287986",
-      "name": "MC6196",
-      "clientId": "1764014447938",
-      "description": "4 tubulaires neuf",
-      "statut": "en_cours"
     },
     {
       "id": "1771497501691",
