@@ -4727,6 +4727,14 @@
       "hours": "0.5",
       "enteredBy": "Administrateur",
       "date": "2026-03-25T11:28:05.114Z"
+    },
+    {
+      "id": "1774451750148",
+      "affaireId": "1774438072867",
+      "posteId": "1764060067448",
+      "hours": "1",
+      "enteredBy": "Administrateur",
+      "date": "2026-03-25T15:15:50.191Z"
     }
   ],
   "clients": [
