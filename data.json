@@ -5292,6 +5292,13 @@
       "clientId": "1764015790842",
       "description": "Ajustage Broche / Tubulaire",
       "statut": "en_cours"
+    },
+    {
+      "id": "1774531095351",
+      "name": "P2 MK2",
+      "clientId": "1764015790842",
+      "description": "Ajustage empreinte Chine",
+      "statut": "en_cours"
     }
   ],
   "postes": [
