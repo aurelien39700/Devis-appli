@@ -4903,6 +4903,14 @@
       "hours": "8",
       "enteredBy": "Aurélien",
       "date": "2026-03-30T13:41:24.866Z"
+    },
+    {
+      "id": "1774878101354",
+      "affaireId": "1764061127262",
+      "posteId": "1764018748947",
+      "hours": "2.5",
+      "enteredBy": "Aurélien",
+      "date": "2026-03-30T13:41:41.408Z"
     }
   ],
   "clients": [
