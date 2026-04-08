@@ -5263,6 +5263,14 @@
       "hours": "6",
       "enteredBy": "Administrateur",
       "date": "2026-04-07T14:37:01.390Z"
+    },
+    {
+      "id": "1775631110794",
+      "affaireId": "1764061127262",
+      "posteId": "1764060071044",
+      "hours": "6",
+      "enteredBy": "jojo",
+      "date": "2026-04-08T06:51:50.878Z"
     }
   ],
   "clients": [
