@@ -5303,6 +5303,14 @@
       "hours": "1",
       "enteredBy": "Administrateur",
       "date": "2026-04-08T08:34:29.186Z"
+    },
+    {
+      "id": "1775637291021",
+      "affaireId": "1775633263820",
+      "posteId": "1764060067448",
+      "hours": "1",
+      "enteredBy": "Administrateur",
+      "date": "2026-04-08T08:34:51.154Z"
     }
   ],
   "clients": [
