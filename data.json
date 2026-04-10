@@ -5423,6 +5423,14 @@
       "hours": "3",
       "enteredBy": "Administrateur",
       "date": "2026-04-10T05:56:35.449Z"
+    },
+    {
+      "id": "1775802886908",
+      "affaireId": "1774256694582",
+      "posteId": "1764055164678",
+      "hours": "6",
+      "enteredBy": "Thomas",
+      "date": "2026-04-10T06:34:47.431Z"
     }
   ],
   "clients": [
