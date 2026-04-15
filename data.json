@@ -5615,6 +5615,14 @@
       "hours": "2",
       "enteredBy": "Administrateur",
       "date": "2026-04-14T16:04:56.899Z"
+    },
+    {
+      "id": "1776240308401",
+      "affaireId": "1764061127262",
+      "posteId": "1764014788537",
+      "hours": "1",
+      "enteredBy": "jojo",
+      "date": "2026-04-15T08:05:08.574Z"
     }
   ],
   "clients": [
