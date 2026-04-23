@@ -6619,6 +6619,13 @@
       "clientId": "1764014447938",
       "description": "",
       "statut": "terminee"
+    },
+    {
+      "id": "1776956837732",
+      "name": "Croissant D8357",
+      "clientId": "1776956777329",
+      "description": "Découpe fil pièce bronze (X6)",
+      "statut": "en_cours"
     }
   ],
   "postes": [
