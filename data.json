@@ -6626,6 +6626,13 @@
       "clientId": "1776956777329",
       "description": "Découpe fil pièce bronze (X6)",
       "statut": "en_cours"
+    },
+    {
+      "id": "1776956885591",
+      "name": "D8347-48",
+      "clientId": "1776956777329",
+      "description": "Découpe fil croissant bronze X10+10",
+      "statut": "en_cours"
     }
   ],
   "postes": [
