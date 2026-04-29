@@ -6231,6 +6231,14 @@
       "hours": "12",
       "enteredBy": "jojo",
       "date": "2026-04-29T15:33:00.530Z"
+    },
+    {
+      "id": "1777477439748",
+      "affaireId": "1777469148535",
+      "posteId": "1764060067448",
+      "hours": "1.5",
+      "enteredBy": "Administrateur",
+      "date": "2026-04-29T15:44:00.123Z"
     }
   ],
   "clients": [
