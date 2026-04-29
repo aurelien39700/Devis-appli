@@ -6175,6 +6175,14 @@
       "hours": "3",
       "enteredBy": "Fabrice",
       "date": "2026-04-28T13:20:18.278Z"
+    },
+    {
+      "id": "1777448758884",
+      "affaireId": "1775633305839",
+      "posteId": "1764019427786",
+      "hours": "1",
+      "enteredBy": "Aurélien",
+      "date": "2026-04-29T07:45:59.014Z"
     }
   ],
   "clients": [
