@@ -6878,6 +6878,13 @@
       "clientId": "1764014447938",
       "description": "MAP 01",
       "statut": "en_cours"
+    },
+    {
+      "id": "1777469148535",
+      "name": "FS130-243",
+      "clientId": "1764015790842",
+      "description": "Ejecteur de forme",
+      "statut": "en_cours"
     }
   ],
   "postes": [
