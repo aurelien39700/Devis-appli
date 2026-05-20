@@ -6313,14 +6313,6 @@
       "date": "2026-05-05T06:24:49.634Z"
     },
     {
-      "id": "1777962573667",
-      "affaireId": "1777962349436",
-      "posteId": "1764060067448",
-      "hours": "0.75",
-      "enteredBy": "Administrateur",
-      "date": "2026-05-05T06:29:33.709Z"
-    },
-    {
       "id": "1778050549777",
       "affaireId": "1778050523667",
       "posteId": "1764060067448",
@@ -7157,13 +7149,6 @@
       "clientId": "1764015790842",
       "description": "Ejecteur de forme",
       "statut": "terminee"
-    },
-    {
-      "id": "1777962349436",
-      "name": "MF9431",
-      "clientId": "1764014447938",
-      "description": "réparation zone enfoncé",
-      "statut": "en_cours"
     },
     {
       "id": "1778050523667",
