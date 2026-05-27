@@ -6823,6 +6823,14 @@
       "hours": "1",
       "enteredBy": "Administrateur",
       "date": "2026-05-27T13:15:55.326Z"
+    },
+    {
+      "id": "1779891837422",
+      "affaireId": "1764061127262",
+      "posteId": "1764014788537",
+      "hours": ".5",
+      "enteredBy": "jojo",
+      "date": "2026-05-27T14:23:57.856Z"
     }
   ],
   "clients": [
