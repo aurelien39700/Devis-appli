@@ -7512,7 +7512,7 @@
       "name": "MF9431",
       "clientId": "1764014447938",
       "description": "réparation zone enfoncée",
-      "statut": "en_cours"
+      "statut": "terminee"
     },
     {
       "id": "1779375099319",
@@ -7526,7 +7526,7 @@
       "name": "MD7809",
       "clientId": "1764014447938",
       "description": "modif insert rep151",
-      "statut": "en_cours"
+      "statut": "terminee"
     },
     {
       "id": "1779788237647",
