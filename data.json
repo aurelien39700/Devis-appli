@@ -7063,6 +7063,14 @@
       "hours": "3",
       "enteredBy": "Aurélien",
       "date": "2026-06-03T13:06:05.713Z"
+    },
+    {
+      "id": "1780492701281",
+      "affaireId": "1779263798493",
+      "posteId": "1764076202419",
+      "hours": "1.5",
+      "enteredBy": "Administrateur",
+      "date": "2026-06-03T13:18:21.604Z"
     }
   ],
   "clients": [
