@@ -8130,6 +8130,13 @@
       "clientId": "1764014760229",
       "description": "Implantation bloc chaud",
       "statut": "en_cours"
+    },
+    {
+      "id": "1781251050108",
+      "name": "ML1762",
+      "clientId": "1768815035991",
+      "description": "Logement ejecteur a reprendre",
+      "statut": "en_cours"
     }
   ],
   "postes": [
