@@ -7703,6 +7703,14 @@
       "hours": "1",
       "enteredBy": "Administrateur",
       "date": "2026-06-23T07:28:47.256Z"
+    },
+    {
+      "id": "1782222615668",
+      "affaireId": "1764061127262",
+      "posteId": "1764055523549",
+      "hours": "8.5",
+      "enteredBy": "jojo",
+      "date": "2026-06-23T13:50:15.782Z"
     }
   ],
   "clients": [
