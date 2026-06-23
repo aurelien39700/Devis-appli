@@ -8486,6 +8486,13 @@
       "clientId": "1764014447938",
       "description": "Reprise soudure",
       "statut": "en_cours"
+    },
+    {
+      "id": "1782200307961",
+      "name": "MD0184",
+      "clientId": "1764014447938",
+      "description": "Reçu de buse",
+      "statut": "en_cours"
     }
   ],
   "postes": [
