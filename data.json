@@ -8471,6 +8471,13 @@
       "clientId": "1764055731886",
       "description": "",
       "statut": "en_cours"
+    },
+    {
+      "id": "1782195820476",
+      "name": "MD7701",
+      "clientId": "1764014447938",
+      "description": "Reprise soudure",
+      "statut": "en_cours"
     }
   ],
   "postes": [
