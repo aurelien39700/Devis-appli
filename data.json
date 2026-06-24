@@ -7743,6 +7743,14 @@
       "hours": "16",
       "enteredBy": "Aurélien",
       "date": "2026-06-24T06:31:30.763Z"
+    },
+    {
+      "id": "1782283738705",
+      "affaireId": "1776956885591",
+      "posteId": "1764018748947",
+      "hours": "1",
+      "enteredBy": "Administrateur",
+      "date": "2026-06-24T06:48:58.984Z"
     }
   ],
   "clients": [
