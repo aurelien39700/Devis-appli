@@ -8143,6 +8143,14 @@
       "hours": "3",
       "enteredBy": "Administrateur",
       "date": "2026-07-02T14:38:46.663Z"
+    },
+    {
+      "id": "1783003137213",
+      "affaireId": "1764061127262",
+      "posteId": "1764076202419",
+      "hours": "6",
+      "enteredBy": "Administrateur",
+      "date": "2026-07-02T14:38:57.523Z"
     }
   ],
   "clients": [
