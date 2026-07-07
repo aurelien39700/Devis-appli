@@ -8183,6 +8183,14 @@
       "hours": "0.5",
       "enteredBy": "Administrateur",
       "date": "2026-07-07T08:27:12.762Z"
+    },
+    {
+      "id": "1783439806770",
+      "affaireId": "1781166567268",
+      "posteId": "1764055164678",
+      "hours": "8",
+      "enteredBy": "Administrateur",
+      "date": "2026-07-07T15:56:47.009Z"
     }
   ],
   "clients": [
