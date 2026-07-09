@@ -8263,6 +8263,14 @@
       "hours": "0.25",
       "enteredBy": "Administrateur",
       "date": "2026-07-09T07:30:22.835Z"
+    },
+    {
+      "id": "1783603534962",
+      "affaireId": "1783603492033",
+      "posteId": "1764060071044",
+      "hours": "4",
+      "enteredBy": "Henri",
+      "date": "2026-07-09T13:25:35.453Z"
     }
   ],
   "clients": [
