@@ -7889,14 +7889,6 @@
       "date": "2026-06-25T15:02:36.974Z"
     },
     {
-      "id": "1782455095599",
-      "affaireId": "1779788237647",
-      "posteId": "1764060067448",
-      "hours": "1",
-      "enteredBy": "Administrateur",
-      "date": "2026-06-26T06:24:56.049Z"
-    },
-    {
       "id": "1782466891991",
       "affaireId": "1774256694582",
       "posteId": "1764014788537",
@@ -8991,13 +8983,6 @@
       "clientId": "1764014447938",
       "description": "modif insert rep151",
       "statut": "terminee"
-    },
-    {
-      "id": "1779788237647",
-      "name": "3075 - dévette neuve",
-      "clientId": "1764014732621",
-      "description": "",
-      "statut": "en_cours"
     },
     {
       "id": "1779882228879",
