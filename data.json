@@ -8287,6 +8287,14 @@
       "hours": "0.75",
       "enteredBy": "Thomas",
       "date": "2026-07-10T07:54:52.838Z"
+    },
+    {
+      "id": "1783670304636",
+      "affaireId": "1783411049600",
+      "posteId": "1764019427786",
+      "hours": "2",
+      "enteredBy": "Aurélien",
+      "date": "2026-07-10T07:58:24.797Z"
     }
   ],
   "clients": [
