@@ -8455,6 +8455,14 @@
       "hours": "2",
       "enteredBy": "Aurélien",
       "date": "2026-08-24T14:01:47.448Z"
+    },
+    {
+      "id": "1787582505606",
+      "affaireId": "1787558318446",
+      "posteId": "1764014788537",
+      "hours": "1",
+      "enteredBy": "jojo",
+      "date": "2026-08-24T14:41:45.775Z"
     }
   ],
   "clients": [
