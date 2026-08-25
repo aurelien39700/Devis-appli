@@ -26,6 +26,50 @@
         down: '<svg viewBox="0 0 24 24"><path d="M6 10l6 6 6-6"/></svg>'
     };
 
+
+    /* ================================ devis rattachés aux affaires ==== */
+
+    // Devis connus, indexés par affaire. Alimenté par chargerDevis().
+    let devisParAffaire = {};
+
+    async function chargerDevis() {
+        try {
+            const r = await fetch(API_URL + '/devis?_t=' + Date.now(), { cache: 'no-store' });
+            if (!r.ok) return;
+            const d = await r.json();
+            devisParAffaire = {};
+            (d.devis || []).forEach(x => { devisParAffaire[x.affaireId] = x; });
+        } catch (e) {
+            console.warn('Devis non chargés :', e);
+        }
+    }
+    window.chargerDevis = chargerDevis;
+
+    // Heures budgétées d'un devis : semaines des postes + temps machine.
+    function budgetHeures(dv) {
+        if (!dv || !dv.data) return 0;
+        const t = (dv.data.travail || []).reduce((s, p) =>
+            s + (p.semaines || []).reduce((a, b) => a + (parseFloat(b) || 0), 0), 0);
+        const m = (dv.data.machine || []).reduce((s, x) => s + (parseFloat(x.temps) || 0), 0);
+        return t + m;
+    }
+
+    function heuresReelles(affaireId) {
+        return entries.filter(e => e.affaireId === affaireId)
+                      .reduce((s, e) => s + (parseFloat(e.hours) || 0), 0);
+    }
+
+    // Le bouton Devis d'une affaire ouvre SON devis, plus un emplacement partagé.
+    window.preparerDevisApp = function (affaireId) {
+        const base = window.location.origin + window.location.pathname
+            .replace(/[^/]*$/, '');
+        const url = base + 'devis_app.html?affaire=' + encodeURIComponent(affaireId);
+        if (!window.open(url, '_blank')) {
+            alert('Le popup a été bloqué par votre navigateur.\n\n'
+                + 'Autorisez les popups pour ce site, puis réessayez.');
+        }
+    };
+
     /* ====================================================== navigation ==== */
 
     const CRUMBS = {
@@ -62,7 +106,12 @@
         if (add) add.style.display = (view === 'hours' && currentUser) ? 'grid' : 'none';
 
         if (view === 'clients') renderClients();
-        else if (view === 'affaires') { renderAffairesStats(); renderAffaires(); }
+        else if (view === 'affaires') {
+            renderAffairesStats();
+            renderAffaires();
+            // les devis arrivent en différé : on redessine à leur réception
+            chargerDevis().then(renderAffaires);
+        }
         else if (view === 'postes') renderPostes();
         else if (view === 'users') renderUsers();
         else renderEntries();
@@ -95,6 +144,7 @@
         const icon = $('#userIcon');
         if (icon) icon.textContent = admin ? '🛠' : '👤';
 
+        chargerDevis();
         go('hours');
     };
 
@@ -292,6 +342,30 @@
             + '</div>';
     };
 
+
+    // Bandeau budget / réel affiché sur la fiche d'une affaire.
+    function comparaisonCarte(affaireId, reel) {
+        const dv = devisParAffaire[affaireId];
+        if (!dv) return '<div class="devis-sans">Aucun devis</div>';
+
+        const budget = budgetHeures(dv);
+        if (budget <= 0) return '<div class="devis-sans">Devis sans heures</div>';
+
+        const ecart = reel - budget;
+        const pct = Math.round(reel / budget * 100);
+        const classe = ecart > 0.005 ? 'depasse' : (ecart < -0.005 ? 'sous' : 'neutre');
+
+        return '<div class="devis-cmp">'
+            + '<div class="devis-cmp-top">'
+            +   '<span>devis <b>' + h1(budget) + ' h</b></span>'
+            +   '<span>pointé <b>' + h1(reel) + ' h</b></span>'
+            +   '<span class="e ' + classe + '">' + (ecart > 0 ? '+' : '') + h1(ecart) + ' h</span>'
+            + '</div>'
+            + '<div class="devis-jauge"><i class="' + classe + '" style="width:'
+            + Math.min(100, pct) + '%"></i></div>'
+            + '</div>';
+    }
+
     window.renderAffaireCard = function (affaire) {
         const statut = affaire.statut || 'en_cours';
         const label = statut === 'en_cours' ? 'En cours'
@@ -306,6 +380,7 @@
             + (affaire.description
                 ? '<div class="affaire-card-description">' + esc(affaire.description) + '</div>' : '')
             + '<div class="affaire-card-hours">' + h2(heures) + ' h</div>'
+            + comparaisonCarte(affaire.id, heures)
             + '<div class="affaire-card-actions">'
             + '<button class="affaire-card-btn affaire-card-btn-primary" onclick="preparerDevisApp(\'' + affaire.id + '\')">Devis</button>'
             + '<button class="affaire-card-btn affaire-card-btn-menu" onclick="toggleAffaireMenu(event,\'' + affaire.id + '\')" aria-label="Plus d\'actions">···</button>'

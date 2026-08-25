@@ -329,6 +329,21 @@ h1,h2,h3{margin:0;font-family:var(--f-display);text-wrap:balance;letter-spacing:
 .ord button:hover:not(:disabled){color:var(--arc);border-color:var(--arc);}
 .ord button:disabled{opacity:.3;cursor:not-allowed;}
 
+
+/* comparaison devis / pointé sur la fiche d'une affaire */
+.devis-cmp{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line-soft);}
+.devis-cmp-top{display:flex;align-items:baseline;gap:10px;font-family:var(--f-data);font-size:11px;color:var(--ink-dim);}
+.devis-cmp-top b{font-size:12.5px;font-weight:700;color:var(--ink);}
+.devis-cmp-top .e{margin-left:auto;font-size:12.5px;font-weight:700;}
+.devis-cmp-top .e.depasse{color:var(--stop);}
+.devis-cmp-top .e.sous{color:var(--ok);}
+.devis-cmp-top .e.neutre{color:var(--ink-dim);}
+.devis-jauge{height:7px;background:var(--panel-3);border-radius:4px;overflow:hidden;}
+.devis-jauge i{display:block;height:100%;border-radius:4px;background:var(--ok);transition:width .8s cubic-bezier(.2,.85,.3,1);}
+.devis-jauge i.depasse{background:var(--stop);}
+.devis-jauge i.neutre{background:var(--idle);}
+.devis-sans{font-family:var(--f-data);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);padding-top:10px;border-top:1px solid var(--line-soft);}
+
 /* ---------------------------------------------------------------- modales */
 .modal,.affaire-modal{
   position:fixed;inset:0;z-index:60;background:var(--scrim);backdrop-filter:blur(6px);

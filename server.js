@@ -317,7 +317,8 @@ async function readData() {
             postes: parsed.postes || [],
             users: parsed.users || [],
             achats: parsed.achats || [],
-            fournisseurs: parsed.fournisseurs || []
+            fournisseurs: parsed.fournisseurs || [],
+            devis: parsed.devis || []
         };
     } catch (error) {
         return {
@@ -327,7 +328,8 @@ async function readData() {
             postes: [],
             users: [],
             achats: [],
-            fournisseurs: []
+            fournisseurs: [],
+            devis: []
         };
     }
 }
@@ -342,7 +344,11 @@ async function writeData(data) {
         postes: Array.isArray(data.postes) ? data.postes : [],
         users: Array.isArray(data.users) ? data.users : [],
         achats: Array.isArray(data.achats) ? data.achats : [],
-        fournisseurs: Array.isArray(data.fournisseurs) ? data.fournisseurs : []
+        fournisseurs: Array.isArray(data.fournisseurs) ? data.fournisseurs : [],
+        // IMPORTANT : cette liste blanche conditionne ce qui survit a une
+        // ecriture. Toute nouvelle collection doit y figurer, sinon elle est
+        // effacee silencieusement a la sauvegarde suivante.
+        devis: Array.isArray(data.devis) ? data.devis : []
     };
 
     // S'assurer que l'admin existe toujours
@@ -615,6 +621,9 @@ app.delete('/api/affaires/:id', async (req, res) => {
         // Supprimer toutes les entrées associées à cette affaire
         data.entries = data.entries.filter(e => e.affaireId !== affaireId);
 
+        // Supprimer le devis de cette affaire
+        data.devis = (data.devis || []).filter(d => d.affaireId !== affaireId);
+
         await writeData(data);
         res.json({ success: true });
     } catch (error) {
@@ -792,6 +801,186 @@ app.post('/api/achats', async (req, res) => {
         res.json({ success: true, achats: updatedData.achats });
     } catch (error) {
         res.status(500).json({ error: 'Erreur de sauvegarde' });
+    }
+});
+
+// ===== Routes pour les Devis (un devis par affaire) =====
+
+// Calcule la synthèse budget (devis) / réel (heures saisies) d'une affaire.
+// Rien n'est stocké : tout est recalculé à la demande, comme dans la V3.
+function calculerSynthese(data, affaireId) {
+    const affaire = data.affaires.find(a => a.id === affaireId);
+    if (!affaire) return null;
+
+    const devis = (data.devis || []).find(d => d.affaireId === affaireId);
+    const contenu = (devis && devis.data) || {};
+    const coeffMarge = devis && devis.coeffMarge ? parseFloat(devis.coeffMarge) || 1.2 : 1.2;
+
+    // --- Budget : les lignes du devis, regroupées par nom de poste ---
+    const budget = {};
+    const ajouterBudget = (nom, heures, taux, machine) => {
+        if (!budget[nom]) budget[nom] = { heures: 0, montant: 0, machine: false };
+        budget[nom].heures += heures;
+        budget[nom].montant += heures * taux;
+        if (machine) budget[nom].machine = true;
+    };
+
+    (contenu.travail || []).forEach(p => {
+        const h = (p.semaines || []).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+        ajouterBudget(p.nom, h, parseFloat(p.taux) || 0, false);
+    });
+    (contenu.machine || []).forEach(m => {
+        ajouterBudget(m.nom, parseFloat(m.temps) || 0, parseFloat(m.taux) || 0, true);
+    });
+
+    const budgetAchats = (contenu.achats || []).reduce(
+        (s, a) => s + (parseFloat(a.quantite) || 0) * (parseFloat(a.prixUnit) || 0), 0);
+
+    // --- Réel : les heures saisies, valorisées au taux du poste ---
+    const reel = {};
+    data.entries.filter(e => e.affaireId === affaireId).forEach(e => {
+        const poste = data.postes.find(p => p.id === e.posteId);
+        const nom = poste ? poste.name : 'Poste inconnu';
+        if (!reel[nom]) {
+            reel[nom] = {
+                heures: 0,
+                taux: poste ? (parseFloat(poste.tauxHoraire) || 0) : 0,
+                machine: poste ? !!poste.isMachine : false
+            };
+        }
+        reel[nom].heures += parseFloat(e.hours) || 0;
+    });
+
+    // --- Rapprochement par nom de poste ---
+    const ordre = {};
+    data.postes.forEach((p, i) => { ordre[p.name] = p.order !== undefined ? p.order : i; });
+
+    const noms = Array.from(new Set(Object.keys(budget).concat(Object.keys(reel))));
+    const postes = noms.map(nom => {
+        const b = budget[nom] || { heures: 0, montant: 0, machine: false };
+        const r = reel[nom] || { heures: 0, taux: 0, machine: false };
+        const reelMontant = r.heures * r.taux;
+        return {
+            nom: nom,
+            machine: b.machine || r.machine,
+            budgetHeures: b.heures,
+            budgetMontant: b.montant,
+            reelHeures: r.heures,
+            reelTaux: r.taux,
+            reelMontant: reelMontant,
+            ecartHeures: r.heures - b.heures,
+            ecartMontant: reelMontant - b.montant
+        };
+    }).sort((a, b) => (ordre[a.nom] !== undefined ? ordre[a.nom] : 999)
+                    - (ordre[b.nom] !== undefined ? ordre[b.nom] : 999));
+
+    const somme = (cle) => postes.reduce((s, p) => s + p[cle], 0);
+    const budgetMontant = somme('budgetMontant');
+    const reelMontant = somme('reelMontant');
+    const coutBudget = budgetMontant + budgetAchats;
+
+    return {
+        affaireId: affaireId,
+        affaire: affaire,
+        aDevis: !!devis,
+        coeffMarge: coeffMarge,
+        postes: postes,
+        totaux: {
+            budgetHeures: somme('budgetHeures'),
+            budgetMontant: budgetMontant,
+            budgetAchats: budgetAchats,
+            coutBudget: coutBudget,
+            prixVente: coutBudget * coeffMarge,
+            reelHeures: somme('reelHeures'),
+            reelMontant: reelMontant,
+            ecartHeures: somme('ecartHeures'),
+            ecartMontant: reelMontant - budgetMontant
+        }
+    };
+}
+
+// GET - Tous les devis (permet au front de calculer les écarts sans N requêtes)
+app.get('/api/devis', async (req, res) => {
+    try {
+        const data = await readData();
+        res.json({ devis: data.devis || [] });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// GET - Le devis d'une affaire
+app.get('/api/devis/:affaireId', async (req, res) => {
+    try {
+        const data = await readData();
+        const devis = (data.devis || []).find(d => d.affaireId === req.params.affaireId);
+        if (!devis) return res.status(404).json({ error: 'Aucun devis pour cette affaire' });
+        res.json(devis);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// PUT - Créer ou mettre à jour le devis d'une affaire
+app.put('/api/devis/:affaireId', async (req, res) => {
+    try {
+        const data = await readData();
+        const affaireId = req.params.affaireId;
+
+        if (!data.affaires.find(a => a.id === affaireId)) {
+            return res.status(404).json({ error: 'Affaire non trouvée' });
+        }
+
+        const devis = {
+            affaireId: affaireId,
+            client: req.body.client || '',
+            numCommande: req.body.numCommande || '',
+            affaire: req.body.affaire || '',
+            date: req.body.date || new Date().toISOString().split('T')[0],
+            coeffMarge: req.body.coeffMarge || 1.2,
+            data: req.body.data || { travail: [], machine: [], achats: [] },
+            updatedAt: new Date().toISOString()
+        };
+
+        const index = (data.devis || []).findIndex(d => d.affaireId === affaireId);
+        if (index === -1) {
+            data.devis = (data.devis || []).concat([devis]);
+            console.log('📄 Devis créé pour l\'affaire ' + affaireId);
+        } else {
+            devis.createdAt = data.devis[index].createdAt || devis.updatedAt;
+            data.devis[index] = devis;
+        }
+
+        await writeData(data);
+        res.json(devis);
+    } catch (error) {
+        console.error('❌ Erreur PUT /api/devis:', error);
+        res.status(500).json({ error: 'Erreur de sauvegarde' });
+    }
+});
+
+// DELETE - Supprimer le devis d'une affaire
+app.delete('/api/devis/:affaireId', async (req, res) => {
+    try {
+        const data = await readData();
+        data.devis = (data.devis || []).filter(d => d.affaireId !== req.params.affaireId);
+        await writeData(data);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de suppression' });
+    }
+});
+
+// GET - Synthèse budget / réel d'une affaire
+app.get('/api/affaires/:id/synthese', async (req, res) => {
+    try {
+        const data = await readData();
+        const synthese = calculerSynthese(data, req.params.id);
+        if (!synthese) return res.status(404).json({ error: 'Affaire non trouvée' });
+        res.json(synthese);
+    } catch (error) {
+        console.error('❌ Erreur GET /api/affaires/:id/synthese:', error);
+        res.status(500).json({ error: 'Erreur de calcul' });
     }
 });
 

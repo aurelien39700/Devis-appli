@@ -318,6 +318,83 @@ table input::placeholder{color:var(--ink-dim);}
    construit par jsPDF, mais preparerImpression() alimente ces cellules */
 #print-summary{display:none;}
 
+
+/* ---------------------------------------- devis rattaché à une affaire */
+.affaire-liee{
+  display:none;align-items:center;gap:11px;flex-wrap:wrap;
+  padding:11px 14px;margin-bottom:16px;
+  background:var(--arc-soft);border:1px solid var(--arc);border-radius:var(--r-md);
+}
+.lien-lab{
+  font-family:var(--f-data);font-size:10px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--arc);
+}
+.lien-nom{font-family:var(--f-display);font-size:19px;font-weight:800;letter-spacing:-.03em;color:var(--ink);}
+.lien-desc{font-size:13px;color:var(--ink-mid);font-style:italic;}
+.etat-devis{
+  margin-left:auto;
+  font-family:var(--f-data);font-size:11px;font-weight:600;
+  letter-spacing:.08em;color:var(--ink-dim);white-space:nowrap;
+}
+.etat-devis.ok{color:var(--ok);}
+.etat-devis.encours{color:var(--arc);}
+.etat-devis.nouveau{color:var(--wait);}
+.etat-devis.horsligne,.etat-devis.erreur{color:var(--stop);}
+
+/* ---------------------------------------- comparaison budget / réel */
+#comparaison{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:18px;margin-bottom:18px;
+  animation:rise .5s cubic-bezier(.22,.9,.3,1) backwards;
+}
+#comparaison .avis{
+  margin:0 0 14px;padding:10px 12px;border-radius:var(--r-md);
+  background:var(--wait-soft);border:1px solid var(--wait);
+  color:var(--wait);font-size:13px;
+}
+.cmp-tuiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+.cmp-tuile{
+  position:relative;overflow:hidden;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:14px 15px 14px 19px;--c:var(--arc);
+}
+.cmp-tuile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c);}
+.cmp-tuile.depasse{--c:var(--stop);}
+.cmp-tuile.sous{--c:var(--ok);}
+.cmp-tuile.neutre{--c:var(--idle);}
+.cmp-lab{font-family:var(--f-data);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:6px;}
+.cmp-val{font-family:var(--f-display);font-variant-numeric:tabular-nums;font-size:23px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--c);}
+
+.jauge-lab{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;font-size:13px;color:var(--ink-mid);}
+.jauge-lab b{margin-left:auto;font-family:var(--f-data);font-size:15px;}
+.jauge-lab b.depasse{color:var(--stop);}
+.jauge-lab b.sous,.jauge-lab b.neutre{color:var(--ok);}
+.jauge{height:10px;background:var(--panel-3);border-radius:6px;overflow:hidden;margin-bottom:18px;}
+.jauge i{display:block;height:100%;border-radius:6px;background:var(--ok);transition:width .9s cubic-bezier(.2,.85,.3,1);}
+.jauge i.depasse{background:var(--stop);}
+.jauge i.neutre{background:var(--idle);}
+
+table.cmp .chiffre{
+  text-align:right;
+  font-family:var(--f-data);font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+table.cmp th.chiffre{text-align:right;}
+table.cmp td.chiffre{font-size:13.5px;}
+table.cmp .ecart{font-weight:700;}
+table.cmp .ecart.depasse{color:var(--stop);}
+table.cmp .ecart.sous{color:var(--ok);}
+table.cmp .ecart.neutre{color:var(--ink-dim);}
+table.cmp .mach{
+  font-family:var(--f-data);font-size:9px;font-weight:700;letter-spacing:.08em;
+  padding:2px 6px;border-radius:3px;margin-left:8px;
+  background:var(--panel-3);color:var(--ink-mid);border:1px solid var(--line);
+}
+table.cmp .total-row td:last-child,table.cmp .total-row td{font-size:12px;}
+table.cmp .total-row td.chiffre{font-size:14px;color:var(--ink);}
+table.cmp .total-row td.ecart.depasse{color:var(--stop);}
+table.cmp .total-row td.ecart.sous{color:var(--ok);}
+
 /* ---------------------------------------------------------------- adaptatif */
 @media (max-width:1000px){
   .header-info{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -418,6 +495,16 @@ table input::placeholder{color:var(--ink-dim);}
   .item-actions{flex:1 1 100%;margin-left:0;}
   .btn-icon{flex:1;justify-content:center;padding:12px 10px;}
   .btn-add-item{padding:13px;}
+
+  /* --- comparaison sur telephone --- */
+  .cmp-tuiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .cmp-val{font-size:19px;}
+  #comparaison{padding:14px;border-radius:10px;}
+  .affaire-liee{padding:10px 12px;}
+  .lien-nom{font-size:17px;}
+  .lien-desc{flex:1 1 100%;}
+  .etat-devis{margin-left:0;flex:1 1 100%;}
+  table.cmp th:first-child,table.cmp .poste-name{max-width:110px;}
 }
 
 /* --- tres petits ecrans --- */
@@ -478,6 +565,11 @@ table input::placeholder{color:var(--ink-dim);}
       <button class="btn-gestion" onclick="ouvrirBibliotheque('achats')">Gérer Achats</button>
       <button class="btn-gestion" onclick="ouvrirBibliotheque('fournisseurs')">Gérer Fournisseurs</button>
     </div>
+  </div>
+
+  <!-- Affiche seulement quand le devis est rattache a une affaire (?affaire=<id>) -->
+  <div class="affaire-liee" id="affaireLiee">
+    <span class="etat-devis" id="etatDevis"></span>
   </div>
 
   <!-- ══════════════════════ TEMPS DE TRAVAIL ══════════════════════ -->
@@ -558,6 +650,10 @@ table input::placeholder{color:var(--ink-dim);}
       <tr><td>Marge</td><td id="printMarge"></td></tr>
     </table>
   </div>
+
+  <!-- ══════════════════════ COMPARAISON ══════════════════════ -->
+  <!-- Remplie par devis-sync.js quand ?affaire=<id> est present -->
+  <div id="comparaison" style="display:none;"></div>
 
   <!-- ══════════════════════ RÉCAPITULATIF ══════════════════════ -->
   <div id="section-recap">
@@ -651,6 +747,7 @@ table input::placeholder{color:var(--ink-dim);}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="devis-app.js?v=20260825-1"></script>
+<script src="devis-sync.js?v=20260825-1"></script>
 <script>
 /* Bascule de thème — seule ligne d'interface ajoutée ici. */
 (function () {
