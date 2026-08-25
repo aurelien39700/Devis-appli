@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Devis — SOMEPRE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   DEVIS CLIENT — la page ouverte depuis le lien personnel.
+   Un document commercial clair comme du papier, imprimable tel
+   quel. Le client voit la note, les montants et les conditions —
+   jamais le détail interne des postes.
+   ============================================================ */
+:root{
+  --ground:#E3E7EC; --paper:#FFFFFF; --paper-2:#F4F6F9;
+  --line:#C4CCD5; --line-soft:#E1E6EC;
+  --ink:#10161C; --ink-mid:#3E4954; --ink-dim:#66717C;
+  --arc:#0A5FC0; --arc-deep:#084A96; --arc-soft:rgba(10,95,192,.10);
+  --ok:#0B7A42; --ok-soft:rgba(11,122,66,.10);
+  --stop:#B01C12; --stop-soft:rgba(176,28,18,.09);
+  --shadow:0 24px 60px -28px rgba(16,30,45,.35), 0 2px 8px -2px rgba(16,30,45,.12);
+  --f-display:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --f-ui:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --f-data:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  --r-md:8px; --r-lg:14px;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+textarea{font:inherit;}
+:focus-visible{outline:2px solid var(--arc);outline-offset:2px;border-radius:4px;}
+h1,h2{margin:0;font-family:var(--f-display);letter-spacing:-.03em;text-wrap:balance;}
+.eyebrow{font-family:var(--f-data);font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);}
+.bureau{max-width:820px;margin:0 auto;padding:34px 18px 60px;}
+@keyframes pose{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+.feuille{background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;animation:pose .55s cubic-bezier(.22,.9,.3,1) backwards;}
+.feuille::before{content:'';display:block;height:6px;background:linear-gradient(90deg,var(--arc-deep),var(--arc));}
+.marges{padding:38px 44px;}
+.attente,.introuvable{text-align:center;padding:60px 20px;color:var(--ink-dim);}
+.introuvable b{display:block;font-family:var(--f-display);font-size:19px;color:var(--ink);margin-bottom:8px;}
+
+.entete{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:34px;}
+.marque{display:flex;align-items:center;gap:13px;}
+.sigle{flex:none;width:46px;height:46px;border:2px solid var(--arc);border-radius:7px;display:grid;place-items:center;overflow:hidden;}
+.sigle::before{content:'';width:16px;height:16px;background:var(--arc);border-radius:2px;transform:rotate(45deg);}
+.sigle.avec-logo{border:none;width:64px;height:64px;}
+.sigle.avec-logo::before{display:none;}
+.sigle img{max-width:100%;max-height:100%;object-fit:contain;}
+.marque-nom{font-family:var(--f-display);font-size:23px;font-weight:800;letter-spacing:-.03em;line-height:1.05;}
+.marque-sous{font-family:var(--f-data);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);}
+.ref{margin-left:auto;text-align:right;}
+.ref-titre{font-family:var(--f-display);font-size:31px;font-weight:800;letter-spacing:-.04em;color:var(--arc);line-height:1;}
+.ref-meta{font-family:var(--f-data);font-size:12px;color:var(--ink-mid);margin-top:8px;line-height:1.7;}
+.ref-meta b{color:var(--ink);font-weight:600;}
+
+.cartouche{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+.cart{padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--paper-2);}
+.cart .eyebrow{margin-bottom:7px;}
+.cart-nom{font-family:var(--f-display);font-size:19px;font-weight:800;letter-spacing:-.02em;}
+.cart-detail{font-size:13.5px;color:var(--ink-mid);margin-top:3px;}
+
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{font-family:var(--f-data);font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);text-align:left;padding:0 12px 10px;border-bottom:2px solid var(--ink);}
+th.c{text-align:right;}
+td{padding:9px 12px;border-bottom:1px solid var(--line-soft);vertical-align:baseline;}
+tr.section td{padding:22px 12px 7px;border-bottom:1px solid var(--line);font-family:var(--f-data);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--arc);}
+tr.note td{padding:11px 12px;font-size:14.5px;font-weight:600;color:var(--ink);}
+tr.note td small{display:block;font-weight:400;font-size:12.5px;color:var(--ink-mid);margin-top:3px;max-width:62ch;line-height:1.55;white-space:pre-line;}
+td.mnt{text-align:right;white-space:nowrap;font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:14px;font-weight:600;color:var(--ink);}
+tr.stotal td{border-bottom:1px solid var(--line);background:var(--paper-2);font-family:var(--f-data);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mid);}
+tr.stotal td.mnt{font-size:14px;letter-spacing:0;color:var(--ink);}
+
+.total{margin-top:26px;display:flex;align-items:center;gap:18px;padding:22px 26px;background:var(--arc-soft);border:2px solid var(--arc);border-radius:var(--r-lg);}
+.total-lab{font-family:var(--f-display);font-size:17px;font-weight:800;letter-spacing:-.02em;}
+.total-note{font-size:12px;color:var(--ink-dim);margin-top:2px;}
+.total-val{margin-left:auto;font-family:var(--f-display);font-variant-numeric:tabular-nums;font-size:40px;font-weight:800;letter-spacing:-.045em;color:var(--arc);line-height:1;}
+
+.conds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;}
+.conds > div{padding:13px 18px;border-right:1px solid var(--line);background:var(--paper-2);font-size:14px;font-weight:600;color:var(--ink);}
+.conds > div:last-child{border-right:none;}
+.conds b{display:block;font-family:var(--f-data);font-size:9.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:4px;}
+.echeancier{margin-top:14px;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;}
+.echeancier .tete{padding:10px 18px;background:var(--paper-2);border-bottom:1px solid var(--line);font-family:var(--f-data);font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mid);}
+.ech-l{display:flex;align-items:baseline;gap:12px;padding:9px 18px;border-bottom:1px solid var(--line-soft);font-size:13.5px;}
+.ech-l:last-child{border-bottom:none;}
+.ech-l b{margin-left:auto;font-family:var(--f-data);font-variant-numeric:tabular-nums;}
+.ech-l .d{font-family:var(--f-data);font-size:12px;color:var(--ink-dim);}
+
+.reponse{margin-top:34px;}
+.rep-attente{padding:24px 26px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--paper-2);}
+.rep-titre{font-family:var(--f-display);font-size:17px;font-weight:800;margin-bottom:6px;}
+.rep-texte{font-size:13.5px;color:var(--ink-mid);margin:0 0 18px;max-width:58ch;}
+.rep-boutons{display:flex;gap:12px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 26px;border-radius:var(--r-md);font-size:15px;font-weight:700;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);transition:transform .15s,border-color .18s,color .18s,filter .18s;}
+.btn:active{transform:translateY(1px);}
+.btn:disabled{opacity:.6;cursor:wait;}
+.btn-accepter{background:var(--ok);border-color:var(--ok);color:#fff;box-shadow:0 8px 20px -8px rgba(11,122,66,.55);}
+.btn-accepter:hover{filter:brightness(1.08);}
+.btn-accepter svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.btn-refuser{color:var(--ink-mid);}
+.btn-refuser:hover{border-color:var(--stop);color:var(--stop);}
+.rep-mention{font-size:11.5px;color:var(--ink-dim);margin:14px 0 0;}
+.refus-champ{margin-top:16px;display:none;}
+.refus-champ.is-on{display:block;animation:pose .3s;}
+.refus-champ textarea{width:100%;min-height:84px;padding:12px 14px;resize:vertical;border:1px solid var(--line);border-radius:var(--r-md);background:var(--paper);color:var(--ink);font-size:14px;}
+.refus-champ textarea:focus{border-color:var(--stop);outline:none;}
+.refus-champ .rep-boutons{margin-top:12px;}
+.btn-confirmer-refus{background:var(--stop);border-color:var(--stop);color:#fff;}
+.btn-confirmer-refus:hover{filter:brightness(1.1);}
+.banniere{display:none;align-items:flex-start;gap:15px;padding:22px 24px;border-radius:var(--r-lg);animation:pose .4s;}
+.banniere.is-on{display:flex;}
+.banniere svg{flex:none;width:26px;height:26px;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none;margin-top:2px;}
+.banniere-titre{font-family:var(--f-display);font-size:18px;font-weight:800;letter-spacing:-.02em;}
+.banniere-texte{font-size:13.5px;margin-top:4px;max-width:56ch;color:var(--ink-mid);}
+.banniere.acceptee{background:var(--ok-soft);border:2px solid var(--ok);}
+.banniere.acceptee svg{stroke:var(--ok);}
+.banniere.acceptee .banniere-titre{color:var(--ok);}
+.banniere.refusee{background:var(--stop-soft);border:2px solid var(--stop);}
+.banniere.refusee svg{stroke:var(--stop);}
+.banniere.refusee .banniere-titre{color:var(--stop);}
+
+.pied{margin-top:38px;padding-top:20px;border-top:1px solid var(--line);display:flex;gap:24px;flex-wrap:wrap;font-size:12px;color:var(--ink-dim);}
+.pied b{display:block;font-family:var(--f-data);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:3px;}
+.pied > div{min-width:150px;}
+
+@media print{
+  body{background:#fff;}
+  .bureau{padding:0;max-width:none;}
+  .feuille{box-shadow:none;border-radius:0;}
+  .rep-attente,.refus-champ{display:none !important;}
+  .banniere.is-on{border-width:1.5px;}
+}
+@media (max-width:640px){
+  .bureau{padding:16px 10px 40px;}
+  .marges{padding:26px 20px;}
+  .ref{margin-left:0;text-align:left;width:100%;}
+  .ref-titre{font-size:26px;}
+  .cartouche{grid-template-columns:minmax(0,1fr);}
+  .total{flex-direction:column;align-items:flex-start;gap:8px;padding:18px 20px;}
+  .total-val{margin-left:0;font-size:33px;}
+  .rep-boutons .btn{flex:1 1 100%;padding:15px;}
+  .conds{grid-template-columns:minmax(0,1fr);}
+  .conds > div{border-right:none;border-bottom:1px solid var(--line);}
+  .conds > div:last-child{border-bottom:none;}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="bureau">
+  <div class="feuille">
+    <div class="marges" id="contenu">
+      <div class="attente">Chargement du devis…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    const API = window.location.origin + '/api';
+    const TOKEN = new URLSearchParams(window.location.search).get('t');
+    const REGLEMENTS = {
+        cheque: 'Chèque', traite_30j: 'Traite à 30 jours', traite_45j: 'Traite à 45 jours',
+        virement_immediat: 'Virement immédiat', virement_30j: 'Virement à 30 jours',
+        virement_45j: 'Virement à 45 jours', personnalise: 'Échéancier personnalisé'
+    };
+
+    const $ = s => document.querySelector(s);
+    const esc = s => String(s == null ? '' : s)
+        .replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const eur = v => (v || 0).toFixed(2).replace('.', ',')
+        .replace(/\B(?=(\d{3})+(?!\d)(?=,))/g, ' ') + ' €';
+    const dateFR = s => {
+        if (!s) return '';
+        const d = new Date(String(s).length > 10 ? s : s + 'T12:00:00');
+        return isNaN(d) ? esc(s) : d.toLocaleDateString('fr-FR');
+    };
+
+    function introuvable(message) {
+        $('#contenu').innerHTML = '<div class="introuvable"><b>Devis introuvable</b>'
+            + esc(message || 'Ce lien n\'est plus valable. Contactez votre interlocuteur SOMEPRE.')
+            + '</div>';
+    }
+
+    function rendre(donnees) {
+        const ent = donnees.entreprise || {};
+        const d = donnees.devis;
+        const m = d.montants || { realisationHT: 0, fournituresHT: 0, totalHT: 0 };
+        const nomEnt = ent.nom || 'SOMEPRE';
+        const perso = d.reglement === 'personnalise';
+        const noteLignes = String(d.noteClient || '').trim();
+
+        const echeancier = (perso && (d.echeances || []).length)
+            ? '<div class="echeancier"><div class="tete">Échéancier de règlement</div>'
+              + d.echeances.map(e =>
+                  '<div class="ech-l"><span>' + esc(e.label || 'Échéance') + '</span>'
+                  + (e.date ? '<span class="d">' + dateFR(e.date) + '</span>' : '')
+                  + '<b>' + (parseFloat(e.pourcent) || 0) + ' %</b></div>').join('')
+              + '</div>'
+            : '';
+
+        const reponse = d.reponse;
+        const quand = reponse ? new Date(reponse.date).toLocaleString('fr-FR',
+            { day: '2-digit', month: '2-digit', year: 'numeric',
+              hour: '2-digit', minute: '2-digit' }) : '';
+
+        $('#contenu').innerHTML =
+            '<div class="entete">'
+            + '<div class="marque">'
+            + (ent.logo
+                ? '<div class="sigle avec-logo"><img src="' + esc(ent.logo) + '" alt="' + esc(nomEnt) + '"></div>'
+                : '<div class="sigle"></div>')
+            + '<div><div class="marque-nom">' + esc(nomEnt) + '</div>'
+            + '<div class="marque-sous">' + esc(ent.forme || 'Mécanique de précision') + '</div></div></div>'
+            + '<div class="ref"><div class="ref-titre">Devis</div>'
+            + '<div class="ref-meta">Référence <b>' + esc(d.affaireNom) + '</b><br>'
+            + 'Émis le <b>' + dateFR(d.date) + '</b> · valable <b>30 jours</b></div></div></div>'
+
+            + '<div class="cartouche">'
+            + '<div class="cart"><div class="eyebrow">À l\'attention de</div>'
+            + '<div class="cart-nom">' + esc(d.clientNom || '—') + '</div>'
+            + (d.numCommande ? '<div class="cart-detail">N° de commande ' + esc(d.numCommande) + '</div>' : '')
+            + '</div>'
+            + '<div class="cart"><div class="eyebrow">Objet</div>'
+            + '<div class="cart-nom">Affaire ' + esc(d.affaireNom) + '</div>'
+            + (d.description ? '<div class="cart-detail">' + esc(d.description) + '</div>' : '')
+            + '</div></div>'
+
+            + '<table><thead><tr><th>Désignation</th><th class="c">Montant HT</th></tr></thead><tbody>'
+            + '<tr class="section"><td colspan="2">Réalisation</td></tr>'
+            + '<tr class="note"><td colspan="2">'
+            + (noteLignes ? esc(noteLignes) : 'Conception et réalisation — affaire ' + esc(d.affaireNom))
+            + '</td></tr>'
+            + '<tr class="stotal"><td>Main-d\'œuvre et usinage</td>'
+            + '<td class="mnt">' + eur(m.realisationHT) + '</td></tr>'
+            + (m.fournituresHT > 0
+                ? '<tr class="section"><td colspan="2">Fournitures &amp; sous-traitance</td></tr>'
+                  + '<tr class="stotal"><td>Fournitures</td>'
+                  + '<td class="mnt">' + eur(m.fournituresHT) + '</td></tr>'
+                : '')
+            + '</tbody></table>'
+
+            + '<div class="total"><div><div class="total-lab">Total HT</div>'
+            + '<div class="total-note">TVA en sus au taux en vigueur</div></div>'
+            + '<div class="total-val">' + eur(m.totalHT) + '</div></div>'
+
+            + '<div class="conds">'
+            + '<div><b>Validité</b>30 jours</div>'
+            + '<div><b>Délai de réalisation</b>' + esc(d.delai || 'À convenir') + '</div>'
+            + '<div><b>Règlement</b>' + esc(REGLEMENTS[d.reglement] || d.reglement || 'À convenir') + '</div>'
+            + '</div>'
+            + echeancier
+
+            + '<div class="reponse">'
+            + (d.repondable
+                ? '<div class="rep-attente" id="repAttente">'
+                  + '<div class="rep-titre">Votre réponse</div>'
+                  + '<p class="rep-texte">Vous pouvez accepter ce devis directement depuis cette page. '
+                  + 'Votre réponse est transmise immédiatement à notre atelier.</p>'
+                  + '<div class="rep-boutons">'
+                  + '<button class="btn btn-accepter" id="btnAccepter">'
+                  + '<svg viewBox="0 0 24 24"><path d="M4 12.5L9.5 18 20 7"/></svg>Accepter le devis</button>'
+                  + '<button class="btn btn-refuser" id="btnRefuser">Refuser</button></div>'
+                  + '<div class="refus-champ" id="refusChamp">'
+                  + '<textarea id="refusMotif" placeholder="Un mot sur la raison du refus ? (facultatif)"></textarea>'
+                  + '<div class="rep-boutons">'
+                  + '<button class="btn btn-confirmer-refus" id="btnConfirmerRefus">Confirmer le refus</button>'
+                  + '<button class="btn" id="btnAnnulerRefus">Annuler</button></div></div>'
+                  + '<p class="rep-mention">L\'acceptation de ce devis vaut bon pour accord.</p>'
+                  + '</div>'
+                : '')
+            + '<div class="banniere acceptee' + (reponse && reponse.action === 'accepte' ? ' is-on' : '')
+            + '" id="banAcceptee"><svg viewBox="0 0 24 24"><path d="M4 12.5L9.5 18 20 7"/></svg>'
+            + '<div><div class="banniere-titre">Devis accepté — merci pour votre confiance</div>'
+            + '<div class="banniere-texte">Votre accord a été transmis'
+            + (quand ? ' le <b>' + quand + '</b>' : '') + '. Notre atelier lance l\'affaire '
+            + esc(d.affaireNom) + '. Vous pouvez imprimer cette page : elle vaut confirmation.</div></div></div>'
+            + '<div class="banniere refusee' + (reponse && reponse.action === 'refuse' ? ' is-on' : '')
+            + '" id="banRefusee"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+            + '<div><div class="banniere-titre">Devis refusé</div>'
+            + '<div class="banniere-texte">Votre réponse a été transmise. Si vous souhaitez en discuter, '
+            + 'contactez-nous — nous restons à votre disposition pour ajuster cette proposition.</div></div></div>'
+            + (!d.repondable && !reponse
+                ? '<p style="color:var(--ink-dim);font-size:13px;">Ce devis n\'attend pas de réponse en ligne.</p>'
+                : '')
+            + '</div>'
+
+            + '<div class="pied">'
+            + '<div><b>' + esc(nomEnt) + '</b>'
+            + esc(ent.adresse || '') + (ent.adresse ? '<br>' : '')
+            + esc(((ent.cp || '') + ' ' + (ent.ville || '')).trim()) + '</div>'
+            + ((ent.tel || ent.site)
+                ? '<div><b>Contact</b>' + esc(ent.tel || '')
+                  + (ent.tel && ent.site ? '<br>' : '') + esc(ent.site || '') + '</div>' : '')
+            + ((ent.siret || ent.tva)
+                ? '<div><b>Références</b>' + (ent.siret ? 'SIRET ' + esc(ent.siret) : '')
+                  + (ent.siret && ent.tva ? '<br>' : '') + (ent.tva ? 'TVA ' + esc(ent.tva) : '') + '</div>' : '')
+            + '<div><b>Règlement</b>' + esc(REGLEMENTS[d.reglement] || 'À convenir')
+            + '<br>Devis valable 30 jours</div>'
+            + '</div>';
+
+        brancher();
+    }
+
+    async function repondre(action, motif) {
+        const r = await fetch(API + '/public/devis/' + encodeURIComponent(TOKEN) + '/repondre', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: action, motif: motif || '' })
+        });
+        if (!r.ok && r.status !== 409) throw new Error('La réponse n\'a pas pu être transmise. Réessayez.');
+        await charger(); // ré-affiche l'état renvoyé par le serveur
+    }
+
+    function brancher() {
+        const acc = $('#btnAccepter');
+        if (acc) acc.addEventListener('click', async () => {
+            if (!confirm('Accepter ce devis ? Votre accord sera transmis à l\'atelier.')) return;
+            acc.disabled = true;
+            try { await repondre('accepter'); }
+            catch (e) { alert(e.message); acc.disabled = false; }
+        });
+        const ref = $('#btnRefuser');
+        if (ref) ref.addEventListener('click', () => {
+            $('#refusChamp').classList.add('is-on');
+            $('#refusMotif').focus();
+        });
+        const ann = $('#btnAnnulerRefus');
+        if (ann) ann.addEventListener('click', () => $('#refusChamp').classList.remove('is-on'));
+        const conf = $('#btnConfirmerRefus');
+        if (conf) conf.addEventListener('click', async () => {
+            conf.disabled = true;
+            try { await repondre('refuser', $('#refusMotif').value); }
+            catch (e) { alert(e.message); conf.disabled = false; }
+        });
+    }
+
+    async function charger() {
+        if (!TOKEN) { introuvable('Aucun devis n\'est indiqué dans ce lien.'); return; }
+        try {
+            const r = await fetch(API + '/public/devis/' + encodeURIComponent(TOKEN)
+                + '?_t=' + Date.now(), { cache: 'no-store' });
+            if (r.status === 404) { introuvable(); return; }
+            if (!r.ok) throw new Error();
+            rendre(await r.json());
+        } catch (e) {
+            introuvable('Le serveur est momentanément indisponible. Réessayez dans un instant.');
+        }
+    }
+
+    charger();
+})();
+</script>
+</body>
+</html>

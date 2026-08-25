@@ -7,6 +7,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec } = require('child_process');
 const util = require('util');
+const crypto = require('crypto');
 const execPromise = util.promisify(exec);
 
 const app = express();
@@ -15,7 +16,7 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 app.use(express.static(__dirname));
 
 // ===== FONCTIONS GIT =====
@@ -318,7 +319,8 @@ async function readData() {
             users: parsed.users || [],
             achats: parsed.achats || [],
             fournisseurs: parsed.fournisseurs || [],
-            devis: parsed.devis || []
+            devis: parsed.devis || [],
+            entreprise: parsed.entreprise || {}
         };
     } catch (error) {
         return {
@@ -329,7 +331,8 @@ async function readData() {
             users: [],
             achats: [],
             fournisseurs: [],
-            devis: []
+            devis: [],
+            entreprise: {}
         };
     }
 }
@@ -348,7 +351,8 @@ async function writeData(data) {
         // IMPORTANT : cette liste blanche conditionne ce qui survit a une
         // ecriture. Toute nouvelle collection doit y figurer, sinon elle est
         // effacee silencieusement a la sauvegarde suivante.
-        devis: Array.isArray(data.devis) ? data.devis : []
+        devis: Array.isArray(data.devis) ? data.devis : [],
+        entreprise: (data.entreprise && typeof data.entreprise === 'object') ? data.entreprise : {}
     };
 
     // S'assurer que l'admin existe toujours
@@ -599,6 +603,23 @@ app.put('/api/affaires/:id/statut', async (req, res) => {
         const affaire = data.affaires.find(a => a.id === req.params.id);
         if (affaire) {
             affaire.statut = req.body.statut;
+
+            // Cycle du devis : l'envoi au client garantit un devis avec un
+            // token de lien ; le retour en brouillon efface la réponse client
+            // (le cycle repart proprement).
+            const devisAffaire = (data.devis || []).find(d => d.affaireId === affaire.id);
+            if (req.body.statut === 'envoye') {
+                if (!devisAffaire) {
+                    return res.status(400).json({ error: 'Aucun devis à envoyer pour cette affaire' });
+                }
+                if (!devisAffaire.token) {
+                    devisAffaire.token = crypto.randomBytes(8).toString('hex');
+                }
+                delete devisAffaire.reponseClient;
+            } else if (req.body.statut === 'brouillon' && devisAffaire) {
+                delete devisAffaire.reponseClient;
+            }
+
             await writeData(data);
             res.json(affaire);
         } else {
@@ -931,6 +952,8 @@ app.put('/api/devis/:affaireId', async (req, res) => {
             return res.status(404).json({ error: 'Affaire non trouvée' });
         }
 
+        const ancien = (data.devis || []).find(d => d.affaireId === affaireId) || {};
+
         const devis = {
             affaireId: affaireId,
             client: req.body.client || '',
@@ -938,12 +961,25 @@ app.put('/api/devis/:affaireId', async (req, res) => {
             affaire: req.body.affaire || '',
             date: req.body.date || new Date().toISOString().split('T')[0],
             coeffMarge: req.body.coeffMarge || 1.2,
-            data: req.body.data || { travail: [], machine: [], achats: [] },
+            data: req.body.data || ancien.data || { travail: [], machine: [], achats: [] },
+            // Conditions du devis (modèle V3) et note visible par le client.
+            // Un client (ex. l'ancien devis-sync) qui n'envoie pas ces champs
+            // ne doit pas les effacer : on retombe sur l'existant.
+            noteClient: req.body.noteClient !== undefined ? String(req.body.noteClient) : (ancien.noteClient || ''),
+            delai: req.body.delai !== undefined ? String(req.body.delai) : (ancien.delai || ''),
+            reglement: req.body.reglement !== undefined ? String(req.body.reglement) : (ancien.reglement || 'virement_45j'),
+            echeances: Array.isArray(req.body.echeances) ? req.body.echeances : (ancien.echeances || []),
+            // Jamais pilotés par le corps de la requête : le token vient de
+            // l'envoi au client, la réponse vient du client lui-même.
+            token: ancien.token,
+            reponseClient: ancien.reponseClient,
+            createdAt: ancien.createdAt,
             updatedAt: new Date().toISOString()
         };
 
         const index = (data.devis || []).findIndex(d => d.affaireId === affaireId);
         if (index === -1) {
+            devis.createdAt = devis.updatedAt;
             data.devis = (data.devis || []).concat([devis]);
             console.log('📄 Devis créé pour l\'affaire ' + affaireId);
         } else {
@@ -981,6 +1017,129 @@ app.get('/api/affaires/:id/synthese', async (req, res) => {
     } catch (error) {
         console.error('❌ Erreur GET /api/affaires/:id/synthese:', error);
         res.status(500).json({ error: 'Erreur de calcul' });
+    }
+});
+
+// ===== Entreprise (coordonnées reprises sur les devis client) =====
+
+app.get('/api/entreprise', async (req, res) => {
+    try {
+        const data = await readData();
+        res.json({ entreprise: data.entreprise || {} });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+app.post('/api/entreprise', async (req, res) => {
+    try {
+        const corps = req.body || {};
+        // le logo arrive en data URI ; on borne sa taille
+        if (corps.logo && String(corps.logo).length > 400000) {
+            return res.status(413).json({ error: 'Logo trop lourd (300 Ko maximum)' });
+        }
+        const CHAMPS = ['nom','forme','adresse','cp','ville','tel','site','siret','tva','logo'];
+        const data = await readData();
+        const entreprise = {};
+        CHAMPS.forEach(k => { if (corps[k] !== undefined) entreprise[k] = String(corps[k]); });
+        data.entreprise = Object.assign({}, data.entreprise, entreprise);
+        await writeData(data);
+        res.json({ success: true, entreprise: data.entreprise });
+    } catch (error) {
+        console.error('❌ Erreur POST /api/entreprise:', error);
+        res.status(500).json({ error: 'Erreur de sauvegarde' });
+    }
+});
+
+// ===== Page client publique (lien par token, sans compte) =====
+
+// Montants tels que le client les voit : cout interne x coefficient de
+// marge, agreges en deux postes. Jamais le detail interne.
+function montantsClient(devis) {
+    const d = devis.data || {};
+    const mo = (d.travail || []).reduce((s, p) =>
+            s + (p.semaines || []).reduce((a, b) => a + (parseFloat(b) || 0), 0) * (parseFloat(p.taux) || 0), 0)
+        + (d.machine || []).reduce((s, m) =>
+            s + (parseFloat(m.temps) || 0) * (parseFloat(m.taux) || 0), 0);
+    const achats = (d.achats || []).reduce((s, a) =>
+        s + (parseFloat(a.quantite) || 0) * (parseFloat(a.prixUnit) || 0), 0);
+    const coeff = parseFloat(devis.coeffMarge) || 1.2;
+    return {
+        realisationHT: mo * coeff,
+        fournituresHT: achats * coeff,
+        totalHT: (mo + achats) * coeff
+    };
+}
+
+// GET - Le devis vu par le client (notes, montants, conditions - pas le detail)
+app.get('/api/public/devis/:token', async (req, res) => {
+    try {
+        const data = await readData();
+        const devis = (data.devis || []).find(d => d.token === req.params.token);
+        if (!devis) return res.status(404).json({ error: 'Devis introuvable' });
+
+        const affaire = data.affaires.find(a => a.id === devis.affaireId) || {};
+        const client = data.clients.find(c => c.id === affaire.clientId);
+
+        res.json({
+            entreprise: data.entreprise || {},
+            devis: {
+                clientNom: client ? client.name : (devis.client || ''),
+                affaireNom: affaire.name || devis.affaire || '',
+                description: affaire.description || '',
+                numCommande: devis.numCommande || '',
+                date: devis.date || '',
+                noteClient: devis.noteClient || '',
+                delai: devis.delai || '',
+                reglement: devis.reglement || '',
+                echeances: devis.echeances || [],
+                montants: montantsClient(devis),
+                reponse: devis.reponseClient || null,
+                repondable: affaire.statut === 'envoye' && !devis.reponseClient
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erreur GET /api/public/devis:', error);
+        res.status(500).json({ error: 'Erreur de lecture' });
+    }
+});
+
+// POST - La reponse du client : accepter fait passer l'affaire en cours
+app.post('/api/public/devis/:token/repondre', async (req, res) => {
+    try {
+        const data = await readData();
+        const devis = (data.devis || []).find(d => d.token === req.params.token);
+        if (!devis) return res.status(404).json({ error: 'Devis introuvable' });
+
+        const affaire = data.affaires.find(a => a.id === devis.affaireId);
+        if (!affaire || affaire.statut !== 'envoye' || devis.reponseClient) {
+            return res.status(409).json({
+                error: 'Ce devis n\'attend plus de réponse',
+                reponse: devis.reponseClient || null
+            });
+        }
+
+        const action = req.body.action === 'accepter' ? 'accepter'
+                     : req.body.action === 'refuser' ? 'refuser' : null;
+        if (!action) return res.status(400).json({ error: 'Action inconnue' });
+
+        devis.reponseClient = {
+            action: action === 'accepter' ? 'accepte' : 'refuse',
+            date: new Date().toISOString(),
+            motif: action === 'refuser' ? String(req.body.motif || '').slice(0, 500) : ''
+        };
+        if (action === 'accepter') {
+            affaire.statut = 'en_cours';
+            console.log('✅ Devis accepté par le client - affaire ' + affaire.name + ' en cours');
+        } else {
+            console.log('❌ Devis refusé par le client - affaire ' + affaire.name);
+        }
+
+        await writeData(data);
+        res.json({ success: true, reponse: devis.reponseClient });
+    } catch (error) {
+        console.error('❌ Erreur POST /api/public/devis/repondre:', error);
+        res.status(500).json({ error: 'Erreur d\'enregistrement' });
     }
 });
 
