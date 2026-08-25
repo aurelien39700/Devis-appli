@@ -9382,14 +9382,14 @@
       "name": "Fraisage",
       "tauxHoraire": 90,
       "isMachine": false,
-      "order": 7
+      "order": 8
     },
     {
       "id": "1764014806191",
       "name": "Ajustage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 8
+      "order": 9
     },
     {
       "id": "1764018748947",
@@ -9459,7 +9459,7 @@
       "name": "Tournage",
       "isMachine": false,
       "tauxHoraire": 80,
-      "order": 9
+      "order": 7
     },
     {
       "id": "1764076202419",
