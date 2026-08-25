@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Suivi d'heures</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f3460">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: rgba(33, 150, 243, 0.2);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+            padding: 15px;
+            padding-bottom: 80px;
+            font-size: 18px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 15px;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(33, 150, 243, 0.2);
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-center {
+            text-align: center;
+        }
+
+        .header-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            color: #2196F3;
+            text-shadow: 0 2px 10px rgba(33, 150, 243, 0.3);
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .company-name {
+            color: #ffc107;
+            font-weight: 800;
+        }
+
+        #currentDateTime {
+            color: #2196F3;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .time-display {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+        }
+
+        .date-display {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            font-weight: 500;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #b0b0b0;
+            font-size: 1.15rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+            min-height: 56px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2196F3;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        input::placeholder {
+            color: #666;
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: #ffffff;
+        }
+
+        .btn {
+            padding: 18px 32px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.35rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-height: 60px;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2196F3, #1565C0);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e8e8e8;
+        }
+
+        .btn-danger {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+        }
+
+        .btn-success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #51cf66;
+        }
+
+        .entries-list {
+            margin-top: 10px;
+        }
+
+        .entry-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .entry-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .entry-client {
+            font-weight: 600;
+            color: #2196F3;
+            font-size: 1.3rem;
+        }
+
+        .entry-hours {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .entry-info {
+            color: #b0b0b0;
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+        }
+
+        .entry-date {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .entry-actions .btn {
+            padding: 12px 16px;
+            font-size: 1rem;
+            flex: 1;
+            min-height: 48px;
+        }
+
+        .total-section {
+            text-align: center;
+            padding: 15px;
+            background: rgba(33, 150, 243, 0.1);
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .total-hours {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2196F3;
+        }
+
+        .total-label {
+            color: #a0a0a0;
+            font-size: 0.85rem;
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2196F3, #1565C0);
+            border: none;
+            color: white;
+            font-size: 2.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 25px rgba(33, 150, 243, 0.6);
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 8px 30px rgba(33, 150, 243, 0.8);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: #2196F3;
+            flex: 1;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ff6b6b;
+            font-size: 2rem;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            line-height: 1;
+            padding: 0;
+            z-index: 9999;
+            position: relative;
+            pointer-events: auto;
+            -webkit-tap-highlight-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            transform: scale(1.1);
+        }
+
+        .modal-close:active {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(0.95);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .sync-status {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .sync-status.synced {
+            color: #51cf66;
+        }
+
+        .sync-status.error {
+            color: #ff6b6b;
+        }
+
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid rgba(33, 150, 243, 0.3);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-header h2 {
+            color: #2196F3;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(33, 150, 243, 0.3);
+        }
+
+        .login-header p {
+            color: #a0a0a0;
+            font-size: 1.2rem;
+        }
+
+        .company-name-login {
+            color: #ffc107;
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .user-type-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .user-type-btn {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #a0a0a0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.3rem;
+            font-weight: 600;
+            min-height: 70px;
+        }
+
+        .user-type-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .user-type-btn.active {
+            border-color: #2196F3;
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            transform: scale(1.05);
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2196F3;
+            font-weight: 700;
+            font-size: 1.3rem;
+            background: rgba(33, 150, 243, 0.1);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .user-badge span {
+            font-size: 1.5rem;
+        }
+
+        .logout-btn {
+            background: rgba(220, 53, 69, 0.2);
+            border: 2px solid rgba(220, 53, 69, 0.3);
+            color: #ff6b6b;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            min-height: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #e8e8e8;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== MODALES PROFESSIONNELLES ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 2px solid rgba(33, 150, 243, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(33, 150, 243, 0.2);
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: #2196F3;
+            margin: 0;
+            flex: 1;
+        }
+
+        .modal-body {
+            margin-bottom: 25px;
+        }
+
+        .modal-body p {
+            color: #b0b0b0;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        /* ===== CARDS ADMIN AMÉLIORÉES ===== */
+        .admin-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .admin-card:hover {
+            border-color: rgba(33, 150, 243, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.15);
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .item-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-en-cours {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+
+        .badge-terminee {
+            background: rgba(158, 158, 158, 0.2);
+            color: #9e9e9e;
+        }
+
+        .badge-archivee {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+        }
+
+        .item-info {
+            color: #b0b0b0;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .item-actions .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 16px;
+        }
+
+        /* ===== FILTRES ET RECHERCHE ===== */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #b0b0b0;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #2196F3, #1565C0);
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .tabs::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .tabs::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        .tabs::-webkit-scrollbar-thumb {
+            background: rgba(33, 150, 243, 0.5);
+            border-radius: 2px;
+        }
+
+        .tab-btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #a0a0a0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-size: 1.15rem;
+            font-weight: 600;
+            min-height: 54px;
+            touch-action: manipulation;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #2196F3, #1565C0);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .library-content {
+            display: none;
+        }
+
+        .library-content.active {
+            display: block;
+        }
+
+        .management-section {
+            margin-bottom: 20px;
+        }
+
+        .items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            min-height: 40px;
+        }
+
+        .item-tag {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .item-tag .delete-btn {
+            background: rgba(220, 53, 69, 0.3);
+            border: none;
+            color: #ff6b6b;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .item-tag .delete-btn:hover {
+            background: rgba(220, 53, 69, 0.5);
+        }
+
+        .add-item-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .add-item-form input,
+        .add-item-form select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .add-item-form button {
+            padding: 12px 20px;
+        }
+
+        /* ===== RESPONSIVE MOBILE ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                padding-bottom: 100px;
+                font-size: 16px;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .header-left,
+            .header-center,
+            .header-right {
+                width: 100%;
+                text-align: center;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .company-name {
+                font-size: 1.5rem;
+            }
+
+            #currentDateTime {
+                font-size: 1.2rem;
+            }
+
+            .time-display {
+                font-size: 1.5rem !important;
+            }
+
+            .date-display {
+                font-size: 1rem !important;
+            }
+
+            .user-info {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .user-badge {
+                width: 100%;
+                justify-content: center;
+                font-size: 1.1rem;
+            }
+
+            .logout-btn {
+                width: 100%;
+            }
+
+            .card {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                gap: 8px;
+            }
+
+            .tab-btn {
+                padding: 12px 20px;
+                font-size: 1rem;
+                min-height: 48px;
+                white-space: nowrap;
+            }
+
+            .entry-item {
+                padding: 12px;
+            }
+
+            .entry-client {
+                font-size: 1.1rem;
+            }
+
+            .entry-hours {
+                font-size: 0.95rem;
+                padding: 5px 12px;
+            }
+
+            .entry-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .entry-actions .btn {
+                width: 100%;
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+
+            .item-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .item-actions .btn {
+                width: 100%;
+            }
+
+            .add-item-form {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .add-item-form input,
+            .add-item-form select,
+            .add-item-form button {
+                width: 100%;
+                min-width: 100%;
+            }
+
+            .floating-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 2rem;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .modal-content,
+            .modal-box {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .modal-close {
+                width: 50px;
+                height: 50px;
+                font-size: 2.5rem;
+            }
+
+            .modal-title {
+                font-size: 1.2rem;
+            }
+
+            .login-card {
+                padding: 25px;
+                transform: scale(1);
+            }
+
+            .login-header h2 {
+                font-size: 2rem;
+            }
+
+            .user-type-btn {
+                font-size: 1.1rem;
+                padding: 15px;
+                min-height: 60px;
+            }
+
+            input, select {
+                font-size: 1.1rem;
+                padding: 16px;
+            }
+
+            .btn {
+                font-size: 1.2rem;
+                padding: 16px 24px;
+                min-height: 54px;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .filter-btn {
+                width: 100%;
+                padding: 12px 16px;
+            }
+
+            .search-box {
+                width: 100%;
+                min-width: 100%;
+            }
+
+            /* Amélioration des bulles d'affaires en cours */
+            #quickAccessAffaires {
+                flex-direction: column;
+            }
+
+            #quickAccessAffaires button {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            /* Admin cards sur mobile */
+            .admin-card {
+                padding: 15px;
+            }
+
+            .item-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.6rem;
+            }
+
+            .company-name {
+                font-size: 1.3rem;
+            }
+
+            .card h3 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* ===== AFFAIRES - VUE MODERNE ===== */
+
+        /* Dashboard statistiques */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #2196F3;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #2196F3;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            font-weight: 500;
+        }
+
+        /* Groupement par client */
+        .client-group {
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .client-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .client-group-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2196F3;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .client-group-count {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Grille d'affaires */
+        .affaires-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        /* Carte d'affaire moderne */
+        .affaire-card {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .affaire-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #2196F3;
+        }
+
+        .affaire-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .affaire-card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .affaire-card-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .affaire-card-badge.en_cours {
+            background: rgba(40, 167, 69, 0.2);
+            color: #51cf66;
+        }
+
+        .affaire-card-badge.terminee {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .affaire-card-badge.archivee {
+            background: rgba(158, 158, 158, 0.2);
+            color: #9e9e9e;
+        }
+
+        .affaire-card-description {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-bottom: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.4;
+        }
+
+        .affaire-card-hours {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2196F3;
+            margin-bottom: 12px;
+        }
+
+        .affaire-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .affaire-card-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .affaire-card-btn-primary {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+        }
+
+        .affaire-card-btn-primary:hover {
+            background: rgba(33, 150, 243, 0.3);
+        }
+
+        .affaire-card-btn-menu {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            flex: 0 0 40px;
+        }
+
+        .affaire-card-btn-menu:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Menu contextuel */
+        .affaire-menu {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background: rgba(30, 30, 45, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 180px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+        }
+
+        .affaire-menu.active {
+            display: block;
+            animation: menuSlideIn 0.2s ease;
+        }
+
+        @keyframes menuSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .affaire-menu-item {
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff;
+        }
+
+        .affaire-menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .affaire-menu-item.danger {
+            color: #ff6b6b;
+        }
+
+        .affaire-menu-item.danger:hover {
+            background: rgba(220, 53, 69, 0.2);
+        }
+
+        /* Modal création/édition affaire */
+        .affaire-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .affaire-modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .affaire-modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .affaire-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .affaire-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2196F3;
+        }
+
+        .affaire-modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .affaire-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .affaires-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Écran de connexion -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h2>Suivi d'heures</h2>
+                <p>Connectez-vous pour continuer</p>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <form id="loginForm">
+                <div class="user-type-selector">
+                    <button type="button" class="user-type-btn active" data-type="user">
+                        👤 Utilisateur
+                    </button>
+                    <button type="button" class="user-type-btn" data-type="admin">
+                        👨‍💼 Admin
+                    </button>
+                </div>
+
+                <div class="form-group" id="userSelectGroup">
+                    <label for="userSelect">Utilisateur</label>
+                    <select id="userSelect" required>
+                        <option value="">Sélectionner votre nom</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="accessCode">Mot de passe</label>
+                    <input type="password" id="accessCode" placeholder="Entrez votre mot de passe" required autocomplete="off">
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application principale -->
+    <div id="appScreen" class="hidden">
+        <div class="container">
+            <header>
+                <div class="header-left">
+                    <div id="currentDateTime">
+                        <div class="time-display">🕐 --:--:--</div>
+                        <div class="date-display">📅 --/--/----</div>
+                    </div>
+                </div>
+
+                <div class="header-center">
+                    <h1>Suivi d'heures<br><span class="company-name">SOMEPRE</span></h1>
+                </div>
+
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-badge">
+                            <span id="userIcon">👤</span>
+                            <span id="userType">Utilisateur</span>
+                        </div>
+                        <button class="logout-btn" onclick="logout()">🚪 Déconnexion</button>
+                    </div>
+                </div>
+            </header>
+
+            <div id="syncStatus" class="sync-status"></div>
+
+            <!-- Onglets -->
+            <div class="tabs" id="mainTabs">
+                <button class="tab-btn active" onclick="switchTab('entries', event)">📊 Heures</button>
+                <button class="tab-btn" onclick="switchTab('management', event)" id="managementTabBtn" style="display: none;">⚙️ Gestion</button>
+                <button class="tab-btn" onclick="ouvrirDevisApp()" id="devisAppBtn" style="display: none; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white;">📄 Devis</button>
+            </div>
+
+            <!-- Onglet Heures -->
+            <div id="entriesTab" class="tab-content active">
+                <!-- Affaires en cours (bulles cliquables) -->
+                <div class="card" id="quickAccessCard" style="display: none;">
+                    <h3 style="margin-bottom: 12px; color: #2196F3; font-size: 1rem;">🚀 Affaires en cours</h3>
+                    <div id="quickAccessAffaires" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 15px; color: #2196F3;">📋 Liste des entrées</h3>
+                    <div id="entriesList" class="entries-list">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="12" y1="18" x2="12" y2="12"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
+                            </svg>
+                            <p>Aucune entrée</p>
+                            <p style="font-size: 0.85rem;">Appuyez sur + pour ajouter</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Gestion (Admin uniquement) -->
+            <div id="managementTab" class="tab-content">
+                <!-- Sous-onglets Bibliothèques -->
+                <div class="tabs" style="margin-bottom: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px;">
+                    <button class="tab-btn active" onclick="switchLibrary('clients', event)">👥 Clients</button>
+                    <button class="tab-btn" onclick="switchLibrary('affaires', event)">📁 Affaires</button>
+                    <button class="tab-btn" onclick="switchLibrary('postes', event)">🔧 Postes</button>
+                    <button class="tab-btn" onclick="switchLibrary('users', event)">👤 Utilisateurs</button>
+                </div>
+
+                <!-- Bibliothèque Clients -->
+                <div id="libraryClients" class="library-content active">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; color: #2196F3;">👥 Bibliothèque des Clients</h3>
+                        <div class="add-item-form">
+                            <input type="text" id="newClient" placeholder="Nom du client">
+                            <button class="btn btn-primary" onclick="addClient()">➕ Ajouter un client</button>
+                        </div>
+                        <div id="clientsList" class="items-list" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
+
+                <!-- Bibliothèque Affaires -->
+                <div id="libraryAffaires" class="library-content">
+                    <div class="card">
+                        <!-- Header avec titre et bouton -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0; color: #2196F3;">📁 Gestion des Affaires</h3>
+                            <button class="btn btn-primary" onclick="openAffaireModal()" style="padding: 12px 24px; font-size: 1rem;">
+                                ➕ Nouvelle affaire
+                            </button>
+                        </div>
+
+                        <!-- Dashboard statistiques -->
+                        <div id="affairesStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                            <!-- Les stats seront générées dynamiquement -->
+                        </div>
+
+                        <!-- Filtres et recherche -->
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                            <input type="text" id="searchAffaires" class="search-box" placeholder="🔍 Rechercher une affaire ou un client..."
+                                style="flex: 1; min-width: 250px; padding: 12px 16px; border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; background: rgba(255,255,255,0.05); color: white; font-size: 1rem;">
+
+                            <select id="filterStatut" onchange="filterAffaires(this.value)"
+                                style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; background: rgba(255,255,255,0.05); color: white; font-size: 1rem; cursor: pointer;">
+                                <option value="all">📋 Toutes</option>
+                                <option value="en_cours" selected>✅ En cours</option>
+                                <option value="terminee">✓ Terminées</option>
+                                <option value="archivee">📦 Archivées</option>
+                            </select>
+
+                            <select id="sortAffaires" onchange="renderAffaires()"
+                                style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; background: rgba(255,255,255,0.05); color: white; font-size: 1rem; cursor: pointer;">
+                                <option value="recent">📅 Plus récentes</option>
+                                <option value="name">🔤 Nom A-Z</option>
+                                <option value="hours">⏱️ Plus d'heures</option>
+                            </select>
+                        </div>
+
+                        <!-- Liste des affaires groupées par client -->
+                        <div id="affairesList" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+
+                <!-- Bibliothèque Postes -->
+                <div id="libraryPostes" class="library-content">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; color: #2196F3;">🔧 Bibliothèque des Postes de Travail</h3>
+                        <div class="add-item-form">
+                            <input type="text" id="newPoste" placeholder="Nom du poste">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #555; margin-left: 10px;">
+                                <input type="checkbox" id="newPosteMachine" style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>⚙️ Temps machine</span>
+                            </label>
+                            <button class="btn btn-primary" onclick="addPoste()">➕ Ajouter un poste</button>
+                        </div>
+                        <div id="postesList" class="items-list" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
+
+                <!-- Bibliothèque Utilisateurs -->
+                <div id="libraryUsers" class="library-content">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; color: #2196F3;">👤 Bibliothèque des Utilisateurs</h3>
+                        <div class="add-item-form">
+                            <input type="text" id="newUserName" placeholder="Nom de l'utilisateur">
+                            <input type="password" id="newUserPassword" placeholder="Mot de passe">
+                            <button class="btn btn-primary" onclick="addUser()">➕ Ajouter un utilisateur</button>
+                        </div>
+                        <div id="usersList" class="items-list" style="margin-top: 15px;"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bouton flottant Ajouter -->
+    <button class="floating-btn" onclick="openModal()" title="Ajouter une entrée" id="addBtn" style="display: none;">
+        +
+    </button>
+
+    <!-- Modal Ajout/Edition -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Nouvelle entrée</h3>
+                <button type="button" class="modal-close" id="modalCloseBtn">×</button>
+            </div>
+            <form id="entryForm">
+                <input type="hidden" id="entryId">
+                <div class="form-group">
+                    <label for="client">Client</label>
+                    <select id="client" required>
+                        <option value="">Sélectionner un client</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="affaire">Affaire de soudure</label>
+                    <select id="affaire" required>
+                        <option value="">Sélectionner une affaire</option>
+                    </select>
+                </div>
+                <div class="form-group" id="newAffaireGroup" style="display: none;">
+                    <label for="newAffaireName">Nom de la nouvelle affaire de soudure</label>
+                    <input type="text" id="newAffaireName" placeholder="Ex: Soudure structure métallique">
+                    <textarea id="newAffaireDesc" placeholder="Description des travaux (optionnel)" style="width: 100%; min-height: 50px; padding: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; border-radius: 8px; margin-top: 8px; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="poste">Poste de travail</label>
+                    <select id="poste" required>
+                        <option value="">Sélectionner un poste</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="hours" style="font-size: 1.1rem; font-weight: 600;">Heures de travail</label>
+                    <input type="number" id="hours" placeholder="Ex: 8 ou 0.25" step="0.25" min="0" required
+                           style="font-size: 1.8rem; padding: 20px; text-align: center; font-weight: 600; height: 70px;">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="button" class="btn btn-secondary" id="modalCancelBtn" style="flex: 1; font-size: 1.2rem; padding: 18px; min-height: 60px;">
+                        ✕ Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="flex: 2; font-size: 1.3rem; padding: 18px; height: auto; min-height: 60px; font-weight: 600;">
+                        <span id="submitBtnText">✓ Ajouter</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Conteneur pour les modales -->
+    <div id="modalContainer"></div>
+
+    <!-- Modal Création/Édition Affaire -->
+    <div id="affaireModal" class="affaire-modal">
+        <div class="affaire-modal-content">
+            <div class="affaire-modal-header">
+                <h3 class="affaire-modal-title" id="affaireModalTitle">➕ Nouvelle affaire</h3>
+                <button class="affaire-modal-close" onclick="closeAffaireModal()">×</button>
+            </div>
+            <form id="affaireForm" onsubmit="saveAffaire(event)">
+                <input type="hidden" id="affaireModalId">
+                <div class="form-group">
+                    <label for="affaireModalClient">Client *</label>
+                    <select id="affaireModalClient" required>
+                        <option value="">Sélectionner un client</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="affaireModalName">Nom de l'affaire *</label>
+                    <input type="text" id="affaireModalName" placeholder="Ex: MD1178, 3075..." required>
+                </div>
+                <div class="form-group">
+                    <label for="affaireModalDescription">Description</label>
+                    <textarea id="affaireModalDescription" placeholder="Description des travaux à réaliser (optionnel)"
+                        style="width: 100%; min-height: 100px; padding: 12px; border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; border-radius: 12px; font-family: inherit; resize: vertical; font-size: 1rem;"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAffaireModal()" style="flex: 1;">
+                        ✕ Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">
+                        ✓ <span id="affaireModalSubmitText">Créer</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="app.js?v=20260825-1"></script>
+</body>
+</html>
