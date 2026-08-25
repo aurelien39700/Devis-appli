@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOMEPRE DEVIS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2E75B6 0%, #1e5a8e 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .header-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-group label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .info-group input {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .info-group input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2E75B6;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #2E75B6;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Masquer les flèches des inputs number */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2E75B6;
+            box-shadow: 0 0 0 3px rgba(46, 117, 182, 0.1);
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            font-weight: 600;
+            color: white;
+        }
+
+        .total-row td {
+            font-size: 15px;
+            border-top: 2px solid #2E7D32;
+            color: white;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .summary-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .summary-large {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%) !important;
+        }
+
+        .summary-large .summary-value {
+            font-size: 36px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #2E75B6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e5a8e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 117, 182, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .marge-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .marge-control label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .marge-control input {
+            width: 100px;
+        }
+
+        .highlight {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+
+        @media (max-width: 768px) {
+            .header-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-large {
+                grid-column: span 1;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            input[type="number"] {
+                width: 60px;
+            }
+        }
+
+        .week-header {
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .poste-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .taux-cell {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2E75B6;
+        }
+
+        .montant-cell {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        /* Modal pour la bibliothèque */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #2E75B6 0%, #1e5a8e 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .close {
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: transform 0.3s;
+        }
+
+        .close:hover {
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .bibliotheque-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .bibliotheque-item:hover {
+            background: #f8f9fa;
+            border-color: #2E75B6;
+            transform: translateX(5px);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .item-taux {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-edit:hover {
+            background: #e0a800;
+            transform: scale(1.05);
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .btn-add-item {
+            background: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add-item:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .btn-nouveau-devis {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-nouveau-devis:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-gestion {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-gestion:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /* Styles pour l'impression PDF */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .header {
+                background: white !important;
+                color: #333 !important;
+                border-bottom: 3px solid #2E75B6;
+                page-break-after: avoid;
+                padding: 20px 30px !important;
+            }
+
+            .header h1 {
+                color: #2E75B6;
+                font-size: 28px;
+            }
+
+            .header img {
+                filter: none !important;
+                height: 50px !important;
+            }
+
+            .header-actions {
+                display: none !important;
+            }
+
+            .info-group input {
+                background: white !important;
+                color: #333 !important;
+                border: 1px solid #ddd !important;
+                font-weight: 600;
+                padding: 5px 10px !important;
+            }
+
+            .info-group label {
+                color: #666 !important;
+                opacity: 1 !important;
+            }
+
+            .content {
+                padding: 20px 30px;
+            }
+
+            .section-title {
+                font-size: 16px;
+                margin-bottom: 10px;
+                padding-bottom: 5px;
+                page-break-after: avoid;
+                margin-top: 20px;
+            }
+
+            /* MASQUER les sections de saisie détaillées */
+            #section-travail,
+            #section-machine,
+            #section-achats,
+            #section-recap {
+                display: none !important;
+            }
+
+            /* AFFICHER uniquement le récapitulatif pour impression */
+            #print-summary {
+                display: block !important;
+            }
+
+            .print-table {
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+
+            .print-table th {
+                background: #f0f0f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .print-table tr[style*="background: linear-gradient"] {
+                background: #4CAF50 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .print-table tr[style*="background: linear-gradient"] td {
+                color: white !important;
+            }
+
+            /* Styles pour le tableau final */
+            .print-table tr[style*="background: #f8f9fa"] {
+                background: #f8f9fa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .print-table tr[style*="background: #FFE5B4"] {
+                background: #FFE5B4 !important;
+                border: 3px solid #FF6B35 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .print-table tr[style*="background: #FFE5B4"] td {
+                color: #FF6B35 !important;
+            }
+
+            /* Styles pour les en-têtes des tableaux */
+            .print-table th[style*="background: #2E75B6"] {
+                background: #2E75B6 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            h2 {
+                page-break-after: avoid;
+            }
+
+            /* Masquer tout le reste sauf le print-summary */
+            .marge-control,
+            .summary-card,
+            .actions {
+                display: none !important;
+            }
+        }
+
+        .btn-add, .btn-remove {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+
+        .btn-add {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            padding: 8px 12px;
+            margin-left: 5px;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Section récapitulatif pour impression */
+        #print-summary {
+            display: none;
+        }
+
+        @media print {
+            #print-summary {
+                display: block !important;
+            }
+        }
+
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+
+        .print-table th {
+            background: #f0f0f0;
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .print-table td {
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <img src="Somepre_Logo_Print_Black.png" alt="SOMEPRE" style="height: 120px; filter: brightness(0) invert(1);">
+                </div>
+                <div class="header-info">
+                    <div class="info-group">
+                        <label>Client</label>
+                        <input type="text" id="client" placeholder="Nom du client">
+                    </div>
+                    <div class="info-group">
+                        <label>N° Commande</label>
+                        <input type="text" id="numCommande" placeholder="CMD">
+                    </div>
+                    <div class="info-group">
+                        <label>Affaire</label>
+                        <input type="text" id="affaire" placeholder="Nom de l'affaire">
+                    </div>
+                    <div class="info-group">
+                        <label>Date</label>
+                        <input type="date" id="date">
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-nouveau-devis" onclick="nouveauDevis()">
+                        🆕 Nouveau Devis
+                    </button>
+                    <button class="btn-gestion" onclick="ouvrirBibliotheque('travail')">
+                        ⚙️ Gérer Postes
+                    </button>
+                    <button class="btn-gestion" onclick="ouvrirBibliotheque('machine')">
+                        🏭 Gérer Machines
+                    </button>
+                    <button class="btn-gestion" onclick="ouvrirBibliotheque('achats')">
+                        🛒 Gérer Achats
+                    </button>
+                    <button class="btn-gestion" onclick="ouvrirBibliotheque('fournisseurs')">
+                        📋 Gérer Fournisseurs
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Page unique de synthèse -->
+
+            <!-- Section Temps de Travail -->
+            <div id="section-travail">
+                <div class="section-title">⚙️ Temps de Travail (heures)</div>
+                <div class="table-container">
+                    <table id="tableTravail">
+                        <thead>
+                            <tr>
+                                <th>Poste</th>
+                                <th class="week-header">S1</th>
+                                <th class="week-header">S2</th>
+                                <th class="week-header">S3</th>
+                                <th class="week-header">S4</th>
+                                <th class="week-header">S5</th>
+                                <th class="week-header">S6</th>
+                                <th class="week-header">S7</th>
+                                <th class="week-header">S8</th>
+                                <th>Total H</th>
+                                <th>Taux €/h</th>
+                                <th>Montant €</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyTravail">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section Temps Machine -->
+            <div id="section-machine" style="margin-top: 40px;">
+                <div class="section-title">🏭 Temps Machine</div>
+                <div class="table-container">
+                    <table id="tableMachine">
+                        <thead>
+                            <tr>
+                                <th>Type Machine</th>
+                                <th>Temps (h)</th>
+                                <th>Taux €/h</th>
+                                <th>Montant €</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyMachine">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section Achats -->
+            <div id="section-achats" style="margin-top: 40px;">
+                <div class="section-title">🛒 Achats & Fournitures</div>
+                <div class="table-container">
+                    <table id="tableAchats">
+                        <thead>
+                            <tr>
+                                <th>Désignation</th>
+                                <th>Fournisseur / Détails</th>
+                                <th>Quantité</th>
+                                <th>Prix Unitaire €</th>
+                                <th>Montant €</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyAchats">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section Récapitulatif pour impression PDF -->
+            <div id="print-summary">
+                <h2 style="text-align: center; color: #2E75B6; margin-bottom: 30px; font-size: 24px; border-bottom: 2px solid #2E75B6; padding-bottom: 10px;">SYNTHÈSE DU DEVIS</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <table class="print-table" style="border: 2px solid #2E75B6;">
+                        <tr>
+                            <th colspan="4" style="background: #2E75B6; color: white; text-align: center; font-size: 14px; padding: 10px;">⚙️ TEMPS DE TRAVAIL</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 40%;">Poste</th>
+                            <th style="text-align: center; width: 20%;">Heures</th>
+                            <th style="text-align: center; width: 20%;">Taux €/h</th>
+                            <th style="text-align: right; width: 20%;">Montant €</th>
+                        </tr>
+                        <tbody id="printTravail"></tbody>
+                    </table>
+
+                    <table class="print-table" style="border: 2px solid #2E75B6; margin-top: 15px;">
+                        <tr>
+                            <th colspan="4" style="background: #2E75B6; color: white; text-align: center; font-size: 14px; padding: 10px;">🏭 TEMPS MACHINE</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 40%;">Machine</th>
+                            <th style="text-align: center; width: 20%;">Heures</th>
+                            <th style="text-align: center; width: 20%;">Taux €/h</th>
+                            <th style="text-align: right; width: 20%;">Montant €</th>
+                        </tr>
+                        <tbody id="printMachine"></tbody>
+                    </table>
+
+                    <table class="print-table" style="border: 2px solid #2E75B6; margin-top: 15px;">
+                        <tr>
+                            <th colspan="4" style="background: #2E75B6; color: white; text-align: center; font-size: 14px; padding: 10px;">🛒 ACHATS & FOURNITURES</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 30%;">Désignation</th>
+                            <th style="width: 30%;">Fournisseur</th>
+                            <th style="text-align: center; width: 15%;">Quantité</th>
+                            <th style="text-align: right; width: 25%;">Montant €</th>
+                        </tr>
+                        <tbody id="printAchats"></tbody>
+                    </table>
+                </div>
+
+                <table class="print-table" style="margin-top: 30px; border: 2px solid #2E75B6;">
+                    <tr style="background: #f8f9fa;">
+                        <td style="text-align: right; font-weight: 600; font-size: 13px; padding: 10px;">COÛT TOTAL (HT) :</td>
+                        <td id="printCoutTotal" style="text-align: right; font-weight: 700; font-size: 13px; width: 150px; padding: 10px;"></td>
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td style="text-align: right; font-size: 12px; padding: 10px;">Coefficient de marge :</td>
+                        <td id="printCoeff" style="text-align: right; font-size: 12px; padding: 10px;"></td>
+                    </tr>
+                    <tr style="background: #FFE5B4; border: 3px solid #0dc936;">
+                        <td style="text-align: right; font-weight: 700; font-size: 16px; padding: 15px; color: rgb(53, 255, 77);">💰 PRIX DE VENTE (HT) :</td>
+                        <td id="printPrixVente" style="text-align: right; font-weight: 700; font-size: 18px; padding: 15px; color: #35ff72;"></td>
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td style="text-align: right; font-size: 11px; padding: 8px;">Marge :</td>
+                        <td id="printMarge" style="text-align: right; font-size: 11px; padding: 8px;"></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Section Récapitulatif -->
+            <div id="section-recap" style="margin-top: 40px;">
+                <div class="section-title">📊 Récapitulatif du Devis</div>
+                
+                <div class="marge-control">
+                    <label>Coefficient de marge :</label>
+                    <input type="number" id="coeffMarge" value="1.20" step="0.05" min="1" onchange="calculer()">
+                    <span style="color: #666; margin-left: 10px;">💡 Modifiez pour ajuster votre marge</span>
+                </div>
+
+                <div class="summary-card">
+                    <h2 style="margin-bottom: 20px;">💰 Synthèse Financière</h2>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-label">Temps de Travail</div>
+                            <div class="summary-value" id="sumTravail">0 €</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Temps Machine</div>
+                            <div class="summary-value" id="sumMachine">0 €</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Achats</div>
+                            <div class="summary-value" id="sumAchats">0 €</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Coût Total HT</div>
+                            <div class="summary-value" id="coutTotal">0 €</div>
+                        </div>
+                        <div class="summary-item summary-large highlight">
+                            <div class="summary-label">💵 PRIX DE VENTE HT</div>
+                            <div class="summary-value" id="prixVente">0 €</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Marge €</div>
+                            <div class="summary-value" id="margeEuro">0 €</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Marge %</div>
+                            <div class="summary-value" id="margePourcent">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="exporterPDF()">
+                        📄 Exporter en PDF
+                    </button>
+                    <button class="btn btn-secondary" onclick="sauvegarder()">
+                        💾 Sauvegarder
+                    </button>
+                    <button class="btn btn-secondary" onclick="reinitialiser()">
+                        🔄 Réinitialiser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Bibliothèque -->
+    <div id="modalBibliotheque" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Bibliothèque</h2>
+                <span class="close" onclick="fermerBibliotheque()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <button class="btn-add-item" onclick="ajouterItemBibliotheque()">
+                    ➕ Ajouter un nouvel élément
+                </button>
+                <div id="listeBibliotheque"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Édition -->
+    <div id="modalEdition" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 id="modalEditionTitle">Modifier</h2>
+                <span class="close" onclick="fermerEdition()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" id="editNom" placeholder="Nom de l'élément">
+                </div>
+                <div class="form-group">
+                    <label id="labelTaux">Taux horaire (€/h)</label>
+                    <input type="number" id="editTaux" placeholder="0" step="1" min="0">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-primary" style="flex: 1;" onclick="sauvegarderEdition()">
+                        💾 Sauvegarder
+                    </button>
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="fermerEdition()">
+                        ❌ Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Charger les postes depuis le serveur et synchroniser le localStorage
+        async function chargerPostesDepuisServeur() {
+            try {
+                console.log('📥 Chargement des postes depuis le serveur...');
+                const response = await fetch('/api/postes');
+                const data = await response.json();
+                const postes = data.postes || [];
+                console.log('✅ Postes chargés depuis le serveur:', postes.length, 'postes');
+
+                // Sauvegarder dans localStorage pour synchronisation
+                localStorage.setItem('devis_postes_bibliothèque', JSON.stringify(postes));
+                console.log('💾 Postes sauvegardés dans localStorage');
+
+                return postes;
+            } catch (error) {
+                console.error('❌ Erreur chargement postes depuis serveur:', error);
+                return [];
+            }
+        }
+
+        // Charger les postes depuis la bibliothèque synchronisée avec l'application principale
+        function chargerPostesBibliotheque() {
+            const postesSync = localStorage.getItem('devis_postes_bibliothèque');
+            if (postesSync) {
+                try {
+                    const postes = JSON.parse(postesSync);
+                    // Filtrer uniquement les postes qui ne sont PAS des machines
+                    const postesFiltres = postes
+                        .filter(p => !p.isMachine)
+                        .map(p => ({
+                            nom: p.name,
+                            taux: p.tauxHoraire || 75,
+                            order: p.order !== undefined ? p.order : 999
+                        }));
+
+                    // Trier par ordre
+                    postesFiltres.sort((a, b) => a.order - b.order);
+
+                    return postesFiltres;
+                } catch (error) {
+                    console.error('Erreur chargement postes synchronisés:', error);
+                }
+            }
+
+            // Postes par défaut si pas de synchronisation
+            return [
+                { nom: 'Étude', taux: 65 },
+                { nom: 'Ébauche', taux: 75 },
+                { nom: 'Carcasse', taux: 75 },
+                { nom: 'Rectification', taux: 75 },
+                { nom: 'Microperçage', taux: 55 },
+                { nom: 'Électrode', taux: 80 },
+                { nom: 'Ajustage', taux: 75 },
+                { nom: 'Montage', taux: 55 },
+                { nom: 'Soudure', taux: 80 }
+            ];
+        }
+
+        // Charger les machines depuis la bibliothèque synchronisée
+        function chargerMachinesBibliotheque() {
+            const postesSync = localStorage.getItem('devis_postes_bibliothèque');
+            if (postesSync) {
+                try {
+                    const postes = JSON.parse(postesSync);
+                    // Filtrer uniquement les postes marqués comme machines
+                    const machines = postes
+                        .filter(p => p.isMachine)
+                        .map(p => ({
+                            nom: p.name,
+                            taux: p.tauxHoraire || 46,
+                            order: p.order !== undefined ? p.order : 999
+                        }));
+
+                    // Si des machines sont trouvées, les trier par ordre et retourner
+                    if (machines.length > 0) {
+                        machines.sort((a, b) => a.order - b.order);
+                        return machines;
+                    }
+                } catch (error) {
+                    console.error('Erreur chargement machines synchronisées:', error);
+                }
+            }
+
+            // Machines par défaut si pas de synchronisation
+            return [
+                { nom: 'Fraisage CN', taux: 46 },
+                { nom: 'Découpe Fil', taux: 46 },
+                { nom: 'Érosion', taux: 46 }
+            ];
+        }
+
+        // Données - charger depuis localStorage ou utiliser les postes/machines par défaut
+        const postesTravail = chargerPostesBibliotheque();
+        const machines = chargerMachinesBibliotheque();
+
+        let achatsItems = [
+            'Carcasse',
+            'Éléments carcasse',
+            'Matière première',
+            'Traitement thermique',
+            'Bloc chaud',
+            'Sous-traitance',
+            'Transport'
+        ];
+
+        // Bibliothèque de fournisseurs
+        let fournisseurs = [
+            'Fournisseur A',
+            'Fournisseur B',
+            'Fournisseur C',
+            'Sous-traitant X',
+            'Sous-traitant Y'
+        ];
+
+        // Charger les fournisseurs depuis le serveur
+        async function chargerFournisseursDepuisServeur() {
+            try {
+                console.log('📥 Chargement des fournisseurs depuis le serveur...');
+                const response = await fetch('/api/fournisseurs');
+                if (!response.ok) {
+                    console.log('⚠️ Endpoint fournisseurs non disponible, utilisation des fournisseurs par défaut');
+                    return fournisseurs;
+                }
+                const data = await response.json();
+                const fournisseursServeur = data.fournisseurs || [];
+                console.log('✅ Fournisseurs chargés depuis le serveur:', fournisseursServeur.length, 'fournisseurs');
+                return fournisseursServeur;
+            } catch (error) {
+                console.error('❌ Erreur chargement fournisseurs depuis serveur:', error);
+                return fournisseurs;
+            }
+        }
+
+        // Sauvegarder les fournisseurs vers le serveur
+        async function sauvegarderFournisseursVersServeur() {
+            try {
+                console.log('💾 Sauvegarde des fournisseurs vers le serveur...');
+                const response = await fetch('/api/fournisseurs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fournisseurs: fournisseurs })
+                });
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ${response.status}`);
+                }
+                console.log('✅ Fournisseurs sauvegardés sur le serveur');
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde fournisseurs vers serveur:', error);
+            }
+        }
+
+        // Charger les achats depuis le serveur
+        async function chargerAchatsDepuisServeur() {
+            try {
+                console.log('📥 Chargement des achats depuis le serveur...');
+                const response = await fetch('/api/achats');
+                if (!response.ok) {
+                    console.log('⚠️ Endpoint achats non disponible, utilisation des achats par défaut');
+                    return achatsItems;
+                }
+                const data = await response.json();
+                const achatsServeur = data.achats || [];
+                console.log('✅ Achats chargés depuis le serveur:', achatsServeur.length, 'achats');
+                return achatsServeur.length > 0 ? achatsServeur : achatsItems;
+            } catch (error) {
+                console.error('❌ Erreur chargement achats depuis serveur:', error);
+                return achatsItems;
+            }
+        }
+
+        // Sauvegarder les achats vers le serveur
+        async function sauvegarderAchatsVersServeur() {
+            try {
+                console.log('💾 Sauvegarde des achats vers le serveur...');
+                const response = await fetch('/api/achats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ achats: achatsItems })
+                });
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ${response.status}`);
+                }
+                console.log('✅ Achats sauvegardés sur le serveur');
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde achats vers serveur:', error);
+            }
+        }
+
+        let data = {
+            travail: postesTravail.map(p => ({ 
+                ...p, 
+                semaines: [0, 0, 0, 0, 0, 0, 0, 0] 
+            })),
+            machine: machines.map(m => ({ ...m, temps: 0 })),
+            achats: achatsItems.map(a => ({
+                nom: a,
+                fournisseur: '',
+                quantite: 1,
+                prixUnit: 0
+            }))
+        };
+
+        // Initialisation
+        function init() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            
+            renderTravail();
+            renderMachine();
+            renderAchats();
+            calculer();
+        }
+
+        // Afficher les onglets
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('section-' + tab).classList.add('active');
+        }
+
+        // Render Travail
+        function renderTravail() {
+            const tbody = document.getElementById('bodyTravail');
+            tbody.innerHTML = '';
+            
+            let totalHeures = 0;
+            let totalMontant = 0;
+
+            data.travail.forEach((poste, idx) => {
+                const tr = document.createElement('tr');
+                const totalH = poste.semaines.reduce((a, b) => a + b, 0);
+                const montant = totalH * poste.taux;
+                
+                totalHeures += totalH;
+                totalMontant += montant;
+
+                tr.innerHTML = `
+                    <td class="poste-name">${poste.nom}</td>
+                    ${poste.semaines.map((s, i) => `
+                        <td><input type="number" value="${s}" min="0" step="0.5"
+                            onfocus="this.select()"
+                            onchange="updateSemaine(${idx}, ${i}, this.value)"></td>
+                    `).join('')}
+                    <td style="text-align: center; font-weight: 600;">${totalH.toFixed(2)}</td>
+                    <td class="taux-cell" style="text-align: center;">
+                        <input type="number" value="${poste.taux}" min="0" step="1"
+                            style="width: 70px; text-align: center;"
+                            onfocus="this.select()"
+                            onchange="updateTauxTravail(${idx}, this.value)">
+                    </td>
+                    <td class="montant-cell" style="text-align: right;">${montant.toFixed(2)} €</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Total
+            const trTotal = document.createElement('tr');
+            trTotal.className = 'total-row';
+            trTotal.innerHTML = `
+                <td colspan="9" style="text-align: right;">TOTAL TRAVAIL</td>
+                <td style="text-align: center;">${totalHeures.toFixed(2)}</td>
+                <td></td>
+                <td style="text-align: right;">${totalMontant.toFixed(2)} €</td>
+            `;
+            tbody.appendChild(trTotal);
+        }
+
+        function updateSemaine(posteIdx, semaineIdx, value) {
+            data.travail[posteIdx].semaines[semaineIdx] = parseFloat(value) || 0;
+            renderTravail();
+            calculer();
+            sauvegarderAuto();
+        }
+
+        async function updateTauxTravail(posteIdx, value) {
+            const nouveauTaux = parseFloat(value) || 0;
+            data.travail[posteIdx].taux = nouveauTaux;
+            renderTravail();
+            calculer();
+            sauvegarderAuto();
+
+            // Récupérer tous les postes depuis le serveur et mettre à jour
+            try {
+                const response = await fetch('/api/postes');
+                const responseData = await response.json();
+                const postes = responseData.postes || [];
+                const poste = postes.find(p => p.name === data.travail[posteIdx].nom && !p.isMachine);
+
+                if (poste && poste.id) {
+                    console.log(`📝 Mise à jour taux de "${poste.name}": ${nouveauTaux}€/h`);
+                    await fetch(`/api/postes/${poste.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: poste.name,
+                            tauxHoraire: nouveauTaux,
+                            isMachine: false
+                        })
+                    });
+                    console.log(`✅ Taux mis à jour pour "${poste.name}"`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur mise à jour taux:', error);
+            }
+        }
+
+
+        // Render Machine
+        function renderMachine() {
+            const tbody = document.getElementById('bodyMachine');
+            tbody.innerHTML = '';
+            
+            let totalTemps = 0;
+            let totalMontant = 0;
+
+            data.machine.forEach((machine, idx) => {
+                const tr = document.createElement('tr');
+                const montant = machine.temps * machine.taux;
+                
+                totalTemps += machine.temps;
+                totalMontant += montant;
+
+                tr.innerHTML = `
+                    <td class="poste-name">${machine.nom}</td>
+                    <td><input type="number" value="${machine.temps}" min="0" step="0.5"
+                        onfocus="this.select()"
+                        onchange="updateMachine(${idx}, this.value)"></td>
+                    <td class="taux-cell" style="text-align: center;">
+                        <input type="number" value="${machine.taux}" min="0" step="1"
+                            style="width: 70px; text-align: center;"
+                            onfocus="this.select()"
+                            onchange="updateTauxMachine(${idx}, this.value)">
+                    </td>
+                    <td class="montant-cell" style="text-align: right;">${montant.toFixed(2)} €</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Total
+            const trTotal = document.createElement('tr');
+            trTotal.className = 'total-row';
+            trTotal.innerHTML = `
+                <td style="text-align: right;">TOTAL MACHINE</td>
+                <td style="text-align: center;">${totalTemps.toFixed(2)}</td>
+                <td></td>
+                <td style="text-align: right;">${totalMontant.toFixed(2)} €</td>
+            `;
+            tbody.appendChild(trTotal);
+        }
+
+        function updateMachine(idx, value) {
+            data.machine[idx].temps = parseFloat(value) || 0;
+            renderMachine();
+            calculer();
+            sauvegarderAuto();
+        }
+
+        async function updateTauxMachine(idx, value) {
+            const nouveauTaux = parseFloat(value) || 0;
+            data.machine[idx].taux = nouveauTaux;
+            renderMachine();
+            calculer();
+            sauvegarderAuto();
+
+            // Récupérer tous les postes depuis le serveur et mettre à jour
+            try {
+                const response = await fetch('/api/postes');
+                const responseData = await response.json();
+                const postes = responseData.postes || [];
+                const machine = postes.find(p => p.name === data.machine[idx].nom && p.isMachine);
+
+                if (machine && machine.id) {
+                    console.log(`📝 Mise à jour taux de "${machine.name}": ${nouveauTaux}€/h`);
+                    await fetch(`/api/postes/${machine.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: machine.name,
+                            tauxHoraire: nouveauTaux,
+                            isMachine: true
+                        })
+                    });
+                    console.log(`✅ Taux mis à jour pour "${machine.name}"`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur mise à jour taux machine:', error);
+            }
+        }
+
+        // Render Achats
+        function renderAchats() {
+            const tbody = document.getElementById('bodyAchats');
+            tbody.innerHTML = '';
+            
+            let totalMontant = 0;
+
+            data.achats.forEach((achat, idx) => {
+                const tr = document.createElement('tr');
+                const montant = achat.quantite * achat.prixUnit;
+                totalMontant += montant;
+
+                // Créer les options pour le datalist
+                const optionsFournisseurs = fournisseurs.map(f => `<option value="${f}">`).join('');
+
+                tr.innerHTML = `
+                    <td class="poste-name">${achat.nom}</td>
+                    <td>
+                        <input type="text" list="fournisseurs-${idx}" value="${achat.fournisseur}" 
+                            onfocus="this.select()"
+                            onchange="updateAchatFournisseur(${idx}, this.value)"
+                            placeholder="Choisir ou saisir...">
+                        <datalist id="fournisseurs-${idx}">
+                            ${optionsFournisseurs}
+                        </datalist>
+                    </td>
+                    <td><input type="number" value="${achat.quantite}" min="0"
+                        onfocus="this.select()" 
+                        onchange="updateAchatQuantite(${idx}, this.value)"></td>
+                    <td><input type="number" value="${achat.prixUnit}" min="0" step="0.01"
+                        onfocus="this.select()" 
+                        onchange="updateAchatPrix(${idx}, this.value)"></td>
+                    <td class="montant-cell" style="text-align: right;">${montant.toFixed(2)} €</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Total
+            const trTotal = document.createElement('tr');
+            trTotal.className = 'total-row';
+            trTotal.innerHTML = `
+                <td colspan="4" style="text-align: right;">TOTAL ACHATS</td>
+                <td style="text-align: right;">${totalMontant.toFixed(2)} €</td>
+            `;
+            tbody.appendChild(trTotal);
+        }
+
+        function updateAchatFournisseur(idx, value) {
+            data.achats[idx].fournisseur = value;
+            sauvegarderAuto();
+        }
+
+        function updateAchatQuantite(idx, value) {
+            data.achats[idx].quantite = parseFloat(value) || 0;
+            renderAchats();
+            calculer();
+            sauvegarderAuto();
+        }
+
+        function updateAchatPrix(idx, value) {
+            data.achats[idx].prixUnit = parseFloat(value) || 0;
+            renderAchats();
+            calculer();
+            sauvegarderAuto();
+        }
+
+        // Calculer
+        function calculer() {
+            // Total Travail
+            const totalTravail = data.travail.reduce((sum, poste) => {
+                const totalH = poste.semaines.reduce((a, b) => a + b, 0);
+                return sum + (totalH * poste.taux);
+            }, 0);
+
+            // Total Machine
+            const totalMachine = data.machine.reduce((sum, m) => {
+                return sum + (m.temps * m.taux);
+            }, 0);
+
+            // Total Achats
+            const totalAchats = data.achats.reduce((sum, a) => {
+                return sum + (a.quantite * a.prixUnit);
+            }, 0);
+
+            // Coût total
+            const coutTotal = totalTravail + totalMachine + totalAchats;
+
+            // Prix de vente
+            const coeffMarge = parseFloat(document.getElementById('coeffMarge').value) || 1.3;
+            const prixVente = coutTotal * coeffMarge;
+
+            // Marge
+            const margeEuro = prixVente - coutTotal;
+            const margePourcent = coutTotal > 0 ? (margeEuro / coutTotal) * 100 : 0;
+
+            // Afficher
+            document.getElementById('sumTravail').textContent = totalTravail.toFixed(2) + ' €';
+            document.getElementById('sumMachine').textContent = totalMachine.toFixed(2) + ' €';
+            document.getElementById('sumAchats').textContent = totalAchats.toFixed(2) + ' €';
+            document.getElementById('coutTotal').textContent = coutTotal.toFixed(2) + ' €';
+            document.getElementById('prixVente').textContent = prixVente.toFixed(2) + ' €';
+            document.getElementById('margeEuro').textContent = margeEuro.toFixed(2) + ' €';
+            document.getElementById('margePourcent').textContent = margePourcent.toFixed(1) + '%';
+
+            // Préparer les données pour l'impression
+            preparerImpression(totalTravail, totalMachine, totalAchats, coutTotal, prixVente, coeffMarge, margeEuro, margePourcent);
+        }
+
+        // Préparer les données pour l'impression PDF
+        function preparerImpression(totalTravail, totalMachine, totalAchats, coutTotal, prixVente, coeffMarge, margeEuro, margePourcent) {
+            // Travail
+            const printTravail = document.getElementById('printTravail');
+            printTravail.innerHTML = '';
+            data.travail.forEach(poste => {
+                const totalH = poste.semaines.reduce((a, b) => a + b, 0);
+                if (totalH > 0) { // N'afficher que les lignes avec des heures
+                    const montant = totalH * poste.taux;
+                    printTravail.innerHTML += `
+                        <tr>
+                            <td>${poste.nom}</td>
+                            <td style="text-align: center;">${totalH.toFixed(2)}</td>
+                            <td style="text-align: center;">${poste.taux}</td>
+                            <td style="text-align: right;">${montant.toFixed(2)} €</td>
+                        </tr>
+                    `;
+                }
+            });
+            printTravail.innerHTML += `
+                <tr style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); font-weight: 600; color: white;">
+                    <td colspan="3" style="text-align: right; color: white;">TOTAL</td>
+                    <td style="text-align: right; color: white;">${totalTravail.toFixed(2)} €</td>
+                </tr>
+            `;
+
+            // Machine
+            const printMachine = document.getElementById('printMachine');
+            printMachine.innerHTML = '';
+            data.machine.forEach(machine => {
+                if (machine.temps > 0) {
+                    const montant = machine.temps * machine.taux;
+                    printMachine.innerHTML += `
+                        <tr>
+                            <td>${machine.nom}</td>
+                            <td style="text-align: center;">${machine.temps.toFixed(2)}</td>
+                            <td style="text-align: center;">${machine.taux}</td>
+                            <td style="text-align: right;">${montant.toFixed(2)} €</td>
+                        </tr>
+                    `;
+                }
+            });
+            printMachine.innerHTML += `
+                <tr style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); font-weight: 600; color: white;">
+                    <td colspan="3" style="text-align: right; color: white;">TOTAL</td>
+                    <td style="text-align: right; color: white;">${totalMachine.toFixed(2)} €</td>
+                </tr>
+            `;
+
+            // Achats
+            const printAchats = document.getElementById('printAchats');
+            printAchats.innerHTML = '';
+            data.achats.forEach(achat => {
+                const montant = achat.quantite * achat.prixUnit;
+                if (montant > 0) {
+                    printAchats.innerHTML += `
+                        <tr>
+                            <td>${achat.nom}</td>
+                            <td>${achat.fournisseur}</td>
+                            <td style="text-align: center;">${achat.quantite}</td>
+                            <td style="text-align: right;">${montant.toFixed(2)} €</td>
+                        </tr>
+                    `;
+                }
+            });
+            printAchats.innerHTML += `
+                <tr style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); font-weight: 600; color: white;">
+                    <td colspan="3" style="text-align: right; color: white;">TOTAL</td>
+                    <td style="text-align: right; color: white;">${totalAchats.toFixed(2)} €</td>
+                </tr>
+            `;
+
+            // Totaux finaux
+            document.getElementById('printCoutTotal').textContent = coutTotal.toFixed(2) + ' €';
+            document.getElementById('printCoeff').textContent = 'x ' + coeffMarge.toFixed(2);
+            document.getElementById('printPrixVente').textContent = prixVente.toFixed(2) + ' €';
+            document.getElementById('printMarge').textContent = margeEuro.toFixed(2) + ' € (' + margePourcent.toFixed(1) + '%)';
+        }
+
+        // Sauvegarde automatique
+        function sauvegarderAuto() {
+            const devisData = {
+                client: document.getElementById('client').value,
+                numCommande: document.getElementById('numCommande').value,
+                affaire: document.getElementById('affaire').value,
+                date: document.getElementById('date').value,
+                coeffMarge: document.getElementById('coeffMarge').value,
+                data: data
+                // Note: fournisseurs et achats ne sont PAS sauvegardés ici
+                // car ce sont des bibliothèques globales gérées par le serveur
+            };
+
+            localStorage.setItem('devis_somepre', JSON.stringify(devisData));
+        }
+
+        // Variables globales pour la bibliothèque
+        let typeBibliotheque = '';
+        let indexEdition = -1;
+
+        // Nouveau devis
+        function nouveauDevis() {
+            if (confirm('⚠️ Voulez-vous vraiment créer un nouveau devis ?\n\nToutes les données du devis actuel seront effacées.\nLes postes, machines et achats de la bibliothèque seront conservés.')) {
+                // Réinitialiser les champs du header
+                document.getElementById('client').value = '';
+                document.getElementById('numCommande').value = '';
+                document.getElementById('affaire').value = '';
+                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('coeffMarge').value = 1.20;
+                
+                // Réinitialiser les heures/quantités mais garder la structure
+                data.travail.forEach(poste => {
+                    poste.semaines = [0, 0, 0, 0, 0, 0, 0, 0];
+                });
+                data.machine.forEach(machine => {
+                    machine.temps = 0;
+                });
+                data.achats.forEach(achat => {
+                    achat.fournisseur = '';
+                    achat.quantite = 1;
+                    achat.prixUnit = 0;
+                });
+                
+                renderTravail();
+                renderMachine();
+                renderAchats();
+                calculer();
+                sauvegarderAuto();
+                
+                alert('✅ Nouveau devis créé avec succès !');
+            }
+        }
+
+        // Gestion de la bibliothèque
+        function ouvrirBibliotheque(type) {
+            typeBibliotheque = type;
+            const modal = document.getElementById('modalBibliotheque');
+            const title = document.getElementById('modalTitle');
+            
+            if (type === 'travail') {
+                title.textContent = '⚙️ Bibliothèque des Postes de Travail';
+            } else if (type === 'machine') {
+                title.textContent = '🏭 Bibliothèque des Machines';
+            } else if (type === 'achats') {
+                title.textContent = '🛒 Bibliothèque des Achats';
+            } else if (type === 'fournisseurs') {
+                title.textContent = '📋 Bibliothèque des Fournisseurs';
+            }
+            
+            afficherListeBibliotheque();
+            modal.style.display = 'block';
+        }
+
+        function fermerBibliotheque() {
+            document.getElementById('modalBibliotheque').style.display = 'none';
+        }
+
+        function afficherListeBibliotheque() {
+            const liste = document.getElementById('listeBibliotheque');
+            liste.innerHTML = '';
+
+            let items = [];
+            if (typeBibliotheque === 'travail') {
+                items = data.travail;
+            } else if (typeBibliotheque === 'machine') {
+                items = data.machine;
+            } else if (typeBibliotheque === 'achats') {
+                items = data.achats;
+            } else if (typeBibliotheque === 'fournisseurs') {
+                items = fournisseurs.map(f => ({ nom: f }));
+            }
+
+            items.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'bibliotheque-item';
+
+                let tauxText = '';
+                if (typeBibliotheque === 'travail' || typeBibliotheque === 'machine') {
+                    tauxText = `<div class="item-taux">Taux: ${item.taux} €/h</div>`;
+                }
+
+                div.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${item.nom}</div>
+                        ${tauxText}
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-icon btn-edit" onclick="editerItem(${idx})">
+                            ✏️ Modifier
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="supprimerItem(${idx})">
+                            🗑️ Supprimer
+                        </button>
+                    </div>
+                `;
+                liste.appendChild(div);
+            });
+        }
+
+        function ajouterItemBibliotheque() {
+            indexEdition = -1;
+            const modal = document.getElementById('modalEdition');
+            const title = document.getElementById('modalEditionTitle');
+            const labelTaux = document.getElementById('labelTaux');
+            
+            if (typeBibliotheque === 'travail') {
+                title.textContent = 'Ajouter un Poste de Travail';
+                labelTaux.textContent = 'Taux horaire (€/h)';
+                labelTaux.style.display = 'block';
+                document.getElementById('editTaux').style.display = 'block';
+            } else if (typeBibliotheque === 'machine') {
+                title.textContent = 'Ajouter une Machine';
+                labelTaux.textContent = 'Taux horaire (€/h)';
+                labelTaux.style.display = 'block';
+                document.getElementById('editTaux').style.display = 'block';
+            } else if (typeBibliotheque === 'achats') {
+                title.textContent = 'Ajouter un Achat';
+                labelTaux.style.display = 'none';
+                document.getElementById('editTaux').style.display = 'none';
+            } else if (typeBibliotheque === 'fournisseurs') {
+                title.textContent = 'Ajouter un Fournisseur';
+                labelTaux.style.display = 'none';
+                document.getElementById('editTaux').style.display = 'none';
+            }
+            
+            document.getElementById('editNom').value = '';
+            document.getElementById('editTaux').value = typeBibliotheque === 'machine' ? 46 : 75;
+            
+            modal.style.display = 'block';
+        }
+
+        function editerItem(idx) {
+            indexEdition = idx;
+            const modal = document.getElementById('modalEdition');
+            const title = document.getElementById('modalEditionTitle');
+            const labelTaux = document.getElementById('labelTaux');
+            
+            let item;
+            if (typeBibliotheque === 'travail') {
+                item = data.travail[idx];
+                title.textContent = 'Modifier le Poste de Travail';
+                labelTaux.textContent = 'Taux horaire (€/h)';
+                labelTaux.style.display = 'block';
+                document.getElementById('editTaux').style.display = 'block';
+                document.getElementById('editTaux').value = item.taux;
+            } else if (typeBibliotheque === 'machine') {
+                item = data.machine[idx];
+                title.textContent = 'Modifier la Machine';
+                labelTaux.textContent = 'Taux horaire (€/h)';
+                labelTaux.style.display = 'block';
+                document.getElementById('editTaux').style.display = 'block';
+                document.getElementById('editTaux').value = item.taux;
+            } else if (typeBibliotheque === 'achats') {
+                item = data.achats[idx];
+                title.textContent = 'Modifier l\'Achat';
+                labelTaux.style.display = 'none';
+                document.getElementById('editTaux').style.display = 'none';
+            } else if (typeBibliotheque === 'fournisseurs') {
+                item = { nom: fournisseurs[idx] };
+                title.textContent = 'Modifier le Fournisseur';
+                labelTaux.style.display = 'none';
+                document.getElementById('editTaux').style.display = 'none';
+            }
+            
+            document.getElementById('editNom').value = item.nom;
+            modal.style.display = 'block';
+        }
+
+        function fermerEdition() {
+            document.getElementById('modalEdition').style.display = 'none';
+        }
+
+        async function sauvegarderEdition() {
+            const nom = document.getElementById('editNom').value.trim();
+            if (!nom) {
+                alert('⚠️ Le nom est obligatoire');
+                return;
+            }
+
+            const taux = parseInt(document.getElementById('editTaux').value) || 0;
+
+            if (indexEdition === -1) {
+                // Ajout
+                if (typeBibliotheque === 'travail') {
+                    data.travail.push({
+                        nom: nom,
+                        taux: taux,
+                        semaines: [0, 0, 0, 0, 0, 0, 0, 0]
+                    });
+                } else if (typeBibliotheque === 'machine') {
+                    data.machine.push({
+                        nom: nom,
+                        taux: taux,
+                        temps: 0
+                    });
+                } else if (typeBibliotheque === 'achats') {
+                    achatsItems.push(nom);
+                    await sauvegarderAchatsVersServeur();
+                    data.achats.push({
+                        nom: nom,
+                        fournisseur: '',
+                        quantite: 1,
+                        prixUnit: 0
+                    });
+                } else if (typeBibliotheque === 'fournisseurs') {
+                    fournisseurs.push(nom);
+                    await sauvegarderFournisseursVersServeur();
+                }
+            } else {
+                // Modification
+                if (typeBibliotheque === 'travail') {
+                    data.travail[indexEdition].nom = nom;
+                    data.travail[indexEdition].taux = taux;
+
+                    // Envoyer la modification au serveur
+                    await envoyerTauxAuServeur(nom, taux, false);
+                } else if (typeBibliotheque === 'machine') {
+                    data.machine[indexEdition].nom = nom;
+                    data.machine[indexEdition].taux = taux;
+
+                    // Envoyer la modification au serveur
+                    await envoyerTauxAuServeur(nom, taux, true);
+                } else if (typeBibliotheque === 'achats') {
+                    achatsItems[indexEdition] = nom;
+                    await sauvegarderAchatsVersServeur();
+                    data.achats[indexEdition].nom = nom;
+                } else if (typeBibliotheque === 'fournisseurs') {
+                    fournisseurs[indexEdition] = nom;
+                    await sauvegarderFournisseursVersServeur();
+                }
+            }
+
+            // Mettre à jour l'affichage
+            if (typeBibliotheque === 'travail') {
+                renderTravail();
+            } else if (typeBibliotheque === 'machine') {
+                renderMachine();
+            } else if (typeBibliotheque === 'achats') {
+                renderAchats();
+            } else if (typeBibliotheque === 'fournisseurs') {
+                renderAchats(); // Rafraîchir les achats pour mettre à jour les datalists
+            }
+
+            calculer();
+            sauvegarderAuto();
+            afficherListeBibliotheque();
+            fermerEdition();
+        }
+
+        // Fonction utilitaire pour envoyer le taux au serveur
+        async function envoyerTauxAuServeur(nomPoste, nouveauTaux, isMachine) {
+            try {
+                const response = await fetch('/api/postes');
+                const responseData = await response.json();
+                const postes = responseData.postes || [];
+                const poste = postes.find(p => p.name === nomPoste && p.isMachine === isMachine);
+
+                if (poste && poste.id) {
+                    console.log(`📝 Mise à jour taux de "${poste.name}": ${nouveauTaux}€/h`);
+                    await fetch(`/api/postes/${poste.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: poste.name,
+                            tauxHoraire: nouveauTaux,
+                            isMachine: isMachine
+                        })
+                    });
+                    console.log(`✅ Taux mis à jour pour "${poste.name}"`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur mise à jour taux:', error);
+            }
+        }
+
+        function supprimerItem(idx) {
+            let item, message;
+            if (typeBibliotheque === 'travail') {
+                item = data.travail[idx];
+                message = `Voulez-vous vraiment supprimer "${item.nom}" ?\n\n⚠️ Attention: cette action supprimera également toutes les données associées dans le devis actuel.`;
+            } else if (typeBibliotheque === 'machine') {
+                item = data.machine[idx];
+                message = `Voulez-vous vraiment supprimer "${item.nom}" ?\n\n⚠️ Attention: cette action supprimera également toutes les données associées dans le devis actuel.`;
+            } else if (typeBibliotheque === 'achats') {
+                item = data.achats[idx];
+                message = `Voulez-vous vraiment supprimer "${item.nom}" ?\n\n⚠️ Attention: cette action supprimera également toutes les données associées dans le devis actuel.`;
+            } else if (typeBibliotheque === 'fournisseurs') {
+                item = { nom: fournisseurs[idx] };
+                message = `Voulez-vous vraiment supprimer "${item.nom}" de la liste des fournisseurs ?`;
+            }
+
+            if (confirm(message)) {
+                if (typeBibliotheque === 'travail') {
+                    data.travail.splice(idx, 1);
+                    renderTravail();
+                } else if (typeBibliotheque === 'machine') {
+                    data.machine.splice(idx, 1);
+                    renderMachine();
+                } else if (typeBibliotheque === 'achats') {
+                    achatsItems.splice(idx, 1);
+                    sauvegarderAchatsVersServeur(); // Sauvegarder sur le serveur
+                    data.achats.splice(idx, 1);
+                    renderAchats();
+                } else if (typeBibliotheque === 'fournisseurs') {
+                    fournisseurs.splice(idx, 1);
+                    sauvegarderFournisseursVersServeur(); // Sauvegarder sur le serveur
+                    renderAchats(); // Rafraîchir les achats
+                }
+
+                calculer();
+                sauvegarderAuto();
+                afficherListeBibliotheque();
+            }
+        }
+
+        // Fermer les modals en cliquant en dehors
+        window.onclick = function(event) {
+            const modalBib = document.getElementById('modalBibliotheque');
+            const modalEdit = document.getElementById('modalEdition');
+            if (event.target == modalBib) {
+                fermerBibliotheque();
+            }
+            if (event.target == modalEdit) {
+                fermerEdition();
+            }
+        }
+
+        // Actions
+        async function exporterPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Charger le logo
+                let logoData = null;
+                try {
+                    const response = await fetch('Somepre_Logo_Print_Black.png');
+                    const blob = await response.blob();
+                    logoData = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (error) {
+                    console.log('Logo non chargé:', error);
+                }
+
+                // En-tête avec logo
+                if (logoData) {
+                    doc.addImage(logoData, 'PNG', 15, 10, 40, 15);
+                }
+
+                doc.setFontSize(20);
+                doc.setTextColor(102, 126, 234);
+                doc.text('DEVIS', 105, 20, { align: 'center' });
+
+                // Informations devis
+                doc.setFontSize(11);
+                doc.setTextColor(0, 0, 0);
+                const client = document.getElementById('client').value || 'Non renseigné';
+                const numCommande = document.getElementById('numCommande').value || 'N/A';
+                const affaire = document.getElementById('affaire').value || 'Non renseigné';
+                const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+
+                doc.text(`Date: ${new Date(date).toLocaleDateString('fr-FR')}`, 15, 35);
+                doc.text(`Client: ${client}`, 15, 42);
+                doc.text(`N° Commande: ${numCommande}`, 15, 49);
+                doc.text(`Affaire: ${affaire}`, 15, 56);
+
+                // Ligne de séparation
+                doc.setDrawColor(200, 200, 200);
+                doc.line(15, 62, 195, 62);
+
+                let yPos = 70;
+
+                // MAIN D'ŒUVRE
+                doc.setFontSize(14);
+                doc.setTextColor(102, 126, 234);
+                doc.text('MAIN D\'ŒUVRE', 15, yPos);
+                yPos += 8;
+
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Poste', 15, yPos);
+                doc.text('Heures', 100, yPos, { align: 'center' });
+                doc.text('Taux', 135, yPos, { align: 'center' });
+                doc.text('Montant', 195, yPos, { align: 'right' });
+                yPos += 5;
+
+                doc.setTextColor(0, 0, 0);
+                let totalTravail = 0;
+                data.travail.forEach(poste => {
+                    const totalH = poste.semaines.reduce((a, b) => a + b, 0);
+                    if (totalH > 0) {
+                        const montant = totalH * poste.taux;
+                        totalTravail += montant;
+                        doc.text(poste.nom, 15, yPos);
+                        doc.text(totalH.toFixed(1) + ' h', 100, yPos, { align: 'center' });
+                        doc.text(poste.taux + ' €/h', 135, yPos, { align: 'center' });
+                        doc.text(montant.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                        yPos += 6;
+                    }
+                });
+
+                doc.setFontSize(11);
+                doc.setTextColor(102, 126, 234);
+                doc.text('Total Main d\'œuvre:', 150, yPos, { align: 'right' });
+                doc.text(totalTravail.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 10;
+
+                // MACHINES
+                doc.setFontSize(14);
+                doc.text('MACHINES', 15, yPos);
+                yPos += 8;
+
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Machine', 15, yPos);
+                doc.text('Temps', 100, yPos, { align: 'center' });
+                doc.text('Taux', 135, yPos, { align: 'center' });
+                doc.text('Montant', 195, yPos, { align: 'right' });
+                yPos += 5;
+
+                doc.setTextColor(0, 0, 0);
+                let totalMachine = 0;
+                data.machine.forEach(machine => {
+                    if (machine.temps > 0) {
+                        const montant = machine.temps * machine.taux;
+                        totalMachine += montant;
+                        doc.text(machine.nom, 15, yPos);
+                        doc.text(machine.temps.toFixed(1) + ' h', 100, yPos, { align: 'center' });
+                        doc.text(machine.taux + ' €/h', 135, yPos, { align: 'center' });
+                        doc.text(montant.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                        yPos += 6;
+                    }
+                });
+
+                doc.setFontSize(11);
+                doc.setTextColor(102, 126, 234);
+                doc.text('Total Machines:', 150, yPos, { align: 'right' });
+                doc.text(totalMachine.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 10;
+
+                // ACHATS
+                if (yPos > 240) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+
+                doc.setFontSize(14);
+                doc.text('ACHATS / FOURNITURES', 15, yPos);
+                yPos += 8;
+
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Article', 15, yPos);
+                doc.text('Fournisseur', 80, yPos);
+                doc.text('Qté', 130, yPos, { align: 'center' });
+                doc.text('P.U.', 155, yPos, { align: 'center' });
+                doc.text('Montant', 195, yPos, { align: 'right' });
+                yPos += 5;
+
+                doc.setTextColor(0, 0, 0);
+                let totalAchats = 0;
+                data.achats.forEach(achat => {
+                    const montant = achat.quantite * achat.prixUnit;
+                    if (montant > 0) {
+                        totalAchats += montant;
+                        doc.text(achat.nom, 15, yPos);
+                        doc.text(achat.fournisseur || '-', 80, yPos);
+                        doc.text(achat.quantite.toString(), 130, yPos, { align: 'center' });
+                        doc.text(achat.prixUnit.toFixed(2) + ' €', 155, yPos, { align: 'center' });
+                        doc.text(montant.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                        yPos += 6;
+                    }
+                });
+
+                doc.setFontSize(11);
+                doc.setTextColor(102, 126, 234);
+                doc.text('Total Achats:', 150, yPos, { align: 'right' });
+                doc.text(totalAchats.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 15;
+
+                // RÉCAPITULATIF
+                doc.setDrawColor(102, 126, 234);
+                doc.setLineWidth(0.5);
+                doc.line(15, yPos, 195, yPos);
+                yPos += 8;
+
+                const coutTotal = totalTravail + totalMachine + totalAchats;
+                const coeffMarge = parseFloat(document.getElementById('coeffMarge').value) || 1.3;
+                const prixVente = coutTotal * coeffMarge;
+                const margeEuro = prixVente - coutTotal;
+                const margePourcent = coutTotal > 0 ? (margeEuro / coutTotal) * 100 : 0;
+
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('Coût Total:', 140, yPos, { align: 'right' });
+                doc.text(coutTotal.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 8;
+
+                doc.text('Coefficient:', 140, yPos, { align: 'right' });
+                doc.text(coeffMarge.toFixed(2), 195, yPos, { align: 'right' });
+                yPos += 10;
+
+                doc.setFontSize(14);
+                doc.setTextColor(102, 126, 234);
+                doc.text('Prix de Vente HT:', 140, yPos, { align: 'right' });
+                doc.text(prixVente.toFixed(2) + ' €', 195, yPos, { align: 'right' });
+                yPos += 8;
+
+                doc.setFontSize(11);
+                doc.setTextColor(76, 175, 80);
+                doc.text(`Marge: ${margeEuro.toFixed(2)} € (${margePourcent.toFixed(1)}%)`, 195, yPos, { align: 'right' });
+
+                // Pied de page
+                doc.setFontSize(9);
+                doc.setTextColor(150, 150, 150);
+                doc.text('SOMEPRE - Document généré automatiquement', 105, 285, { align: 'center' });
+
+                // Sauvegarder avec choix de l'emplacement
+                const fileName = `Devis_${client.replace(/[^a-z0-9]/gi, '_')}_${date}.pdf`;
+                doc.save(fileName);
+
+            } catch (error) {
+                console.error('Erreur génération PDF:', error);
+                alert('❌ Erreur lors de la génération du PDF. Vérifiez la console pour plus de détails.');
+            }
+        }
+
+        function sauvegarder() {
+            sauvegarderAuto();
+            alert('💾 Devis sauvegardé avec succès!');
+        }
+
+        function reinitialiser() {
+            if (confirm('🔄 Voulez-vous vraiment réinitialiser tous les champs?')) {
+                localStorage.removeItem('devis_somepre');
+                location.reload();
+            }
+        }
+
+        // Charger les données sauvegardées
+        function chargerSauvegarde() {
+            const saved = localStorage.getItem('devis_somepre');
+            if (saved) {
+                const devisData = JSON.parse(saved);
+                document.getElementById('client').value = devisData.client || '';
+                document.getElementById('numCommande').value = devisData.numCommande || '';
+                document.getElementById('affaire').value = devisData.affaire || '';
+                document.getElementById('date').value = devisData.date || '';
+                document.getElementById('coeffMarge').value = devisData.coeffMarge || 1.20;
+                if (devisData.data) {
+                    data = devisData.data;
+                }
+                // Note: fournisseurs et achats ne sont PAS chargés depuis localStorage
+                // car ils proviennent toujours du serveur (source de vérité)
+            }
+        }
+
+        // Synchroniser les taux depuis le serveur vers les données chargées
+        async function synchroniserTauxDepuisServeur() {
+            try {
+                console.log('🔄 Synchronisation des taux depuis le serveur...');
+                const response = await fetch('/api/postes');
+                const responseData = await response.json();
+                const postesServeur = responseData.postes || [];
+
+                // Mettre à jour les taux des postes de travail
+                data.travail.forEach(poste => {
+                    const posteServeur = postesServeur.find(p => p.name === poste.nom && !p.isMachine);
+                    if (posteServeur) {
+                        console.log(`✅ Mise à jour taux "${poste.nom}": ${poste.taux} → ${posteServeur.tauxHoraire}€/h`);
+                        poste.taux = posteServeur.tauxHoraire;
+                    }
+                });
+
+                // Mettre à jour les taux des machines
+                data.machine.forEach(machine => {
+                    const machineServeur = postesServeur.find(p => p.name === machine.nom && p.isMachine);
+                    if (machineServeur) {
+                        console.log(`✅ Mise à jour taux "${machine.nom}": ${machine.taux} → ${machineServeur.tauxHoraire}€/h`);
+                        machine.taux = machineServeur.tauxHoraire;
+                    }
+                });
+
+                console.log('✅ Synchronisation des taux terminée');
+            } catch (error) {
+                console.error('❌ Erreur synchronisation taux:', error);
+            }
+        }
+
+        // Ajouter les événements de sauvegarde automatique aux champs
+        function ajouterEvenementsSauvegarde() {
+            document.getElementById('client').addEventListener('input', sauvegarderAuto);
+            document.getElementById('numCommande').addEventListener('input', sauvegarderAuto);
+            document.getElementById('affaire').addEventListener('input', sauvegarderAuto);
+            document.getElementById('date').addEventListener('change', sauvegarderAuto);
+            document.getElementById('coeffMarge').addEventListener('change', () => {
+                calculer();
+                sauvegarderAuto();
+            });
+        }
+
+        // Lancement
+        window.onload = async function() {
+            console.log('🚀 Démarrage de l\'application devis_app...');
+
+            // 1. Charger les postes et machines depuis data.json (source de vérité)
+            const postesTravail = await chargerPostesBibliotheque();
+            const machines = await chargerMachinesBibliotheque();
+
+            console.log('📊 Postes chargés:', postesTravail.length);
+            console.log('🏭 Machines chargées:', machines.length);
+
+            // 2. Charger les fournisseurs et achats depuis le serveur
+            fournisseurs = await chargerFournisseursDepuisServeur();
+            console.log('📋 Fournisseurs chargés:', fournisseurs.length);
+
+            achatsItems = await chargerAchatsDepuisServeur();
+            console.log('🛒 Achats chargés:', achatsItems.length);
+
+            // 3. Initialiser les données avec les postes/machines depuis data.json
+            data.travail = postesTravail.map(p => ({
+                ...p,
+                semaines: [0, 0, 0, 0, 0, 0, 0, 0]
+            }));
+
+            data.machine = machines.map(m => ({
+                ...m,
+                temps: 0
+            }));
+
+            // 4. Charger la sauvegarde du devis (heures, quantités, infos client)
+            chargerSauvegarde();
+
+            // 5. Synchroniser les taux depuis data.json (écrase les anciens taux)
+            await synchroniserTauxDepuisServeur();
+
+            console.log('✅ Application initialisée avec les données de data.json');
+
+            // 6. Initialiser l'interface
+            init();
+            ajouterEvenementsSauvegarde();
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
