@@ -9278,6 +9278,13 @@
       "clientId": "1764014732621",
       "description": "Réparation Bavure",
       "statut": "en_cours"
+    },
+    {
+      "id": "1787653480242",
+      "name": "M42940",
+      "clientId": "1764014447938",
+      "description": "Ejecteur Ø8 long à refaire (X2)",
+      "statut": "en_cours"
     }
   ],
   "postes": [
