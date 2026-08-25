@@ -505,5 +505,24 @@
             const on = $$('.nav-item').find(b => b.classList.contains('is-on'));
             if (on) placeCursor(on);
         });
+
+        /* ---- telephone uniquement : le rail est un tiroir ----
+           Sur ordinateur, "is-tight" replie le rail et ces deux
+           comportements sont volontairement inactifs. */
+        const surTelephone = () => window.matchMedia('(max-width: 720px)').matches;
+
+        // refermer le tiroir apres avoir choisi une rubrique
+        $$('.nav-item').forEach(b => b.addEventListener('click', () => {
+            if (surTelephone()) $('#appScreen').classList.remove('is-tight');
+        }));
+
+        // refermer le tiroir en touchant le voile
+        const stage = $('.stage');
+        if (stage) stage.addEventListener('click', e => {
+            const app = $('#appScreen');
+            if (surTelephone() && app.classList.contains('is-tight') && e.target === stage) {
+                app.classList.remove('is-tight');
+            }
+        });
     });
 })();
