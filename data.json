@@ -8503,6 +8503,14 @@
       "hours": "36",
       "enteredBy": "Administrateur",
       "date": "2026-08-25T13:51:30.768Z"
+    },
+    {
+      "id": "1787671429901",
+      "affaireId": "1787659337543",
+      "posteId": "1764018748947",
+      "hours": "1.25",
+      "enteredBy": "Aurélien",
+      "date": "2026-08-25T15:23:50.068Z"
     }
   ],
   "clients": [
@@ -9563,5 +9571,6 @@
   "fournisseurs": [
     "MEUSBURGER",
     "HASCO"
-  ]
+  ],
+  "devis": []
 }
