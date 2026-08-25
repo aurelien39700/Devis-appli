@@ -9572,5 +9572,248 @@
     "MEUSBURGER",
     "HASCO"
   ],
-  "devis": []
+  "devis": [
+    {
+      "affaireId": "1787659337543",
+      "client": "NP JURA",
+      "numCommande": "",
+      "affaire": "MD7251",
+      "date": "2026-08-25",
+      "coeffMarge": "1.20",
+      "data": {
+        "travail": [
+          {
+            "nom": "Étude",
+            "taux": 80,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Ébauche",
+            "taux": 80,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Carcasse",
+            "taux": 80,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Rectification",
+            "taux": 80,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Microperçage",
+            "taux": 70,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "FIL",
+            "taux": 90,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Erosion",
+            "taux": 80,
+            "semaines": [
+              1.25,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Electrode",
+            "taux": 80,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Fraisage Finition",
+            "taux": 90,
+            "semaines": [
+              0.5,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Ajustage",
+            "taux": 75,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Montage / Demontage",
+            "taux": 75,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "nom": "Soudure",
+            "taux": 80,
+            "semaines": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "machine": [
+          {
+            "nom": "Érosion CN",
+            "taux": 46,
+            "temps": 0
+          },
+          {
+            "nom": "Fraisage CN",
+            "taux": 46,
+            "temps": 1
+          },
+          {
+            "nom": "Érosion FIL CN",
+            "taux": 46,
+            "temps": 0
+          }
+        ],
+        "achats": [
+          {
+            "nom": "Carcasse",
+            "fournisseur": "",
+            "quantite": 1,
+            "prixUnit": 0
+          },
+          {
+            "nom": "Éléments carcasse",
+            "fournisseur": "",
+            "quantite": 1,
+            "prixUnit": 0
+          },
+          {
+            "nom": "Matière première",
+            "fournisseur": "",
+            "quantite": 1,
+            "prixUnit": 0
+          },
+          {
+            "nom": "Traitement thermique",
+            "fournisseur": "",
+            "quantite": 1,
+            "prixUnit": 0
+          },
+          {
+            "nom": "Bloc chaud",
+            "fournisseur": "",
+            "quantite": 1,
+            "prixUnit": 0
+          },
+          {
+            "nom": "Sous-traitance",
+            "fournisseur": "",
+            "quantite": 1,
+            "prixUnit": 0
+          },
+          {
+            "nom": "Transport",
+            "fournisseur": "",
+            "quantite": 1,
+            "prixUnit": 0
+          }
+        ]
+      },
+      "updatedAt": "2026-08-25T15:25:53.340Z"
+    }
+  ]
 }
