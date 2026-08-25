@@ -9292,6 +9292,13 @@
       "clientId": "1764014447938",
       "description": "Reprise des 4 sous marins",
       "statut": "en_cours"
+    },
+    {
+      "id": "1787653542736",
+      "name": "MG9866 moule renault",
+      "clientId": "1764014447938",
+      "description": "reprise zones soudé",
+      "statut": "en_cours"
     }
   ],
   "postes": [
