@@ -9314,6 +9314,13 @@
       "clientId": "1764014447938",
       "description": "Reprise 6 pans + réalisation de 4 porte insert",
       "statut": "en_cours"
+    },
+    {
+      "id": "1787659298958",
+      "name": "MD7701",
+      "clientId": "1764014447938",
+      "description": "Reprise soudure",
+      "statut": "en_cours"
     }
   ],
   "postes": [
