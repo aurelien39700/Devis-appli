@@ -1905,6 +1905,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== FONCTIONS MODAL AFFAIRE =====
 
 function openAffaireModal() {
+    isFormActive = true; // Bloquer la synchronisation pendant la saisie
+    console.log('🔒 Formulaire affaire ouvert - synchronisation bloquée');
+
     const modal = document.getElementById('affaireModal');
     const title = document.getElementById('affaireModalTitle');
     const submitText = document.getElementById('affaireModalSubmitText');
@@ -1926,6 +1929,9 @@ function openAffaireModal() {
 function openEditAffaireModal(affaireId) {
     const affaire = affaires.find(a => a.id === affaireId);
     if (!affaire) return;
+
+    isFormActive = true; // Bloquer la synchronisation pendant la saisie
+    console.log('🔒 Formulaire affaire ouvert - synchronisation bloquée');
 
     const modal = document.getElementById('affaireModal');
     const title = document.getElementById('affaireModalTitle');
@@ -1949,6 +1955,9 @@ function openEditAffaireModal(affaireId) {
 }
 
 function closeAffaireModal() {
+    isFormActive = false; // Réactiver la synchronisation
+    console.log('🔓 Formulaire affaire fermé - synchronisation réactivée');
+
     const modal = document.getElementById('affaireModal');
     modal.classList.remove('active');
 }
@@ -1956,6 +1965,10 @@ function closeAffaireModal() {
 function updateAffaireModalClients() {
     const select = document.getElementById('affaireModalClient');
     if (!select) return;
+
+    // Sauvegarder la valeur actuellement sélectionnée (la synchro auto reconstruit
+    // cette liste toutes les 30s : sans ça, le client saisi est perdu)
+    const savedValue = select.value;
 
     select.innerHTML = '<option value="">Sélectionner un client</option>';
     clients.forEach(client => {
@@ -1965,9 +1978,16 @@ function updateAffaireModalClients() {
         select.appendChild(option);
     });
 
+    // Restaurer la valeur sélectionnée si elle existe toujours
+    if (savedValue && clients.some(c => c.id === savedValue)) {
+        select.value = savedValue;
+    }
+
     // Aussi mettre à jour l'ancien select si il existe
     const oldSelect = document.getElementById('newAffaireClient');
     if (oldSelect) {
+        const savedOldValue = oldSelect.value;
+
         oldSelect.innerHTML = '<option value="">Sélectionner un client</option>';
         clients.forEach(client => {
             const option = document.createElement('option');
@@ -1975,6 +1995,10 @@ function updateAffaireModalClients() {
             option.textContent = client.name;
             oldSelect.appendChild(option);
         });
+
+        if (savedOldValue && clients.some(c => c.id === savedOldValue)) {
+            oldSelect.value = savedOldValue;
+        }
     }
 }
 
@@ -1997,39 +2021,27 @@ async function saveAffaire(event) {
     }
 
     try {
+        let response;
+
         if (id) {
             // Modification
-            const affaire = affaires.find(a => a.id === id);
-            if (affaire) {
-                affaire.name = name;
-                affaire.clientId = clientId;
-                affaire.description = description;
-
-                // Sauvegarder sur le serveur
-                await fetch(`${API_URL}/affaires/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(affaire)
-                });
-            }
+            response = await fetch(`${API_URL}/affaires/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, clientId, description })
+            });
         } else {
-            // Création
-            const newAffaire = {
-                id: Date.now().toString(),
-                name,
-                clientId,
-                description,
-                statut: 'en_cours'
-            };
-
-            affaires.push(newAffaire);
-
-            // Sauvegarder sur le serveur
-            await fetch(`${API_URL}/affaires`, {
+            // Création (l'id est généré par le serveur)
+            response = await fetch(`${API_URL}/affaires`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newAffaire)
+                body: JSON.stringify({ name, clientId, description, statut: 'en_cours' })
             });
+        }
+
+        // Vérifier que le serveur a bien accepté : sans ça l'échec est silencieux
+        if (!response.ok) {
+            throw new Error(`Erreur serveur ${response.status}`);
         }
 
         // Recharger et rafraîchir
@@ -2037,6 +2049,7 @@ async function saveAffaire(event) {
         renderAffaires();
         updateSelects();
         closeAffaireModal();
+        showNotification(id ? '✅ Affaire modifiée' : '✅ Affaire créée', 'success');
     } catch (error) {
         console.error('Erreur lors de la sauvegarde:', error);
         alert('Erreur lors de la sauvegarde de l\'affaire');

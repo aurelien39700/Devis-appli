@@ -488,6 +488,28 @@ app.post('/api/clients', async (req, res) => {
     }
 });
 
+// PUT - Mettre à jour un client (renommage)
+app.put('/api/clients/:id', async (req, res) => {
+    try {
+        const data = await readData();
+        const index = data.clients.findIndex(c => c.id === req.params.id);
+
+        if (index === -1) {
+            return res.status(404).json({ error: 'Client non trouvé' });
+        }
+
+        if (req.body.name !== undefined) {
+            data.clients[index].name = req.body.name;
+        }
+
+        await writeData(data);
+        res.json(data.clients[index]);
+    } catch (error) {
+        console.error('❌ Erreur PUT /api/clients:', error);
+        res.status(500).json({ error: 'Erreur de mise à jour' });
+    }
+});
+
 // DELETE - Supprimer un client
 app.delete('/api/clients/:id', async (req, res) => {
     try {
@@ -528,6 +550,39 @@ app.post('/api/affaires', async (req, res) => {
         res.json(newAffaire);
     } catch (error) {
         res.status(500).json({ error: 'Erreur de création' });
+    }
+});
+
+// PUT - Mettre à jour une affaire (nom, client, description, statut)
+app.put('/api/affaires/:id', async (req, res) => {
+    try {
+        console.log(`📝 PUT /api/affaires/${req.params.id}`, req.body);
+        const data = await readData();
+        const index = data.affaires.findIndex(a => a.id === req.params.id);
+
+        if (index === -1) {
+            console.error(`❌ Affaire ${req.params.id} non trouvée`);
+            return res.status(404).json({ error: 'Affaire non trouvée' });
+        }
+
+        if (req.body.name !== undefined) {
+            data.affaires[index].name = req.body.name;
+        }
+        if (req.body.clientId !== undefined) {
+            data.affaires[index].clientId = req.body.clientId;
+        }
+        if (req.body.description !== undefined) {
+            data.affaires[index].description = req.body.description;
+        }
+        if (req.body.statut !== undefined) {
+            data.affaires[index].statut = req.body.statut;
+        }
+
+        await writeData(data);
+        res.json(data.affaires[index]);
+    } catch (error) {
+        console.error('❌ Erreur PUT /api/affaires:', error);
+        res.status(500).json({ error: 'Erreur de mise à jour' });
     }
 });
 
@@ -766,6 +821,31 @@ app.post('/api/users', async (req, res) => {
         res.json(newUser);
     } catch (error) {
         res.status(500).json({ error: 'Erreur de création' });
+    }
+});
+
+// PUT - Mettre à jour un utilisateur (renommage, changement de code)
+app.put('/api/users/:id', async (req, res) => {
+    try {
+        const data = await readData();
+        const index = data.users.findIndex(u => u.id === req.params.id);
+
+        if (index === -1) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+
+        if (req.body.name !== undefined) {
+            data.users[index].name = req.body.name;
+        }
+        if (req.body.password !== undefined) {
+            data.users[index].password = req.body.password;
+        }
+
+        await writeData(data);
+        res.json(data.users[index]);
+    } catch (error) {
+        console.error('❌ Erreur PUT /api/users:', error);
+        res.status(500).json({ error: 'Erreur de mise à jour' });
     }
 });
 
