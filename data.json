@@ -8145,22 +8145,6 @@
       "date": "2026-07-02T14:38:57.523Z"
     },
     {
-      "id": "1783003150938",
-      "affaireId": "1782993430928",
-      "posteId": "1764060067448",
-      "hours": "0.5",
-      "enteredBy": "Administrateur",
-      "date": "2026-07-02T14:39:11.252Z"
-    },
-    {
-      "id": "1783072446333",
-      "affaireId": "1782993430928",
-      "posteId": "1764060067448",
-      "hours": "1",
-      "enteredBy": "Administrateur",
-      "date": "2026-07-03T09:54:06.618Z"
-    },
-    {
       "id": "1783412684724",
       "affaireId": "1764061127262",
       "posteId": "1764060071044",
@@ -8225,14 +8209,6 @@
       "date": "2026-07-08T08:02:45.690Z"
     },
     {
-      "id": "1783522421061",
-      "affaireId": "1782993430928",
-      "posteId": "1764060067448",
-      "hours": "1",
-      "enteredBy": "Administrateur",
-      "date": "2026-07-08T14:53:41.395Z"
-    },
-    {
       "id": "1783522435101",
       "affaireId": "1764061127262",
       "posteId": "1764014788537",
@@ -8247,14 +8223,6 @@
       "hours": "0.25",
       "enteredBy": "Administrateur",
       "date": "2026-07-08T14:54:06.075Z"
-    },
-    {
-      "id": "1783582222497",
-      "affaireId": "1782993430928",
-      "posteId": "1764060067448",
-      "hours": "0.25",
-      "enteredBy": "Administrateur",
-      "date": "2026-07-09T07:30:22.835Z"
     },
     {
       "id": "1783603534962",
@@ -8391,22 +8359,6 @@
       "hours": "5",
       "enteredBy": "jojo",
       "date": "2026-07-23T07:19:43.957Z"
-    },
-    {
-      "id": "1784796985095",
-      "affaireId": "1782993430928",
-      "posteId": "1764014788537",
-      "hours": "1",
-      "enteredBy": "jojo",
-      "date": "2026-07-23T08:56:25.205Z"
-    },
-    {
-      "id": "1784797068102",
-      "affaireId": "1782993430928",
-      "posteId": "1764055523549",
-      "hours": "6",
-      "enteredBy": "jojo",
-      "date": "2026-07-23T08:57:48.193Z"
     },
     {
       "id": "1787558357388",
@@ -9269,13 +9221,6 @@
       "name": "Repousse cable",
       "clientId": "1782390553385",
       "description": "Modif profondeur erosion",
-      "statut": "en_cours"
-    },
-    {
-      "id": "1782993430928",
-      "name": "MG7053",
-      "clientId": "1764014447938",
-      "description": "MAP",
       "statut": "en_cours"
     },
     {
