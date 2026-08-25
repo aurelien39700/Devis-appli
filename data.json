@@ -9407,6 +9407,13 @@
       "clientId": "1764015790842",
       "description": "Modif évent",
       "statut": "en_cours"
+    },
+    {
+      "id": "1787672578656",
+      "name": "FS130-367 Corps INF KZ3",
+      "clientId": "1764015790842",
+      "description": "Réparation bavure pates arche",
+      "statut": "en_cours"
     }
   ],
   "postes": [
