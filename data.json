@@ -8551,6 +8551,14 @@
       "hours": 4,
       "enteredBy": "Aurélien",
       "date": "2026-08-26T09:15:38.451Z"
+    },
+    {
+      "id": "1787739844945",
+      "affaireId": "1787558318446",
+      "posteId": "1764014781418",
+      "hours": 6,
+      "enteredBy": "Thomas",
+      "date": "2026-08-26T10:24:04.945Z"
     }
   ],
   "clients": [
