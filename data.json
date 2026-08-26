@@ -9436,7 +9436,7 @@
       "name": "Mon CUL",
       "clientId": "1764014447938",
       "description": "Ma bite",
-      "statut": "brouillon"
+      "statut": "envoye"
     }
   ],
   "postes": [
@@ -10097,7 +10097,8 @@
       "reglement": "cheque",
       "echeances": [],
       "createdAt": "2026-08-26T07:12:06.266Z",
-      "updatedAt": "2026-08-26T07:13:35.327Z"
+      "updatedAt": "2026-08-26T07:13:35.327Z",
+      "token": "9331f5ec28095301"
     }
   ],
   "entreprise": {
