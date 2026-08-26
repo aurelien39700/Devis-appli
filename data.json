@@ -10046,7 +10046,7 @@
           {
             "nom": "Érosion FIL CN",
             "taux": 46,
-            "temps": 4
+            "temps": 3
           }
         ],
         "achats": [
@@ -10106,7 +10106,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T09:13:43.056Z",
-      "updatedAt": "2026-08-26T09:14:05.245Z"
+      "updatedAt": "2026-08-26T09:14:12.351Z"
     }
   ],
   "entreprise": {
