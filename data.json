@@ -10361,7 +10361,7 @@
           {
             "nom": "Carcasse",
             "fournisseur": "",
-            "quantite": 1,
+            "quantite": 8,
             "prixUnit": 0
           },
           {
@@ -10414,7 +10414,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T11:45:42.734Z",
-      "updatedAt": "2026-08-26T11:45:42.734Z"
+      "updatedAt": "2026-08-26T11:45:54.437Z"
     }
   ],
   "entreprise": {
