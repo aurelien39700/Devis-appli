@@ -9518,7 +9518,8 @@
       "name": "Étude",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 0
+      "order": 0,
+      "coutHoraire": 87
     },
     {
       "id": "1764060071044",
