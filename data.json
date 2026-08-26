@@ -10046,7 +10046,7 @@
             "nom": "Carcasse",
             "fournisseur": "",
             "quantite": 1,
-            "prixUnit": 0
+            "prixUnit": 12
           },
           {
             "nom": "Éléments carcasse",
@@ -10097,7 +10097,7 @@
       "reglement": "cheque",
       "echeances": [],
       "createdAt": "2026-08-26T07:12:06.266Z",
-      "updatedAt": "2026-08-26T07:13:08.995Z"
+      "updatedAt": "2026-08-26T07:13:18.872Z"
     }
   ],
   "entreprise": {
