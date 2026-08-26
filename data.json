@@ -9518,7 +9518,7 @@
       "isMachine": true,
       "tauxHoraire": 46,
       "order": 13,
-      "coutHoraire": 0
+      "coutHoraire": 30
     },
     {
       "id": "1764060067448",
@@ -9582,7 +9582,7 @@
       "isMachine": true,
       "tauxHoraire": 46,
       "order": 14,
-      "coutHoraire": 0
+      "coutHoraire": 30
     }
   ],
   "users": [
