@@ -40,7 +40,9 @@
         recherche: '',
         ongletGestion: 'entreprise',
         editionAffaireId: null,
-        editionClientId: null,    // la fiche client en cours d'édition   // la modale affaire modifie au lieu de créer
+        editionClientId: null,    // le client édité dans la modale d'identité
+        ficheClientId: null,      // la fiche client ouverte
+        editionContactIdx: null,  // l'interlocuteur édité (index), null = ajout   // la modale affaire modifie au lieu de créer
         vue: 'pointage',
         ficheId: null,
         filtre: null,         // stade filtré dans le couloir
@@ -206,17 +208,22 @@
 
     /* ═══════════════ navigation ═══════════════ */
     const TITRES = { pointage: ['Saisie', 'Pointage'], affaires: ['Production', 'Affaires'],
-                     fiche: ['Affaire', ''], gestion: ['Référentiel', 'Gestion'] };
+                     fiche: ['Affaire', ''], gestion: ['Référentiel', 'Gestion'],
+                     ficheClient: ['Client', ''] };
 
     function aller(vue) {
         etat.vue = vue;
         $$('.view').forEach(v => v.classList.toggle('is-on', v.dataset.vue === vue));
         $$('.nav-item').forEach(b => b.classList.toggle('is-on',
-            b.dataset.vue === vue || (vue === 'fiche' && b.dataset.vue === 'affaires')));
+            b.dataset.vue === vue || (vue === 'fiche' && b.dataset.vue === 'affaires')
+            || (vue === 'ficheClient' && b.dataset.vue === 'gestion')));
         const t = TITRES[vue];
         $('#crumbTop').textContent = t[0];
         $('#crumbMain').textContent = vue === 'fiche'
-            ? ((etat.affaires.find(a => a.id === etat.ficheId) || {}).name || '') : t[1];
+            ? ((etat.affaires.find(a => a.id === etat.ficheId) || {}).name || '')
+            : vue === 'ficheClient'
+                ? ((etat.clients.find(c => c.id === etat.ficheClientId) || {}).name || '')
+                : t[1];
         $('#btnNouvelle').classList.toggle('hidden', vue !== 'affaires');
         $('#fab').classList.toggle('hidden', vue !== 'pointage');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -228,6 +235,7 @@
         else if (b.dataset.vue === 'gestion') rendreGestion();
     }));
     $('#btnRetour').addEventListener('click', () => { aller('affaires'); rendreListeAffaires(); });
+    $('#btnRetourClient').addEventListener('click', () => { aller('gestion'); rendreGestion(); });
     $('#rechercheAffaires').addEventListener('input', () => {
         etat.recherche = $('#rechercheAffaires').value.trim().toLowerCase();
         rendreListeAffaires();
@@ -1477,8 +1485,7 @@
                     + '<span class="m">' + n + ' affaire' + (n > 1 ? 's' : '')
                     + (nc ? ' · ' + nc + ' interlocuteur' + (nc > 1 ? 's' : '') : '') + '</span>'
                     + '<div class="acts">'
-                    + '<button class="btn btn-sm" data-modif-client="' + attr(c.id) + '">Modifier</button>'
-                    + '<button class="btn btn-sm btn-danger" data-suppr-client="' + attr(c.id) + '">Supprimer</button>'
+                    + '<button class="btn btn-sm" data-ouvrir-client="' + attr(c.id) + '">Ouvrir</button>'
                     + '</div></div>';
             }).join('')
             + '<div class="ajout"><input type="text" id="ajClient" placeholder="Nouveau client">'
@@ -1493,71 +1500,200 @@
                 await chargerTout(); rendreGestion(); toast('Client ajouté');
             } catch (err) { toast(err.message, true); }
         });
-        $$('#gestionContenu [data-modif-client]').forEach(b => b.addEventListener('click', () => {
-            const c = etat.clients.find(x => x.id === b.dataset.modifClient);
-            if (c) ouvrirModalClient(c);
+        $$('#gestionContenu [data-ouvrir-client]').forEach(b => b.addEventListener('click', () => {
+            etat.ficheClientId = b.dataset.ouvrirClient;
+            rendreFicheClient();
+            aller('ficheClient');
         }));
-        $$('#gestionContenu [data-suppr-client]').forEach(b => b.addEventListener('click', async () => {
-            const c = etat.clients.find(x => x.id === b.dataset.supprClient);
+    }
+
+    /* ── FICHE CLIENT : identité, interlocuteurs en cartes, affaires ── */
+
+    const SVG_MAIL = '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>';
+    const SVG_TEL = '<svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>';
+    const initiales = n => String(n || '').split(/\s+/)
+        .map(m => m[0] || '').join('').slice(0, 2).toUpperCase() || '--';
+
+    function rendreFicheClient() {
+        const c = etat.clients.find(x => x.id === etat.ficheClientId);
+        if (!c) { aller('gestion'); rendreGestion(); return; }
+
+        const affairesClient = etat.affaires.filter(a => a.clientId === c.id);
+        const enCours = affairesClient.filter(a => stadeDe(a) === 'en_cours').length;
+        const heures = affairesClient.reduce((s, a) => s + heuresAffaire(a.id), 0);
+        const contacts = c.contacts || [];
+
+        const coord = (svg, valeur, absente) =>
+            '<div class="coord' + (valeur ? '' : ' absente') + '">' + svg
+            + '<span>' + (valeur ? esc(valeur) : absente) + '</span></div>';
+
+        $('#ficheClientContenu').innerHTML =
+            '<div class="bloc"><div class="identite">'
+            + '<div class="sceau">' + esc(initiales(c.name)) + '</div>'
+            + '<div class="identite-corps">'
+            + '<div class="identite-nom">' + esc(c.name) + '</div>'
+            + ((c.adresse || c.tva)
+                ? '<div class="identite-lignes">'
+                  + (c.adresse ? '<span><svg viewBox="0 0 24 24"><path d="M3 21V8l6-4 6 4v13M15 21V11l6 3v7"/></svg>'
+                    + esc(c.adresse) + '</span>' : '')
+                  + (c.tva ? '<span><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/></svg>'
+                    + 'TVA ' + esc(c.tva) + '</span>' : '')
+                  + '</div>'
+                : '')
+            + '</div>'
+            + '<div class="identite-actions">'
+            + '<button class="btn btn-sm" data-modif-identite>Modifier</button>'
+            + '<button class="btn btn-sm btn-danger" data-suppr-ce-client>Supprimer</button>'
+            + '</div></div>'
+            + '<div class="compteurs">'
+            + '<div class="compteur"><b>' + enCours + '</b><span>affaires en cours</span></div>'
+            + '<div class="compteur"><b>' + affairesClient.length + '</b><span>affaires au total</span></div>'
+            + '<div class="compteur"><b>' + h1(heures) + '</b><span>heures pointées</span></div>'
+            + '<div class="compteur"><b>' + contacts.length + '</b><span>interlocuteur' + (contacts.length > 1 ? 's' : '') + '</span></div>'
+            + '</div></div>'
+
+            + '<div class="bloc"><div class="titre"><h2>Interlocuteurs</h2></div>'
+            + '<div class="gens">'
+            + contacts.map((p, i) =>
+                '<div class="personne"><div class="personne-tete">'
+                + '<div class="pastille">' + esc(initiales(p.nom)) + '</div>'
+                + '<div><div class="personne-nom">' + esc(p.nom) + '</div>'
+                + (p.fonction ? '<div class="personne-fonction">' + esc(p.fonction) + '</div>' : '')
+                + '</div></div>'
+                + '<div class="personne-coord">'
+                + coord(SVG_MAIL, p.email, 'pas d\'email')
+                + coord(SVG_TEL, p.tel, 'pas de téléphone')
+                + '</div>'
+                + '<div class="personne-actions">'
+                + '<button class="btn btn-sm" data-modif-personne="' + i + '">Modifier</button>'
+                + '<button class="btn btn-sm btn-danger" data-suppr-personne="' + i + '">Supprimer</button>'
+                + '</div></div>').join('')
+            + '<button class="personne personne-ajout" data-ajout-personne>'
+            + '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'
+            + '<b>Ajouter un interlocuteur</b></button>'
+            + '</div></div>'
+
+            + '<div class="bloc"><div class="titre"><h2>Affaires</h2>'
+            + '<button class="btn btn-arc btn-sm" data-affaire-ici style="margin-left:auto;">Nouvelle affaire</button></div>'
+            + (affairesClient.length
+                ? '<div class="mini-affaires">' + affairesClient.map(a => {
+                    const st = stadeDe(a);
+                    return '<button class="mini-affaire" data-va-affaire="' + attr(a.id) + '">'
+                        + '<div class="mini-affaire-tete"><span class="mini-affaire-nom">' + esc(a.name) + '</span>'
+                        + '<span class="stade ' + st + '">' + NOMS_STADE[st] + '</span></div>'
+                        + '<span class="mini-affaire-h">'
+                        + (st === 'brouillon' || st === 'envoye'
+                            ? 'devis en chiffrage'
+                            : h1(heuresAffaire(a.id)) + ' h pointées')
+                        + '</span></button>';
+                }).join('') + '</div>'
+                : '<p style="color:var(--ink-dim);">Aucune affaire pour ce client.</p>');
+
+        brancherFicheClient(c);
+    }
+
+    function brancherFicheClient(c) {
+        const q = s => document.querySelector('#ficheClientContenu ' + s);
+        q('[data-modif-identite]').addEventListener('click', () => ouvrirModalClient(c));
+        q('[data-suppr-ce-client]').addEventListener('click', async () => {
             if (!confirm('Supprimer le client « ' + c.name + ' » et ses affaires associées ?')) return;
             try {
                 await api('/clients/' + c.id, 'DELETE');
-                await chargerTout(); rendreGestion(); toast('Client supprimé');
+                await chargerTout();
+                aller('gestion');
+                rendreGestion();
+                toast('Client supprimé');
             } catch (err) { toast(err.message, true); }
-        }));
+        });
+        q('[data-ajout-personne]').addEventListener('click', () => ouvrirPersonne(null));
+        $$('#ficheClientContenu [data-modif-personne]').forEach(b =>
+            b.addEventListener('click', () => ouvrirPersonne(parseInt(b.dataset.modifPersonne, 10))));
+        $$('#ficheClientContenu [data-suppr-personne]').forEach(b =>
+            b.addEventListener('click', async () => {
+                const i = parseInt(b.dataset.supprPersonne, 10);
+                const p = (c.contacts || [])[i];
+                if (!p || !confirm('Supprimer ' + p.nom + ' ?')) return;
+                const contacts = c.contacts.slice();
+                contacts.splice(i, 1);
+                try {
+                    await api('/clients/' + c.id, 'PUT', { contacts: contacts });
+                    await chargerTout();
+                    rendreFicheClient();
+                    toast(p.nom + ' supprimé');
+                } catch (err) { toast(err.message, true); }
+            }));
+        q('[data-affaire-ici]').addEventListener('click', () => {
+            ouvrirModalAffaire(null);
+            $('#naClient').value = c.id;
+        });
+        $$('#ficheClientContenu [data-va-affaire]').forEach(b =>
+            b.addEventListener('click', () => {
+                etat.ficheId = b.dataset.vaAffaire;
+                ouvrirFiche();
+            }));
     }
 
-    /* ── fiche client : nom, adresse, TVA, interlocuteurs ── */
-    function ligneContact(ct) {
-        ct = ct || {};
-        const div = document.createElement('div');
-        div.className = 'contact-ligne';
-        div.innerHTML =
-            '<input type="text" placeholder="Nom" value="' + attr(ct.nom || '') + '" data-ck="nom">'
-            + '<input type="text" placeholder="Fonction" value="' + attr(ct.fonction || '') + '" data-ck="fonction">'
-            + '<input type="email" placeholder="Email" value="' + attr(ct.email || '') + '" data-ck="email">'
-            + '<input type="tel" placeholder="Téléphone" value="' + attr(ct.tel || '') + '" data-ck="tel">'
-            + '<button class="btn btn-sm btn-danger" type="button">✕</button>';
-        div.dataset.contactId = ct.id || '';
-        div.querySelector('button').addEventListener('click', () => div.remove());
-        return div;
+    /* ── un interlocuteur : modale à champs empilés ── */
+    function ouvrirPersonne(idx) {
+        etat.editionContactIdx = idx;
+        const c = etat.clients.find(x => x.id === etat.ficheClientId);
+        const p = (idx === null || !c) ? {} : ((c.contacts || [])[idx] || {});
+        $('#titrePersonne').textContent = idx === null ? 'Nouvel interlocuteur' : (p.nom || 'Interlocuteur');
+        $('#pNom').value = p.nom || '';
+        $('#pFonction').value = p.fonction || '';
+        $('#pEmail').value = p.email || '';
+        $('#pTel').value = p.tel || '';
+        ouvrir('scrimPersonne');
+        setTimeout(() => $('#pNom').focus(), 120);
     }
 
+    $('#btnEnregistrerPersonne').addEventListener('click', async () => {
+        const c = etat.clients.find(x => x.id === etat.ficheClientId);
+        if (!c) return;
+        const nom = $('#pNom').value.trim();
+        if (!nom) { $('#pNom').focus(); return; }
+        const contacts = (c.contacts || []).slice();
+        const p = {
+            id: etat.editionContactIdx !== null && contacts[etat.editionContactIdx]
+                ? contacts[etat.editionContactIdx].id : undefined,
+            nom: nom,
+            fonction: $('#pFonction').value.trim(),
+            email: $('#pEmail').value.trim(),
+            tel: $('#pTel').value.trim()
+        };
+        if (etat.editionContactIdx === null) contacts.push(p);
+        else contacts[etat.editionContactIdx] = p;
+        try {
+            await api('/clients/' + c.id, 'PUT', { contacts: contacts });
+            fermer('scrimPersonne');
+            await chargerTout();
+            rendreFicheClient();
+            toast(etat.editionContactIdx === null ? nom + ' ajouté' : nom + ' mis à jour');
+        } catch (err) { toast(err.message, true); }
+    });
+
+    /* ── identité du client : la modale ne porte plus que nom/adresse/TVA ── */
     function ouvrirModalClient(client) {
         etat.editionClientId = client ? client.id : null;
         $('#titreModalClient').textContent = client ? client.name : 'Nouveau client';
         $('#clNom').value = client ? client.name : '';
         $('#clAdresse').value = client ? (client.adresse || '') : '';
         $('#clTva').value = client ? (client.tva || '') : '';
-        const conteneur = $('#clContacts');
-        conteneur.innerHTML = '';
-        ((client && client.contacts) || []).forEach(ct => conteneur.appendChild(ligneContact(ct)));
         ouvrir('scrimClient');
     }
-
-    $('#btnAjContact').addEventListener('click', () => {
-        const ligne = ligneContact();
-        $('#clContacts').appendChild(ligne);
-        ligne.querySelector('input').focus();
-    });
 
     $('#btnEnregistrerClient').addEventListener('click', async () => {
         const nom = $('#clNom').value.trim();
         if (!nom) { toast('Le nom du client est requis', true); return; }
-        const contacts = $$('#clContacts .contact-ligne').map(l => {
-            const lire = k => l.querySelector('[data-ck="' + k + '"]').value.trim();
-            return { id: l.dataset.contactId || undefined, nom: lire('nom'),
-                     fonction: lire('fonction'), email: lire('email'), tel: lire('tel') };
-        });
         const corps = { name: nom, adresse: $('#clAdresse').value.trim(),
-                        tva: $('#clTva').value.trim(), contacts: contacts };
+                        tva: $('#clTva').value.trim() };
         try {
             if (etat.editionClientId) await api('/clients/' + etat.editionClientId, 'PUT', corps);
             else await api('/clients', 'POST', corps);
             fermer('scrimClient');
             await chargerTout();
-            if (etat.vue === 'gestion') rendreGestion();
-            else if (etat.vue === 'fiche') await ouvrirFiche();
+            if (etat.vue === 'ficheClient') rendreFicheClient();
+            else if (etat.vue === 'gestion') rendreGestion();
             toast(etat.editionClientId ? 'Client mis à jour' : 'Client créé');
         } catch (err) { toast(err.message, true); }
     });
