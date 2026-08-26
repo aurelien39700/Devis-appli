@@ -234,14 +234,32 @@
 
     /* ═══════════════ POINTAGE ═══════════════ */
     function rendrePointage() {
+        // Groupé par client, clients et affaires en ordre alphabétique,
+        // total d'heures par client — comme l'interface historique.
         const enCours = etat.affaires.filter(a => stadeDe(a) === 'en_cours');
-        $('#qaListe').innerHTML = enCours.length ? enCours.map(a => {
+        const parClient = {};
+        enCours.forEach(a => {
             const c = etat.clients.find(x => x.id === a.clientId);
-            return '<button class="qa-btn" data-qa="' + attr(a.id) + '">'
-                + '<span class="qa-client">' + esc(c ? c.name : '') + '</span>'
-                + '<span class="qa-nom">' + esc(a.name) + '</span>'
-                + '<span class="qa-h">' + h1(heuresAffaire(a.id)) + ' h pointées</span></button>';
-        }).join('') : '<p style="color:var(--ink-dim);">Aucune affaire en cours.</p>';
+            const nom = c ? c.name : 'Client inconnu';
+            (parClient[nom] = parClient[nom] || []).push(a);
+        });
+        $('#qaListe').innerHTML = enCours.length
+            ? Object.keys(parClient).sort((x, y) => x.localeCompare(y)).map(nomClient => {
+                const liste = parClient[nomClient].slice()
+                    .sort((x, y) => (x.name || '').localeCompare(y.name || ''));
+                const totClient = liste.reduce((s, a) => s + heuresAffaire(a.id), 0);
+                return '<div class="bande-client"><h3>' + esc(nomClient) + '</h3>'
+                    + '<div class="rule"></div>'
+                    + '<span class="tot-client">' + h1(totClient) + ' h</span></div>'
+                    + '<div class="qa">' + liste.map(a =>
+                        '<button class="qa-btn" data-qa="' + attr(a.id) + '">'
+                        + '<span class="qa-nom">' + esc(a.name) + '</span>'
+                        + (a.description
+                            ? '<span class="qa-desc">' + esc(a.description) + '</span>' : '')
+                        + '<span class="qa-h">' + h1(heuresAffaire(a.id)) + ' h pointées</span>'
+                        + '</button>').join('') + '</div>';
+            }).join('')
+            : '<p style="color:var(--ink-dim);">Aucune affaire en cours.</p>';
 
         $$('#qaListe [data-qa]').forEach(b => b.addEventListener('click', () =>
             ouvrirSaisie({ affaireId: b.dataset.qa })));
@@ -332,6 +350,7 @@
                 + '<div class="hist-tete">'
                 + '<span class="hist-client">' + esc(c ? c.name : '') + '</span>'
                 + '<span class="hist-nom">' + esc(a.name) + '</span>'
+                + (a.description ? '<span class="hist-desc">' + esc(a.description) + '</span>' : '')
                 + '<span class="hist-total">' + h1(total) + ' h</span></div>'
                 + '<div class="chips">' + Object.keys(parPoste).map(n =>
                     '<span class="chip">' + esc(n) + ' · ' + h1(parPoste[n]) + ' h</span>').join('') + '</div>'
@@ -540,9 +559,24 @@
         let html = stades.map(s => {
             const liste = etat.affaires.filter(a => stadeDe(a) === s.k && correspondRecherche(a));
             if (!liste.length) return '';
+            // à l'intérieur du stade : groupé par client, comme avant
+            const parClient = {};
+            liste.forEach(a => {
+                const c = etat.clients.find(x => x.id === a.clientId);
+                const nom = c ? c.name : 'Sans client';
+                (parClient[nom] = parClient[nom] || []).push(a);
+            });
             return '<div class="groupe-stade">'
                 + '<div class="eyebrow section-lab">' + s.lab + ' · ' + liste.length + '</div>'
-                + '<div class="grille">' + liste.map(carteAffaire).join('') + '</div></div>';
+                + Object.keys(parClient).sort((x, y) => x.localeCompare(y)).map(nomClient => {
+                    const arr = parClient[nomClient].slice()
+                        .sort((x, y) => (x.name || '').localeCompare(y.name || ''));
+                    return '<div class="bande-client"><h3>' + esc(nomClient) + '</h3>'
+                        + '<div class="rule"></div>'
+                        + '<span class="compte">' + arr.length + '</span></div>'
+                        + '<div class="grille">' + arr.map(carteAffaire).join('') + '</div>';
+                }).join('')
+                + '</div>';
         }).join('');
 
         const archivees = etat.affaires.filter(a => stadeDe(a) === 'archivee' && correspondRecherche(a));
@@ -708,6 +742,7 @@
         let lignes = '';
         if (d) {
             const rendreLigne = (ligne, type, i) => {
+                const lid = type + i;
                 const b = type === 't'
                     ? (ligne.semaines || []).reduce((x, y) => x + (parseFloat(y) || 0), 0)
                     : (parseFloat(ligne.temps) || 0);
@@ -721,15 +756,28 @@
                           + '" data-bud="' + type + i + '" aria-label="Budget ' + attr(ligne.nom) + '">'
                         : '<span class="fixe">' + h1(b) + '</span>') + '</td>'
                     + '<td class="reel">' + h1(r) + '</td>'
-                    + '<td class="ec ' + cc + '">' + ((b === 0 && r === 0) ? '—' : sgn(e, h1)) + '</td>'
+                    + '<td class="ec ' + cc + '" data-fec="' + lid + '">'
+                    +   ((b === 0 && r === 0) ? '—' : sgn(e, h1)) + '</td>'
                     + '<td class="conso"><div class="mini">'
-                    + '<div class="fill ' + cc + '" style="width:' + Math.round(r / ech * 100) + '%"></div>'
-                    + (b > 0 ? '<div class="cible" style="left:' + Math.round(b / ech * 100) + '%"></div>' : '')
+                    + '<div class="fill ' + cc + '" data-ffill="' + lid
+                    +   '" style="width:' + Math.round(r / ech * 100) + '%"></div>'
+                    + '<div class="cible" data-fcible="' + lid + '" style="left:'
+                    +   Math.round(b / ech * 100) + '%;' + (b > 0 ? '' : 'display:none;') + '"></div>'
                     + '</div></td>'
-                    + '<td class="eur">' + eur(b * (parseFloat(ligne.taux) || 0)) + '</td></tr>';
+                    + '<td class="eur" data-feur="' + lid + '">'
+                    +   eur(b * (parseFloat(ligne.taux) || 0)) + '</td></tr>';
             };
-            lignes += (d.data.travail || []).map((l, i) => rendreLigne(l, 't', i)).join('');
-            lignes += (d.data.machine || []).map((l, i) => rendreLigne(l, 'm', i)).join('');
+            // Ordre d'affichage = ordre actuel de la bibliothèque des postes
+            // (réordonnable en Gestion). Les index d'origine restent attachés
+            // aux lignes pour que la saisie du budget vise la bonne entrée.
+            const ordreDe = {};
+            etat.postes.forEach((p, k) => { ordreDe[p.name] = k; });
+            const lignesTriees = (d.data.travail || []).map((l, i) => ({ l: l, t: 't', i: i }))
+                .concat((d.data.machine || []).map((l, i) => ({ l: l, t: 'm', i: i })));
+            lignesTriees.sort((x, y) =>
+                (ordreDe[x.l.nom] !== undefined ? ordreDe[x.l.nom] : 999)
+                - (ordreDe[y.l.nom] !== undefined ? ordreDe[y.l.nom] : 999));
+            lignes += lignesTriees.map(x => rendreLigne(x.l, x.t, x.i)).join('');
             // pointé sur des postes absents du devis
             const nomsDevis = (d.data.travail || []).map(l => l.nom)
                 .concat((d.data.machine || []).map(l => l.nom));
@@ -762,7 +810,7 @@
         let achatsHtml = '';
         if (d) {
             achatsHtml = '<div class="bloc"><div class="titre"><h2>Achats &amp; fournitures</h2>'
-                + '<span class="tot">' + eur(m.achats) + '</span></div>'
+                + '<span class="tot" id="fTotAchats">' + eur(m.achats) + '</span></div>'
                 + '<div class="tbl"><table><thead><tr>'
                 + '<th>Désignation</th><th>Fournisseur</th>'
                 + '<th class="c">Quantité</th><th class="c">Prix unitaire</th><th class="c">Montant</th>'
@@ -786,7 +834,7 @@
                         + (parseFloat(ac.quantite) || 0) + '" data-achat="quantite" data-i="' + i + '"></td>'
                         + '<td class="qte"><input type="number" min="0" step="0.01" value="'
                         + (parseFloat(ac.prixUnit) || 0) + '" data-achat="prixUnit" data-i="' + i + '"></td>'
-                        + '<td class="eur" style="color:var(--ink);">' + eur(mt) + '</td>'
+                        + '<td class="eur" style="color:var(--ink);" data-faeur="' + i + '">' + eur(mt) + '</td>'
                         + '<td style="text-align:right;"><button class="btn btn-sm btn-danger" '
                         + 'data-suppr-achat="' + i + '">✕</button></td></tr>';
                 }).join('')
@@ -883,14 +931,14 @@
 
             + '<div class="bilan">'
             + '<div class="case budget"><div class="case-lab"><i class="sw"></i>Heures budgétées</div>'
-            + '<div class="case-val">' + h1(bud) + '<small>h</small></div>'
+            + '<div class="case-val" id="fBudVal">' + h1(bud) + '<small>h</small></div>'
             + '<div class="case-sous">le devis de cette affaire</div></div>'
             + '<div class="case reel"><div class="case-lab"><i class="sw"></i>Heures pointées</div>'
             + '<div class="case-val">' + h1(reel) + '<small>h</small></div>'
             + '<div class="case-sous">saisies par l\'atelier</div></div>'
-            + '<div class="case ' + cEcart + '"><div class="case-lab"><i class="sw"></i>Écart</div>'
-            + '<div class="case-val">' + sgn(ecart, h1) + '<small>h</small></div>'
-            + '<div class="case-sous">' + (Math.abs(ecart) < 0.005 ? 'pile sur le budget'
+            + '<div class="case ' + cEcart + '" id="fEcartCase"><div class="case-lab"><i class="sw"></i>Écart</div>'
+            + '<div class="case-val" id="fEcartVal">' + sgn(ecart, h1) + '<small>h</small></div>'
+            + '<div class="case-sous" id="fEcartSous">' + (Math.abs(ecart) < 0.005 ? 'pile sur le budget'
                 : ecart > 0 ? 'de dépassement' : 'de marge restante') + '</div></div></div>'
 
             + '<div class="bloc"><div class="titre"><h2>Devis et heures</h2>'
@@ -898,7 +946,7 @@
                 ? '<a class="btn btn-sm" style="text-decoration:none;" '
                   + 'href="devis_app.html?affaire=' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">'
                   + 'Éditeur détaillé</a>' : '')
-            + '<span class="tot">' + eur(m.heures) + '</span></div>'
+            + '<span class="tot" id="fTotHeures">' + eur(m.heures) + '</span></div>'
             + '<div class="tbl"><table><thead><tr>'
             + '<th>Poste</th>'
             + '<th class="c"><i class="sw" style="background:var(--m-bud);"></i>Budget h</th>'
@@ -906,10 +954,10 @@
             + '<th class="c">Écart</th><th>Avancement</th><th class="c">Montant</th>'
             + '</tr></thead><tbody>' + lignes
             + '<tr class="total"><td>Total</td>'
-            + '<td class="bud" style="color:var(--m-bud-ink);">' + h1(bud) + '</td>'
+            + '<td class="bud" style="color:var(--m-bud-ink);" id="fTotB">' + h1(bud) + '</td>'
             + '<td class="reel">' + h1(reel) + '</td>'
-            + '<td class="ec ' + cEcart + '">' + sgn(ecart, h1) + '</td>'
-            + '<td></td><td class="eur">' + eur(m.heures) + '</td></tr>'
+            + '<td class="ec ' + cEcart + '" id="fTotEc">' + sgn(ecart, h1) + '</td>'
+            + '<td></td><td class="eur" id="fTotEur">' + eur(m.heures) + '</td></tr>'
             + '</tbody></table></div>'
             + (d
                 ? (modifiable
@@ -936,10 +984,10 @@
             + (d
                 ? '<div class="bloc"><div class="titre"><h2>Synthèse financière</h2></div>'
                   + '<div class="syn">'
-                  + '<div class="si"><div class="si-lab">Heures</div><div class="si-val">' + eur(m.heures) + '</div></div>'
-                  + '<div class="si"><div class="si-lab">Achats</div><div class="si-val">' + eur(m.achats) + '</div></div>'
-                  + '<div class="si prix"><div class="si-lab">Prix de vente HT</div><div class="si-val">' + eur(prix) + '</div></div>'
-                  + '<div class="si marge"><div class="si-lab">Marge</div><div class="si-val">' + eur(prix - cout) + '</div></div>'
+                  + '<div class="si"><div class="si-lab">Heures</div><div class="si-val" id="fSynHeures">' + eur(m.heures) + '</div></div>'
+                  + '<div class="si"><div class="si-lab">Achats</div><div class="si-val" id="fSynAchats">' + eur(m.achats) + '</div></div>'
+                  + '<div class="si prix"><div class="si-lab">Prix de vente HT</div><div class="si-val" id="fSynPrix">' + eur(prix) + '</div></div>'
+                  + '<div class="si marge"><div class="si-lab">Marge</div><div class="si-val" id="fSynMarge">' + eur(prix - cout) + '</div></div>'
                   + '</div>'
                   + '<div class="syn-coeff"><span>Coefficient de marge</span>'
                   + '<input type="number" step="0.05" min="1" value="' + coeff + '" data-devis="coeffMarge"'
@@ -1110,22 +1158,82 @@
         });
     }
 
-    // Recalcule bilan/synthèse de la fiche depuis le devis local, sans
-    // toucher aux champs en cours de frappe.
+    // Met à jour IMMÉDIATEMENT, côté client, toutes les cellules calculées
+    // de la fiche : lignes, bilan, ligne de total, synthèse financière.
+    // On n'attend pas le serveur — son enregistrement passe par un commit
+    // git qui peut prendre plusieurs secondes, et les totaux doivent suivre
+    // la frappe. Les heures pointées, elles, ne bougent pas pendant qu'on
+    // chiffre : on garde celles de la synthèse chargée.
     function rafraichirSyntheseFiche() {
         const d = etat.devisLocal;
-        if (!d) return;
-        // pas de rechargement complet : re-render différé quand la frappe se calme
-        clearTimeout(rafraichirSyntheseFiche._t);
-        rafraichirSyntheseFiche._t = setTimeout(async () => {
-            try {
-                etat.syntheseLocale = await api('/affaires/' + etat.ficheId + '/synthese?_t=' + Date.now());
-            } catch (e) { /* la fiche garde ses chiffres actuels */ }
-            if (etat.vue === 'fiche' && document.activeElement.tagName !== 'INPUT'
-                && document.activeElement.tagName !== 'SELECT') {
-                rendreFiche();
+        if (!d || !etat.syntheseLocale) return;
+
+        const reelParNom = {};
+        etat.syntheseLocale.postes.forEach(p => { reelParNom[p.nom] = p.reelHeures; });
+
+        const majLigne = (ligne, type, i) => {
+            const lid = type + i;
+            const b = type === 't'
+                ? (ligne.semaines || []).reduce((x, y) => x + (parseFloat(y) || 0), 0)
+                : (parseFloat(ligne.temps) || 0);
+            const r = reelParNom[ligne.nom] || 0;
+            const e = r - b, cc = cls(e);
+            const ech = Math.max(b, r) || 1;
+            const ec = document.querySelector('[data-fec="' + lid + '"]');
+            if (ec) {
+                ec.textContent = (b === 0 && r === 0) ? '—' : sgn(e, h1);
+                ec.className = 'ec ' + cc;
             }
-        }, 1400);
+            const fill = document.querySelector('[data-ffill="' + lid + '"]');
+            if (fill) {
+                fill.className = 'fill ' + cc;
+                fill.style.width = Math.round(r / ech * 100) + '%';
+            }
+            const cible = document.querySelector('[data-fcible="' + lid + '"]');
+            if (cible) {
+                cible.style.left = Math.round(b / ech * 100) + '%';
+                cible.style.display = b > 0 ? '' : 'none';
+            }
+            const eurC = document.querySelector('[data-feur="' + lid + '"]');
+            if (eurC) eurC.textContent = eur(b * (parseFloat(ligne.taux) || 0));
+        };
+        (d.data.travail || []).forEach((l, i) => majLigne(l, 't', i));
+        (d.data.machine || []).forEach((l, i) => majLigne(l, 'm', i));
+        (d.data.achats || []).forEach((a2, i) => {
+            const c2 = document.querySelector('[data-faeur="' + i + '"]');
+            if (c2) c2.textContent =
+                eur((parseFloat(a2.quantite) || 0) * (parseFloat(a2.prixUnit) || 0));
+        });
+
+        const bud = budgetDevis(d);
+        const reel = etat.syntheseLocale.totaux.reelHeures;
+        const ecart = reel - bud, cE = cls(ecart);
+        const pose = (id2, txt) => {
+            const el = document.getElementById(id2);
+            if (el) el.textContent = txt;
+        };
+        const budEl = document.getElementById('fBudVal');
+        if (budEl) budEl.innerHTML = h1(bud) + '<small>h</small>';
+        const ecartEl = document.getElementById('fEcartVal');
+        if (ecartEl) ecartEl.innerHTML = sgn(ecart, h1) + '<small>h</small>';
+        const caseEl = document.getElementById('fEcartCase');
+        if (caseEl) caseEl.className = 'case ' + cE;
+        pose('fEcartSous', Math.abs(ecart) < 0.005 ? 'pile sur le budget'
+            : ecart > 0 ? 'de dépassement' : 'de marge restante');
+
+        const m2 = montantsDevis(d);
+        const coeff2 = parseFloat(d.coeffMarge) || 1.2;
+        const cout2 = m2.heures + m2.achats;
+        pose('fTotHeures', eur(m2.heures));
+        pose('fTotAchats', eur(m2.achats));
+        pose('fTotB', h1(bud));
+        pose('fTotEur', eur(m2.heures));
+        const totEc = document.getElementById('fTotEc');
+        if (totEc) { totEc.textContent = sgn(ecart, h1); totEc.className = 'ec ' + cE; }
+        pose('fSynHeures', eur(m2.heures));
+        pose('fSynAchats', eur(m2.achats));
+        pose('fSynPrix', eur(cout2 * coeff2));
+        pose('fSynMarge', eur(cout2 * coeff2 - cout2));
     }
 
     function montrerLienClient() {
