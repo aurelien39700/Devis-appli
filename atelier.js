@@ -17,9 +17,11 @@
         virement_immediat: 'Virement immédiat', virement_30j: 'Virement à 30 jours',
         virement_45j: 'Virement à 45 jours', personnalise: 'Échéancier personnalisé'
     };
+    // Les mêmes mots partout : le couloir reprend les noms des pastilles
+    // et du cycle de la fiche.
     const STADES = [
-        { k: 'brouillon', lab: 'Devis à chiffrer' },
-        { k: 'envoye',    lab: 'Chez le client' },
+        { k: 'brouillon', lab: 'Brouillons' },
+        { k: 'envoye',    lab: 'Envoyés au client' },
         { k: 'en_cours',  lab: 'En cours' },
         { k: 'terminee',  lab: 'Terminées' }
     ];
