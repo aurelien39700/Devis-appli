@@ -9549,7 +9549,8 @@
       "name": "Rectification",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 3
+      "order": 3,
+      "coutHoraire": 70
     },
     {
       "id": "1764061151273",
