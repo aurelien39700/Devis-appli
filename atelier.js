@@ -1056,10 +1056,24 @@
             + (d
                 ? '<div class="bloc"><div class="titre"><h2>Synthèse financière</h2></div>'
                   + '<div class="syn">'
-                  + '<div class="si"><div class="si-lab">Heures</div><div class="si-val" id="fSynHeures">' + eur(m.heures) + '</div></div>'
-                  + '<div class="si"><div class="si-lab">Achats</div><div class="si-val" id="fSynAchats">' + eur(m.achats) + '</div></div>'
-                  + '<div class="si prix"><div class="si-lab">Prix de vente HT</div><div class="si-val" id="fSynPrix">' + eur(prix) + '</div></div>'
-                  + '<div class="si marge"><div class="si-lab">Marge</div><div class="si-val" id="fSynMarge">' + eur(prix - cout) + '</div></div>'
+                  + (enChiffrage
+                      /* au chiffrage : la marge PRÉVUE au devis */
+                      ? '<div class="si"><div class="si-lab">Heures</div><div class="si-val" id="fSynHeures">' + eur(m.heures) + '</div></div>'
+                        + '<div class="si"><div class="si-lab">Achats</div><div class="si-val" id="fSynAchats">' + eur(m.achats) + '</div></div>'
+                        + '<div class="si prix"><div class="si-lab">Prix de vente HT</div><div class="si-val" id="fSynPrix">' + eur(prix) + '</div></div>'
+                        + '<div class="si marge"><div class="si-lab">Marge prévue</div><div class="si-val" id="fSynMarge">' + eur(prix - cout) + '</div></div>'
+                      /* au suivi : le coût du POINTÉ face au prix de vente */
+                      : (function () {
+                          const pointeM = (s.totaux && (s.totaux.reelCout !== undefined
+                              ? s.totaux.reelCout : s.totaux.reelMontant)) || 0;
+                          const margeReelle = prix - pointeM - m.achats;
+                          return '<div class="si pointe"><div class="si-lab">Coût des heures pointées</div>'
+                              + '<div class="si-val" id="fSynPointe">' + eur(pointeM) + '</div></div>'
+                              + '<div class="si"><div class="si-lab">Achats</div><div class="si-val" id="fSynAchats">' + eur(m.achats) + '</div></div>'
+                              + '<div class="si prix"><div class="si-lab">Prix de vente HT</div><div class="si-val" id="fSynPrix">' + eur(prix) + '</div></div>'
+                              + '<div class="si ' + (margeReelle >= 0 ? 'marge' : 'negatif') + '" id="fSynMargeTile">'
+                              + '<div class="si-lab">Marge réelle</div><div class="si-val" id="fSynMarge">' + eur(margeReelle) + '</div></div>';
+                      })())
                   + '</div>'
                   + '<div class="syn-coeff"><span>Coefficient de marge</span>'
                   + '<input type="number" step="0.05" min="1" value="' + coeff + '" data-devis="coeffMarge"'
@@ -1317,7 +1331,18 @@
         pose('fSynHeures', eur(m2.heures));
         pose('fSynAchats', eur(m2.achats));
         pose('fSynPrix', eur(cout2 * coeff2));
-        pose('fSynMarge', eur(cout2 * coeff2 - cout2));
+        if (document.getElementById('fSynPointe')) {
+            // mode suivi : la marge reelle bouge avec le prix et les achats,
+            // le pointe vient de la synthese chargee
+            const pointeM = (etat.syntheseLocale && (etat.syntheseLocale.totaux.reelCout !== undefined
+                ? etat.syntheseLocale.totaux.reelCout : etat.syntheseLocale.totaux.reelMontant)) || 0;
+            const margeReelle = cout2 * coeff2 - pointeM - m2.achats;
+            pose('fSynMarge', eur(margeReelle));
+            const tuile = document.getElementById('fSynMargeTile');
+            if (tuile) tuile.className = 'si ' + (margeReelle >= 0 ? 'marge' : 'negatif');
+        } else {
+            pose('fSynMarge', eur(cout2 * coeff2 - cout2));
+        }
     }
 
     function montrerLienClient() {
@@ -1733,8 +1758,14 @@
                 + (p.isMachine ? '<span class="mach">MACHINE</span>' : '') + '</span>'
                 + '<label class="check" title="Temps machine"><input type="checkbox" data-machine="' + attr(p.id) + '"'
                 + (p.isMachine ? ' checked' : '') + '><span>Machine</span></label>'
+                + '<span class="m">taux</span>'
                 + '<input type="number" min="0" step="1" class="taux-inline" value="'
-                + (p.tauxHoraire || 0) + '" data-taux="' + attr(p.id) + '" title="Taux €/h">'
+                + (p.tauxHoraire || 0) + '" data-taux="' + attr(p.id) + '" title="Taux facturé €/h">'
+                + '<span class="m">coût</span>'
+                + '<input type="number" min="0" step="1" class="taux-inline" value="'
+                + (p.coutHoraire !== undefined && p.coutHoraire !== '' ? p.coutHoraire : '')
+                + '" placeholder="' + (p.tauxHoraire || 0) + '" data-cout="' + attr(p.id)
+                + '" title="Coût réel €/h — à défaut, le taux est utilisé">'
                 + '<span class="m">€/h</span>'
                 + '<div class="acts">'
                 + '<button class="btn btn-sm" data-ren-poste="' + attr(p.id) + '">Renommer</button>'
@@ -1781,6 +1812,13 @@
                 await api('/postes/' + i2.dataset.taux, 'PUT',
                     { tauxHoraire: parseFloat(i2.value) || 0 });
                 await chargerTout(); toast('Taux mis à jour');
+            } catch (err) { toast(err.message, true); }
+        }));
+        $$('#gestionContenu [data-cout]').forEach(i2 => i2.addEventListener('change', async () => {
+            try {
+                await api('/postes/' + i2.dataset.cout, 'PUT',
+                    { coutHoraire: parseFloat(i2.value) || 0 });
+                await chargerTout(); toast('Coût horaire mis à jour');
             } catch (err) { toast(err.message, true); }
         }));
         $$('#gestionContenu [data-ren-poste]').forEach(b => b.addEventListener('click', async () => {

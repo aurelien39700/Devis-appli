@@ -746,6 +746,12 @@ app.put('/api/postes/:id', async (req, res) => {
             console.log(`✅ Taux horaire mis à jour: ${req.body.tauxHoraire}`);
         }
 
+        // Coût horaire (modèle V3) : le coût réel du poste, sans la marge
+        // portée par le taux facturé. Sert à valoriser les heures pointées.
+        if (req.body.coutHoraire !== undefined) {
+            data.postes[posteIndex].coutHoraire = req.body.coutHoraire;
+        }
+
         // Mettre à jour isMachine si fourni
         if (req.body.isMachine !== undefined) {
             data.postes[posteIndex].isMachine = req.body.isMachine;
@@ -905,6 +911,8 @@ function calculerSynthese(data, affaireId) {
             reel[nom] = {
                 heures: 0,
                 taux: poste ? (parseFloat(poste.tauxHoraire) || 0) : 0,
+                // à défaut de coût renseigné, on retombe sur le taux
+                cout: poste ? (parseFloat(poste.coutHoraire) || parseFloat(poste.tauxHoraire) || 0) : 0,
                 machine: poste ? !!poste.isMachine : false
             };
         }
@@ -918,8 +926,9 @@ function calculerSynthese(data, affaireId) {
     const noms = Array.from(new Set(Object.keys(budget).concat(Object.keys(reel))));
     const postes = noms.map(nom => {
         const b = budget[nom] || { heures: 0, montant: 0, machine: false };
-        const r = reel[nom] || { heures: 0, taux: 0, machine: false };
+        const r = reel[nom] || { heures: 0, taux: 0, cout: 0, machine: false };
         const reelMontant = r.heures * r.taux;
+        const reelCout = r.heures * r.cout;
         return {
             nom: nom,
             machine: b.machine || r.machine,
@@ -928,6 +937,7 @@ function calculerSynthese(data, affaireId) {
             reelHeures: r.heures,
             reelTaux: r.taux,
             reelMontant: reelMontant,
+            reelCout: reelCout,
             ecartHeures: r.heures - b.heures,
             ecartMontant: reelMontant - b.montant
         };
@@ -937,6 +947,7 @@ function calculerSynthese(data, affaireId) {
     const somme = (cle) => postes.reduce((s, p) => s + p[cle], 0);
     const budgetMontant = somme('budgetMontant');
     const reelMontant = somme('reelMontant');
+    const reelCout = somme('reelCout');
     const coutBudget = budgetMontant + budgetAchats;
 
     return {
@@ -953,6 +964,7 @@ function calculerSynthese(data, affaireId) {
             prixVente: coutBudget * coeffMarge,
             reelHeures: somme('reelHeures'),
             reelMontant: reelMontant,
+            reelCout: reelCout,
             ecartHeures: somme('ecartHeures'),
             ecartMontant: reelMontant - budgetMontant
         }
