@@ -704,7 +704,10 @@
     function actionsCycle(a, d) {
         switch (stadeDe(a)) {
             case 'brouillon':
-                return '<button class="btn btn-arc btn-sm" data-cycle="envoye">Envoyer au client</button>';
+                // deux sorties : le client accepte par son lien, ou
+                // l'admin valide lui-meme et lance l'affaire
+                return '<button class="btn btn-arc btn-sm" data-cycle="envoye">Envoyer au client</button>'
+                    + '<button class="btn btn-ok btn-sm" data-cycle="en_cours">Valider moi-même</button>';
             case 'envoye':
                 return '<button class="btn btn-sm" data-cycle="brouillon">Repasser en brouillon</button>'
                     + '<button class="btn btn-sm" data-voir-lien>Voir le lien client</button>'
@@ -730,6 +733,9 @@
         const client = etat.clients.find(x => x.id === a.clientId);
         const modifiable = budgetModifiable(a, d);
         const rang = PAS.indexOf(stade);
+        // Au chiffrage, rien à comparer : personne ne pointe sur un
+        // brouillon. La comparaison arrive avec le stade "en cours".
+        const enChiffrage = !!d && (stade === 'brouillon' || stade === 'envoye');
 
         const bud = s.totaux.budgetHeures;
         const reel = s.totaux.reelHeures;
@@ -748,12 +754,26 @@
                 const r = reelParNom[ligne.nom] ? reelParNom[ligne.nom].reelHeures : 0;
                 const e = r - b, cc = cls(e);
                 const ech = Math.max(b, r) || 1;
+                const celluleBudget = '<td class="bud">' + (modifiable
+                    ? '<input type="number" min="0" step="0.5" value="' + b
+                      + '" data-bud="' + type + i + '" aria-label="Budget ' + attr(ligne.nom) + '">'
+                    : '<span class="fixe">' + h1(b) + '</span>') + '</td>';
+                if (enChiffrage) {
+                    // pur chiffrage : budget, taux modifiable, montant
+                    return '<tr><td class="nom">' + esc(ligne.nom)
+                        + (type === 'm' ? '<span class="mach">MACHINE</span>' : '') + '</td>'
+                        + celluleBudget
+                        + '<td class="taux">' + (modifiable
+                            ? '<input type="number" min="0" step="1" value="' + (parseFloat(ligne.taux) || 0)
+                              + '" data-ftaux="' + lid + '" aria-label="Taux ' + attr(ligne.nom) + '">'
+                            : '<span style="font-family:var(--f-data);">' + (parseFloat(ligne.taux) || 0) + '</span>')
+                        + '</td>'
+                        + '<td class="eur" data-feur="' + lid + '">'
+                        +   eur(b * (parseFloat(ligne.taux) || 0)) + '</td></tr>';
+                }
                 return '<tr><td class="nom">' + esc(ligne.nom)
                     + (type === 'm' ? '<span class="mach">MACHINE</span>' : '') + '</td>'
-                    + '<td class="bud">' + (modifiable
-                        ? '<input type="number" min="0" step="0.5" value="' + b
-                          + '" data-bud="' + type + i + '" aria-label="Budget ' + attr(ligne.nom) + '">'
-                        : '<span class="fixe">' + h1(b) + '</span>') + '</td>'
+                    + celluleBudget
                     + '<td class="reel">' + h1(r) + '</td>'
                     + '<td class="ec ' + cc + '" data-fec="' + lid + '">'
                     +   ((b === 0 && r === 0) ? '—' : sgn(e, h1)) + '</td>'
@@ -926,7 +946,8 @@
 
             + reponseHtml
 
-            + '<div class="bilan">'
+            + (enChiffrage ? '' :
+              '<div class="bilan">'
             + '<div class="case budget"><div class="case-lab"><i class="sw"></i>Heures budgétées</div>'
             + '<div class="case-val" id="fBudVal">' + h1(bud) + '<small>h</small></div>'
             + '</div>'
@@ -936,25 +957,33 @@
             + '<div class="case ' + cEcart + '" id="fEcartCase"><div class="case-lab"><i class="sw"></i>Écart</div>'
             + '<div class="case-val" id="fEcartVal">' + sgn(ecart, h1) + '<small>h</small></div>'
             + '<div class="case-sous" id="fEcartSous">' + (Math.abs(ecart) < 0.005 ? 'pile sur le budget'
-                : ecart > 0 ? 'de dépassement' : 'de marge restante') + '</div></div></div>'
+                : ecart > 0 ? 'de dépassement' : 'de marge restante') + '</div></div></div>')
 
-            + '<div class="bloc"><div class="titre"><h2>Devis et heures</h2>'
+            + '<div class="bloc"><div class="titre"><h2>' + (enChiffrage ? 'Devis' : 'Devis et heures') + '</h2>'
             + (d && modifiable
                 ? '<a class="btn btn-sm" style="text-decoration:none;" '
                   + 'href="devis_app.html?affaire=' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">'
                   + 'Éditeur détaillé</a>' : '')
             + '<span class="tot" id="fTotHeures">' + eur(m.heures) + '</span></div>'
             + '<div class="tbl"><table><thead><tr>'
-            + '<th>Poste</th>'
-            + '<th class="c"><i class="sw" style="background:var(--m-bud);"></i>Budget h</th>'
-            + '<th class="c"><i class="sw" style="background:var(--m-reel);"></i>Pointé h</th>'
-            + '<th class="c">Écart</th><th>Avancement</th><th class="c">Montant</th>'
+            + (enChiffrage
+                ? '<th>Poste</th>'
+                  + '<th class="c"><i class="sw" style="background:var(--m-bud);"></i>Budget h</th>'
+                  + '<th class="c">Taux €/h</th><th class="c">Montant</th>'
+                : '<th>Poste</th>'
+                  + '<th class="c"><i class="sw" style="background:var(--m-bud);"></i>Budget h</th>'
+                  + '<th class="c"><i class="sw" style="background:var(--m-reel);"></i>Pointé h</th>'
+                  + '<th class="c">Écart</th><th>Avancement</th><th class="c">Montant</th>')
             + '</tr></thead><tbody>' + lignes
-            + '<tr class="total"><td>Total</td>'
-            + '<td class="bud" style="color:var(--m-bud-ink);" id="fTotB">' + h1(bud) + '</td>'
-            + '<td class="reel">' + h1(reel) + '</td>'
-            + '<td class="ec ' + cEcart + '" id="fTotEc">' + sgn(ecart, h1) + '</td>'
-            + '<td></td><td class="eur" id="fTotEur">' + eur(m.heures) + '</td></tr>'
+            + (enChiffrage
+                ? '<tr class="total"><td>Total</td>'
+                  + '<td class="bud" style="color:var(--m-bud-ink);" id="fTotB">' + h1(bud) + '</td>'
+                  + '<td></td><td class="eur" id="fTotEur">' + eur(m.heures) + '</td></tr>'
+                : '<tr class="total"><td>Total</td>'
+                  + '<td class="bud" style="color:var(--m-bud-ink);" id="fTotB">' + h1(bud) + '</td>'
+                  + '<td class="reel">' + h1(reel) + '</td>'
+                  + '<td class="ec ' + cEcart + '" id="fTotEc">' + sgn(ecart, h1) + '</td>'
+                  + '<td></td><td class="eur" id="fTotEur">' + eur(m.heures) + '</td></tr>')
             + '</tbody></table></div>'
             + (d
                 ? (modifiable
@@ -1036,6 +1065,17 @@
             const v = parseFloat(inp.value) || 0;
             if (type === 't') etat.devisLocal.data.travail[i].semaines = [v, 0, 0, 0, 0, 0, 0, 0];
             else etat.devisLocal.data.machine[i].temps = v;
+            programmerEnregistrement();
+            rafraichirSyntheseFiche();
+        }));
+
+        // taux par ligne (mode chiffrage)
+        $$('#ficheContenu [data-ftaux]').forEach(inp => inp.addEventListener('change', () => {
+            const code = inp.dataset.ftaux;
+            const type = code[0], i = parseInt(code.slice(1), 10);
+            const v = parseFloat(inp.value) || 0;
+            if (type === 't') etat.devisLocal.data.travail[i].taux = v;
+            else etat.devisLocal.data.machine[i].taux = v;
             programmerEnregistrement();
             rafraichirSyntheseFiche();
         }));
@@ -1125,7 +1165,7 @@
                 await ouvrirFiche();
                 if (cible === 'envoye') montrerLienClient();
                 else toast({ brouillon: 'Repassé en brouillon — le budget est modifiable',
-                             en_cours: 'Affaire en cours',
+                             en_cours: 'Devis validé — l\x27affaire est en cours',
                              terminee: 'Affaire terminée',
                              archivee: 'Affaire archivée' }[cible] || 'Statut mis à jour');
             } catch (err) { toast(err.message, true); }
