@@ -9469,7 +9469,8 @@
       "name": "Soudure",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 11
+      "order": 11,
+      "coutHoraire": 80
     },
     {
       "id": "1764014788537",
