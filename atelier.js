@@ -990,7 +990,7 @@
 
             + reponseHtml
 
-            + (enChiffrage ? '' :
+            + ((enChiffrage || !d) ? '' :
               '<div class="bilan">'
             + '<div class="case budget"><div class="case-lab"><i class="sw"></i>Heures budgétées</div>'
             + '<div class="case-val" id="fBudVal">' + h1(bud) + '<small>h</small></div>'
@@ -1085,7 +1085,34 @@
                   + (modifiable ? '' : ' disabled') + '>'
                   + (modifiable ? '' : '<span>— verrouillé avec le devis</span>') + '</div>'
                   + '</div>'
-                : '');
+                : (function () {
+                    // Vente au temps passé : l'affaire n'a pas de devis, on
+                    // facture les heures pointées au taux, coefficient compris.
+                    const factM = (s.totaux && s.totaux.reelMontant) || 0;
+                    const coutM = (s.totaux && (s.totaux.reelCout !== undefined
+                        ? s.totaux.reelCout : s.totaux.reelMontant)) || 0;
+                    const coeffR = parseFloat(a.coeffRegie) || 1.2;
+                    const prixR = factM * coeffR;
+                    const margeR = prixR - coutM;
+                    return '<div class="bloc"><div class="titre"><h2>Vente au temps passé</h2></div>'
+                        + '<div class="syn">'
+                        + '<div class="si pointe"><div class="si-lab">Temps passé au taux</div>'
+                        + '<div class="si-val" id="fRegieBase">' + eur(factM) + '</div></div>'
+                        + '<div class="si"><div class="si-lab">Coût des heures</div>'
+                        + '<div class="si-val">' + eur(coutM) + '</div></div>'
+                        + '<div class="si prix"><div class="si-lab">Prix de vente HT</div>'
+                        + '<div class="si-val" id="fRegiePrix">' + eur(prixR) + '</div></div>'
+                        + '<div class="si ' + (margeR >= 0 ? 'marge' : 'negatif') + '" id="fRegieMargeTile">'
+                        + '<div class="si-lab">Marge réelle</div>'
+                        + '<div class="si-val" id="fRegieMarge">' + eur(margeR) + '</div>'
+                        + '<div class="si-sous" id="fRegiePct">'
+                        + (prixR > 0 ? Math.round(margeR / prixR * 100) + ' % du prix de vente' : '')
+                        + '</div></div>'
+                        + '</div>'
+                        + '<div class="syn-coeff"><span>Coefficient de marge</span>'
+                        + '<input type="number" step="0.05" min="1" value="' + coeffR + '" data-coeff-regie>'
+                        + '</div></div>';
+                })());
 
         brancherFiche(a, d, modifiable);
     }
@@ -1206,6 +1233,29 @@
             etat.devisLocal.data.achats.push({ nom: '', fournisseur: '', quantite: 1, prixUnit: 0 });
             programmerEnregistrement();
             rendreFiche();
+        });
+
+        // coefficient de la vente au temps passé : recalcul immédiat,
+        // enregistrement sur l'affaire en arrière-plan
+        const coeffRegieInp = document.querySelector('#ficheContenu [data-coeff-regie]');
+        if (coeffRegieInp) coeffRegieInp.addEventListener('change', async () => {
+            const coeffR = parseFloat(coeffRegieInp.value) || 1.2;
+            a.coeffRegie = coeffR;
+            const factM = (etat.syntheseLocale.totaux && etat.syntheseLocale.totaux.reelMontant) || 0;
+            const coutM = (etat.syntheseLocale.totaux
+                && (etat.syntheseLocale.totaux.reelCout !== undefined
+                    ? etat.syntheseLocale.totaux.reelCout : etat.syntheseLocale.totaux.reelMontant)) || 0;
+            const prixR = factM * coeffR;
+            const margeR = prixR - coutM;
+            const pose2 = (id2, t2) => { const el = document.getElementById(id2); if (el) el.textContent = t2; };
+            pose2('fRegiePrix', eur(prixR));
+            pose2('fRegieMarge', eur(margeR));
+            pose2('fRegiePct', prixR > 0 ? Math.round(margeR / prixR * 100) + ' % du prix de vente' : '');
+            const tuile = document.getElementById('fRegieMargeTile');
+            if (tuile) tuile.className = 'si ' + (margeR >= 0 ? 'marge' : 'negatif');
+            try {
+                await api('/affaires/' + a.id, 'PUT', { coeffRegie: coeffR });
+            } catch (err) { toast(err.message, true); }
         });
 
         // créer le devis d'une affaire qui n'en a pas

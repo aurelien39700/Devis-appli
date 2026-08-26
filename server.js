@@ -611,6 +611,11 @@ app.put('/api/affaires/:id', async (req, res) => {
         if (req.body.statut !== undefined) {
             data.affaires[index].statut = req.body.statut;
         }
+        // vente au temps passé (affaire sans devis) : le coefficient de
+        // marge appliqué au temps facturé est retenu sur l'affaire
+        if (req.body.coeffRegie !== undefined) {
+            data.affaires[index].coeffRegie = parseFloat(req.body.coeffRegie) || 1.2;
+        }
 
         await writeData(data);
         res.json(data.affaires[index]);
