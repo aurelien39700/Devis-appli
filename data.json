@@ -8669,14 +8669,14 @@
       "name": "3165",
       "clientId": "1764014732621",
       "description": "Noyau moule Bi matière",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1764082722139",
       "name": "Buse presse",
       "clientId": "1764014447938",
       "description": "",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1764087070809",
@@ -8746,14 +8746,14 @@
       "name": "MC8483",
       "clientId": "1764014447938",
       "description": "MAP outil pignon",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1765790513290",
       "name": "Moule 6",
       "clientId": "1764014760229",
       "description": "Reprise de cône en érosion pour ajustage",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1765790545276",
@@ -8767,7 +8767,7 @@
       "name": "1842",
       "clientId": "1764014732621",
       "description": "Empreinte à renvoyer au traitement\nprépa / traitement / transport / remontage",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1766403022300",
@@ -8795,7 +8795,7 @@
       "name": "MF9632",
       "clientId": "1764014447938",
       "description": "Moule gros vérin",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1768293940161",
@@ -8809,252 +8809,252 @@
       "name": "LUB SHUTTLE 4",
       "clientId": "1764014760229",
       "description": "Réparation noyau",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1768465071641",
       "name": "2046",
       "clientId": "1764014732621",
       "description": "Electrode D18",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1768815055414",
       "name": "GROMMET",
       "clientId": "1768815035991",
       "description": "MAP01",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1768898463088",
       "name": "MOULE 2",
       "clientId": "1764014760229",
       "description": "Reprise ajustage",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1768991922867",
       "name": "ELCF UK",
       "clientId": "1764015790842",
       "description": "2 chariot version",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1769091458164",
       "name": "MH3108",
       "clientId": "1764014447938",
       "description": "Cassette surmoulage TD",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1769423704564",
       "name": "MC7880",
       "clientId": "1764014447938",
       "description": "Pavé neuf",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1769423756138",
       "name": "0552",
       "clientId": "1764014447938",
       "description": "Rondelle de centrage",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1769439339887",
       "name": "MD7106",
       "clientId": "1764014447938",
       "description": "MAP buse + remplacmeent strack",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1769616047379",
       "name": "Peigne étanchéité",
       "clientId": "1768815035991",
       "description": "Empreinte neuve",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770016328856",
       "name": "MG4477",
       "clientId": "1764014447938",
       "description": "Reprise soudure",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770116873538",
       "name": "MF9632",
       "clientId": "1764014447938",
       "description": "",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770127344832",
       "name": "MF9449",
       "clientId": "1764014447938",
       "description": "Réparation insert sous marin",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770627217190",
       "name": "3102",
       "clientId": "1764014732621",
       "description": "soudure+ reprise tiroir",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770635482361",
       "name": "MD1437",
       "clientId": "1764014447938",
       "description": "Noyau neuf",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770654827565",
       "name": "MG0036",
       "clientId": "1764014447938",
       "description": "Réparation bavures",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770802782150",
       "name": "BALI 12",
       "clientId": "1764014760229",
       "description": "Entretient moule",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770804206423",
       "name": "MD0564",
       "clientId": "1764014447938",
       "description": "Refection forme",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1770877379864",
       "name": "NAFTA",
       "clientId": "1764014760229",
       "description": "Modif profil JONC",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1771240512374",
       "name": "MG4476",
       "clientId": "1764014447938",
       "description": "Moule renault",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1771255899882",
       "name": "2976",
       "clientId": "1764014732621",
       "description": "Modif",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1771326730523",
       "name": "MG6349",
       "clientId": "1764014447938",
       "description": "Broche tiroir",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1771484448235",
       "name": "M42936",
       "clientId": "1764014447938",
       "description": "Refaire 2 tiroirs à fil",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1771497501691",
       "name": "2475",
       "clientId": "1764014732621",
       "description": "Point d'injection",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1771499917358",
       "name": "P3",
       "clientId": "1764015790842",
       "description": "Pièces détachées REP_17-18-31-78-84",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1771578941479",
       "name": "Moule 0",
       "clientId": "1764014760229",
       "description": "Remplacement empreinte HS",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1771949533268",
       "name": "Moule blister",
       "clientId": "1764017522395",
       "description": "étude + dessin + 4 ouverture pavé + 4 ouverture empreintes",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1772443602298",
       "name": "2929",
       "clientId": "1764014732621",
       "description": "Modif triangle + bavure",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1772444792258",
       "name": "P2 MK2",
       "clientId": "1764015790842",
       "description": "Réparation empreinte",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1772621022222",
       "name": "MD8017",
       "clientId": "1764014447938",
       "description": "Réparation empreinte TD cassé",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1772629331839",
       "name": "MZF9600",
       "clientId": "1764014447938",
       "description": "réparation logement de doigt sur tiroir",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1773233123336",
       "name": "Moule 2",
       "clientId": "1764014760229",
       "description": "Busette (X2)",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1773233162478",
       "name": "MD7105",
       "clientId": "1764014447938",
       "description": "Ajout vérin éjection",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1773300413526",
       "name": "Buse presse",
       "clientId": "1764014760229",
       "description": "",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1773311286824",
       "name": "MC4857",
       "clientId": "1764014447938",
       "description": "Passage compression en injection",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1773907112429",
       "name": "MOULE 2 Empilage fermeture",
       "clientId": "1764014760229",
       "description": "Soudure + reprise fermeture",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1774256649979",
@@ -9068,49 +9068,49 @@
       "name": "Capuchon RIVERA",
       "clientId": "1764014760229",
       "description": "Réfection moule 32 empreintes",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1774256810397",
       "name": "MD1004",
       "clientId": "1764014447938",
       "description": "Réparation forme centrale",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1774339006554",
       "name": "Obturateur",
       "clientId": "1774338988559",
       "description": "",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1774341950184",
       "name": "MB3241",
       "clientId": "1764014447938",
       "description": "Fraisage forme",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1774429266757",
       "name": "MD0564",
       "clientId": "1764014447938",
       "description": "Réparation noyaux",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1774438072867",
       "name": "FS130-405",
       "clientId": "1764015790842",
       "description": "Ajustage Broche / Tubulaire",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1774531095351",
       "name": "P2 MK2",
       "clientId": "1764015790842",
       "description": "Ajustage empreinte Chine",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1774605009529",
@@ -9124,217 +9124,217 @@
       "name": "Sécu enfant",
       "clientId": "1764014760229",
       "description": "Nettoyage moule",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1775022139498",
       "name": "moule 0 de merde",
       "clientId": "1764014760229",
       "description": "Et ta mère",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1775195566595",
       "name": "MG7053",
       "clientId": "1764014447938",
       "description": "Cassette Thermodur neuve",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1775633263820",
       "name": "3075",
       "clientId": "1764014732621",
       "description": "Fausse broche",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1775633305839",
       "name": "MC8483",
       "clientId": "1764014447938",
       "description": "MAP empreintes pignon",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1775719363375",
       "name": "2914",
       "clientId": "1764014732621",
       "description": "réparation empreinte ajout broche",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1776075888145",
       "name": "T12546",
       "clientId": "1774338988559",
       "description": "16+16 Broches",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1776329942277",
       "name": "MF9432",
       "clientId": "1764014447938",
       "description": "Douille antichambre",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1776405312512",
       "name": "TG12",
       "clientId": "1764014760229",
       "description": "Modif profil bouchon",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1776754210823",
       "name": "MF9409",
       "clientId": "1764014447938",
       "description": "réparation",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1776869938888",
       "name": "MD7105",
       "clientId": "1764014447938",
       "description": "",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1776956837732",
       "name": "Croissant D8357",
       "clientId": "1776956777329",
       "description": "Découpe fil pièce bronze (X6)",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1776956885591",
       "name": "D8347-48",
       "clientId": "1776956777329",
       "description": "Découpe fil croissant bronze X10+10",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1777279644079",
       "name": "MG4476",
       "clientId": "1764014447938",
       "description": "Moule Renault Jaune",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1777360433129",
       "name": "3165",
       "clientId": "1764014732621",
       "description": "MAP eventation",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1777380254799",
       "name": "MH3108",
       "clientId": "1764014447938",
       "description": "MAP 01",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1777469148535",
       "name": "FS130-243",
       "clientId": "1764015790842",
       "description": "Ejecteur de forme",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1778050523667",
       "name": "2467",
       "clientId": "1764014732621",
       "description": "Plaquette d'usure",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1779257832757",
       "name": "MF9430",
       "clientId": "1764014447938",
       "description": "2 Pavés neuf rep242",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1779263798493",
       "name": "2689",
       "clientId": "1764014732621",
       "description": "SUCETTES",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1779263822519",
       "name": "MF9431",
       "clientId": "1764014447938",
       "description": "réparation zone enfoncée",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1779375099319",
       "name": "ELCF LVIP",
       "clientId": "1764015790842",
       "description": "Tiroir version",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1779439169265",
       "name": "MD7809",
       "clientId": "1764014447938",
       "description": "modif insert rep151",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1779882228879",
       "name": "FS130-373",
       "clientId": "1764015790842",
       "description": "Réparation plan de joint",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1780315645369",
       "name": "tige inox",
       "clientId": "1764014760229",
       "description": "",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1781166567268",
       "name": "Moule 0",
       "clientId": "1764014760229",
       "description": "Implantation bloc chaud",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1781251050108",
       "name": "ML1762",
       "clientId": "1768815035991",
       "description": "Logement ejecteur a reprendre",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1781762122269",
       "name": "P2 MK2",
       "clientId": "1764015790842",
       "description": "réparation insert point d'injection",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1782195820476",
       "name": "MD7701",
       "clientId": "1764014447938",
       "description": "Reprise soudure",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1782200307961",
       "name": "MD0184",
       "clientId": "1764014447938",
       "description": "Reçu de buse",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1782218349438",
       "name": "PS1010",
       "clientId": "1782218332974",
       "description": "Micro gravure",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1782390584192",
@@ -9348,7 +9348,7 @@
       "name": "3000",
       "clientId": "1764014732621",
       "description": "réparation cales montante",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1783603492033",
@@ -9362,14 +9362,14 @@
       "name": "MG4476 RENAULT",
       "clientId": "1764014447938",
       "description": "Reprise soudure",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1784791051993",
       "name": "MOULE 5",
       "clientId": "1764014760229",
       "description": "Réfection",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1784791083290",
@@ -9390,7 +9390,7 @@
       "name": "GROMMET",
       "clientId": "1768815035991",
       "description": "2+2 inserts peigne",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1787653429126",
@@ -9432,14 +9432,14 @@
       "name": "MD7701",
       "clientId": "1764014447938",
       "description": "Reprise soudure",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1787659337543",
       "name": "1465",
       "clientId": "1764014732621",
       "description": "Reprise sous marin",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1787663813789",
@@ -9460,7 +9460,7 @@
       "name": "MG6852",
       "clientId": "1764014447938",
       "description": "Broche tiroir",
-      "statut": "terminee"
+      "statut": "archivee"
     }
   ],
   "postes": [
