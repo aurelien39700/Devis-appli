@@ -9504,7 +9504,7 @@
       "name": "2875",
       "clientId": "1764014732621",
       "description": "Soudure + reprise noyau",
-      "statut": "brouillon"
+      "statut": "envoye"
     }
   ],
   "postes": [
@@ -10943,7 +10943,8 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T11:57:18.499Z",
-      "updatedAt": "2026-08-26T11:58:21.403Z"
+      "updatedAt": "2026-08-26T11:58:21.403Z",
+      "token": "c179ea2badcd3c12"
     }
   ],
   "entreprise": {
