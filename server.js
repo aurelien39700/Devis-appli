@@ -470,6 +470,18 @@ app.put('/api/sync', async (req, res) => {
     }
 });
 
+// Interlocuteurs d'un client (modèle V3) : nom, fonction, email, tél.
+function nettoyerContacts(liste) {
+    if (!Array.isArray(liste)) return [];
+    return liste.filter(c => c && String(c.nom || '').trim()).map((c, i) => ({
+        id: String(c.id || (Date.now().toString() + '-' + i)),
+        nom: String(c.nom).trim(),
+        fonction: String(c.fonction || ''),
+        email: String(c.email || ''),
+        tel: String(c.tel || '')
+    }));
+}
+
 // ===== Routes pour les Clients =====
 
 // GET - Récupérer tous les clients
@@ -488,7 +500,10 @@ app.post('/api/clients', async (req, res) => {
         const data = await readData();
         const newClient = {
             id: Date.now().toString(),
-            name: req.body.name
+            name: req.body.name,
+            adresse: String(req.body.adresse || ''),
+            tva: String(req.body.tva || ''),
+            contacts: nettoyerContacts(req.body.contacts)
         };
         data.clients.push(newClient);
         await writeData(data);
@@ -510,6 +525,15 @@ app.put('/api/clients/:id', async (req, res) => {
 
         if (req.body.name !== undefined) {
             data.clients[index].name = req.body.name;
+        }
+        if (req.body.adresse !== undefined) {
+            data.clients[index].adresse = String(req.body.adresse);
+        }
+        if (req.body.tva !== undefined) {
+            data.clients[index].tva = String(req.body.tva);
+        }
+        if (req.body.contacts !== undefined) {
+            data.clients[index].contacts = nettoyerContacts(req.body.contacts);
         }
 
         await writeData(data);
@@ -969,6 +993,8 @@ app.put('/api/devis/:affaireId', async (req, res) => {
             delai: req.body.delai !== undefined ? String(req.body.delai) : (ancien.delai || ''),
             reglement: req.body.reglement !== undefined ? String(req.body.reglement) : (ancien.reglement || 'virement_45j'),
             echeances: Array.isArray(req.body.echeances) ? req.body.echeances : (ancien.echeances || []),
+            interlocuteurId: req.body.interlocuteurId !== undefined
+                ? String(req.body.interlocuteurId || '') : (ancien.interlocuteurId || ''),
             // Jamais pilotés par le corps de la requête : le token vient de
             // l'envoi au client, la réponse vient du client lui-même.
             token: ancien.token,
@@ -1085,6 +1111,12 @@ app.get('/api/public/devis/:token', async (req, res) => {
             entreprise: data.entreprise || {},
             devis: {
                 clientNom: client ? client.name : (devis.client || ''),
+                interlocuteur: (function () {
+                    if (!client || !devis.interlocuteurId) return null;
+                    const ct = (client.contacts || [])
+                        .find(x => String(x.id) === String(devis.interlocuteurId));
+                    return ct ? { nom: ct.nom, fonction: ct.fonction || '' } : null;
+                })(),
                 affaireNom: affaire.name || devis.affaire || '',
                 description: affaire.description || '',
                 numCommande: devis.numCommande || '',
@@ -1093,7 +1125,8 @@ app.get('/api/public/devis/:token', async (req, res) => {
                 delai: devis.delai || '',
                 reglement: devis.reglement || '',
                 echeances: devis.echeances || [],
-                montants: montantsClient(devis),
+                // pas de detail : le client ne voit que le total
+                montants: { totalHT: montantsClient(devis).totalHT },
                 reponse: devis.reponseClient || null,
                 repondable: affaire.statut === 'envoye' && !devis.reponseClient
             }

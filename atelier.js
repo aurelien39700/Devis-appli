@@ -39,7 +39,8 @@
         achatsBib: [],        // bibliothèque des achats (chaînes)
         recherche: '',
         ongletGestion: 'entreprise',
-        editionAffaireId: null,   // la modale affaire modifie au lieu de créer
+        editionAffaireId: null,
+        editionClientId: null,    // la fiche client en cours d'édition   // la modale affaire modifie au lieu de créer
         vue: 'pointage',
         ficheId: null,
         filtre: null,         // stade filtré dans le couloir
@@ -892,6 +893,14 @@
                 + Object.keys(REGLEMENTS).map(k => '<option value="' + k + '"'
                     + (k === (d.reglement || 'virement_45j') ? ' selected' : '') + '>'
                     + REGLEMENTS[k] + '</option>').join('')
+                + '</select></div>'
+                + '<div class="cd" style="grid-column:1 / -1;"><label>Interlocuteur</label>'
+                + '<select data-devis="interlocuteurId">'
+                + '<option value="">—</option>'
+                + ((client && client.contacts) || []).map(ct =>
+                    '<option value="' + attr(ct.id) + '"'
+                    + (String(d.interlocuteurId || '') === String(ct.id) ? ' selected' : '') + '>'
+                    + esc(ct.nom) + (ct.fonction ? ' — ' + esc(ct.fonction) : '') + '</option>').join('')
                 + '</select></div></div>'
                 + '<div class="echeancier' + ((d.reglement === 'personnalise') ? '' : ' hidden')
                 + '" id="blocEcheancier">'
@@ -999,12 +1008,16 @@
                       + '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>'
                       + 'Devis ' + (stade === 'envoye' ? 'envoyé' : 'verrouillé')
                       + ' : repassez en brouillon pour modifier le budget.'
-                      + ((d.delai || d.reglement)
-                          ? '<span class="verrou-conds">'
-                            + (d.delai ? 'Délai ' + esc(d.delai) : '')
-                            + (d.delai && d.reglement ? ' · ' : '')
-                            + (d.reglement ? esc(REGLEMENTS[d.reglement] || d.reglement) : '')
-                            + '</span>' : '')
+                      + (function () {
+                          const morceaux = [];
+                          if (d.delai) morceaux.push('Délai ' + esc(d.delai));
+                          if (d.reglement) morceaux.push(esc(REGLEMENTS[d.reglement] || d.reglement));
+                          const ct = client && (client.contacts || [])
+                              .find(x => String(x.id) === String(d.interlocuteurId || ''));
+                          if (ct) morceaux.push(esc(ct.nom));
+                          return morceaux.length
+                              ? '<span class="verrou-conds">' + morceaux.join(' · ') + '</span>' : '';
+                      })()
                       + '</div>')
                 : '')
             + conditionsHtml
@@ -1052,7 +1065,8 @@
                 client: d.client, numCommande: d.numCommande, affaire: d.affaire,
                 date: d.date, coeffMarge: d.coeffMarge, data: d.data,
                 noteClient: d.noteClient, delai: d.delai,
-                reglement: d.reglement, echeances: d.echeances
+                reglement: d.reglement, echeances: d.echeances,
+                interlocuteurId: d.interlocuteurId || ''
             });
             etat.devisLocal = sauve;
             etat.devis[etat.ficheId] = sauve;
@@ -1458,10 +1472,12 @@
         return '<div class="titre"><h2>Clients</h2></div>'
             + etat.clients.map(c => {
                 const n = etat.affaires.filter(a => a.clientId === c.id).length;
+                const nc = (c.contacts || []).length;
                 return '<div class="ligne-g"><span class="n">' + esc(c.name) + '</span>'
-                    + '<span class="m">' + n + ' affaire' + (n > 1 ? 's' : '') + '</span>'
+                    + '<span class="m">' + n + ' affaire' + (n > 1 ? 's' : '')
+                    + (nc ? ' · ' + nc + ' interlocuteur' + (nc > 1 ? 's' : '') : '') + '</span>'
                     + '<div class="acts">'
-                    + '<button class="btn btn-sm" data-ren-client="' + attr(c.id) + '">Renommer</button>'
+                    + '<button class="btn btn-sm" data-modif-client="' + attr(c.id) + '">Modifier</button>'
                     + '<button class="btn btn-sm btn-danger" data-suppr-client="' + attr(c.id) + '">Supprimer</button>'
                     + '</div></div>';
             }).join('')
@@ -1477,14 +1493,9 @@
                 await chargerTout(); rendreGestion(); toast('Client ajouté');
             } catch (err) { toast(err.message, true); }
         });
-        $$('#gestionContenu [data-ren-client]').forEach(b => b.addEventListener('click', async () => {
-            const c = etat.clients.find(x => x.id === b.dataset.renClient);
-            const nom = prompt('Nouveau nom du client :', c.name);
-            if (!nom || nom.trim() === c.name) return;
-            try {
-                await api('/clients/' + c.id, 'PUT', { name: nom.trim() });
-                await chargerTout(); rendreGestion(); toast('Client renommé');
-            } catch (err) { toast(err.message, true); }
+        $$('#gestionContenu [data-modif-client]').forEach(b => b.addEventListener('click', () => {
+            const c = etat.clients.find(x => x.id === b.dataset.modifClient);
+            if (c) ouvrirModalClient(c);
         }));
         $$('#gestionContenu [data-suppr-client]').forEach(b => b.addEventListener('click', async () => {
             const c = etat.clients.find(x => x.id === b.dataset.supprClient);
@@ -1495,6 +1506,61 @@
             } catch (err) { toast(err.message, true); }
         }));
     }
+
+    /* ── fiche client : nom, adresse, TVA, interlocuteurs ── */
+    function ligneContact(ct) {
+        ct = ct || {};
+        const div = document.createElement('div');
+        div.className = 'contact-ligne';
+        div.innerHTML =
+            '<input type="text" placeholder="Nom" value="' + attr(ct.nom || '') + '" data-ck="nom">'
+            + '<input type="text" placeholder="Fonction" value="' + attr(ct.fonction || '') + '" data-ck="fonction">'
+            + '<input type="email" placeholder="Email" value="' + attr(ct.email || '') + '" data-ck="email">'
+            + '<input type="tel" placeholder="Téléphone" value="' + attr(ct.tel || '') + '" data-ck="tel">'
+            + '<button class="btn btn-sm btn-danger" type="button">✕</button>';
+        div.dataset.contactId = ct.id || '';
+        div.querySelector('button').addEventListener('click', () => div.remove());
+        return div;
+    }
+
+    function ouvrirModalClient(client) {
+        etat.editionClientId = client ? client.id : null;
+        $('#titreModalClient').textContent = client ? client.name : 'Nouveau client';
+        $('#clNom').value = client ? client.name : '';
+        $('#clAdresse').value = client ? (client.adresse || '') : '';
+        $('#clTva').value = client ? (client.tva || '') : '';
+        const conteneur = $('#clContacts');
+        conteneur.innerHTML = '';
+        ((client && client.contacts) || []).forEach(ct => conteneur.appendChild(ligneContact(ct)));
+        ouvrir('scrimClient');
+    }
+
+    $('#btnAjContact').addEventListener('click', () => {
+        const ligne = ligneContact();
+        $('#clContacts').appendChild(ligne);
+        ligne.querySelector('input').focus();
+    });
+
+    $('#btnEnregistrerClient').addEventListener('click', async () => {
+        const nom = $('#clNom').value.trim();
+        if (!nom) { toast('Le nom du client est requis', true); return; }
+        const contacts = $$('#clContacts .contact-ligne').map(l => {
+            const lire = k => l.querySelector('[data-ck="' + k + '"]').value.trim();
+            return { id: l.dataset.contactId || undefined, nom: lire('nom'),
+                     fonction: lire('fonction'), email: lire('email'), tel: lire('tel') };
+        });
+        const corps = { name: nom, adresse: $('#clAdresse').value.trim(),
+                        tva: $('#clTva').value.trim(), contacts: contacts };
+        try {
+            if (etat.editionClientId) await api('/clients/' + etat.editionClientId, 'PUT', corps);
+            else await api('/clients', 'POST', corps);
+            fermer('scrimClient');
+            await chargerTout();
+            if (etat.vue === 'gestion') rendreGestion();
+            else if (etat.vue === 'fiche') await ouvrirFiche();
+            toast(etat.editionClientId ? 'Client mis à jour' : 'Client créé');
+        } catch (err) { toast(err.message, true); }
+    });
 
     /* ── Postes ── */
     function panneauPostes() {

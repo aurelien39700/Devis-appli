@@ -391,6 +391,13 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 .recherche input:focus{border-color:var(--arc);outline:none;}
 .recherche input::placeholder{color:var(--ink-dim);}
 
+/* interlocuteurs de la fiche client */
+.contact-ligne{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;padding:9px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-2);}
+.contact-ligne input{flex:1;min-width:110px;padding:8px 10px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:13px;}
+.contact-ligne input:focus{border-color:var(--arc);outline:none;}
+.contact-ligne input[data-ck="tel"]{flex:0 1 130px;}
+.contact-ligne .btn{flex:none;}
+
 /* onglets de la gestion */
 .gonglets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
 .gonglet{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:22px;border:1px solid var(--line);background:var(--panel);color:var(--ink-mid);font-size:14px;font-weight:600;transition:border-color .18s,color .18s,background .18s,transform .15s;}
@@ -686,6 +693,41 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
   </div>
 </div>
 
+<!-- ══════════════════════ MODALE : FICHE CLIENT ══════════════════════ -->
+<div class="scrim" id="scrimClient" role="dialog" aria-modal="true" aria-label="Fiche client">
+  <div class="sheet" style="width:min(560px,100%);">
+    <div class="sheet-head">
+      <h2 id="titreModalClient">Client</h2>
+      <button class="icon-btn" data-fermer="scrimClient" aria-label="Fermer">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div class="champ">
+        <label for="clNom">Nom *</label>
+        <input type="text" id="clNom" placeholder="Nom du client">
+      </div>
+      <div class="champ">
+        <label for="clAdresse">Adresse</label>
+        <input type="text" id="clAdresse" placeholder="Adresse (optionnel)">
+      </div>
+      <div class="champ">
+        <label for="clTva">N° TVA</label>
+        <input type="text" id="clTva" placeholder="FR... (optionnel)">
+      </div>
+      <div class="champ" style="margin-bottom:0;">
+        <label>Interlocuteurs</label>
+        <div id="clContacts"></div>
+        <div><button class="btn btn-sm" id="btnAjContact">Ajouter un interlocuteur</button></div>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn" data-fermer="scrimClient">Annuler</button>
+      <button class="btn btn-arc" id="btnEnregistrerClient">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════ MODALE : LIEN CLIENT ══════════════════════ -->
 <div class="scrim" id="scrimLien" role="dialog" aria-modal="true" aria-label="Lien client">
   <div class="sheet" style="width:min(520px,100%);">
@@ -711,6 +753,6 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="atelier.js?v=20260826-7"></script>
+<script src="atelier.js?v=20260826-8"></script>
 </body>
 </html>

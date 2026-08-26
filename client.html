@@ -74,6 +74,9 @@ td.mnt{text-align:right;white-space:nowrap;font-family:var(--f-data);font-varian
 tr.stotal td{border-bottom:1px solid var(--line);background:var(--paper-2);font-family:var(--f-data);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mid);}
 tr.stotal td.mnt{font-size:14px;letter-spacing:0;color:var(--ink);}
 
+.travaux{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;}
+.travaux-tete{padding:10px 18px;background:var(--paper-2);border-bottom:1px solid var(--line);font-family:var(--f-data);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--arc);}
+.travaux-texte{padding:16px 18px;font-size:15px;font-weight:600;white-space:pre-line;line-height:1.65;}
 .total{margin-top:26px;display:flex;align-items:center;gap:18px;padding:22px 26px;background:var(--arc-soft);border:2px solid var(--arc);border-radius:var(--r-lg);}
 .total-lab{font-family:var(--f-display);font-size:17px;font-weight:800;letter-spacing:-.02em;}
 .total-note{font-size:12px;color:var(--ink-dim);margin-top:2px;}
@@ -194,7 +197,7 @@ tr.stotal td.mnt{font-size:14px;letter-spacing:0;color:var(--ink);}
     function rendre(donnees) {
         const ent = donnees.entreprise || {};
         const d = donnees.devis;
-        const m = d.montants || { realisationHT: 0, fournituresHT: 0, totalHT: 0 };
+        const m = d.montants || { totalHT: 0 };
         const nomEnt = ent.nom || 'SOMEPRE';
         const perso = d.reglement === 'personnalise';
         const noteLignes = String(d.noteClient || '').trim();
@@ -226,8 +229,11 @@ tr.stotal td.mnt{font-size:14px;letter-spacing:0;color:var(--ink);}
             + 'Émis le <b>' + dateFR(d.date) + '</b> · valable <b>30 jours</b></div></div></div>'
 
             + '<div class="cartouche">'
-            + '<div class="cart"><div class="eyebrow">À l\'attention de</div>'
+            + '<div class="cart"><div class="eyebrow">Destinataire</div>'
             + '<div class="cart-nom">' + esc(d.clientNom || '—') + '</div>'
+            + (d.interlocuteur
+                ? '<div class="cart-detail">À l\'attention de <b>' + esc(d.interlocuteur.nom) + '</b>'
+                  + (d.interlocuteur.fonction ? ' — ' + esc(d.interlocuteur.fonction) : '') + '</div>' : '')
             + (d.numCommande ? '<div class="cart-detail">N° de commande ' + esc(d.numCommande) + '</div>' : '')
             + '</div>'
             + '<div class="cart"><div class="eyebrow">Objet</div>'
@@ -235,19 +241,10 @@ tr.stotal td.mnt{font-size:14px;letter-spacing:0;color:var(--ink);}
             + (d.description ? '<div class="cart-detail">' + esc(d.description) + '</div>' : '')
             + '</div></div>'
 
-            + '<table><thead><tr><th>Désignation</th><th class="c">Montant HT</th></tr></thead><tbody>'
-            + '<tr class="section"><td colspan="2">Réalisation</td></tr>'
-            + '<tr class="note"><td colspan="2">'
+            + '<div class="travaux"><div class="travaux-tete">Description des travaux</div>'
+            + '<div class="travaux-texte">'
             + (noteLignes ? esc(noteLignes) : 'Conception et réalisation — affaire ' + esc(d.affaireNom))
-            + '</td></tr>'
-            + '<tr class="stotal"><td>Main-d\'œuvre et usinage</td>'
-            + '<td class="mnt">' + eur(m.realisationHT) + '</td></tr>'
-            + (m.fournituresHT > 0
-                ? '<tr class="section"><td colspan="2">Fournitures &amp; sous-traitance</td></tr>'
-                  + '<tr class="stotal"><td>Fournitures</td>'
-                  + '<td class="mnt">' + eur(m.fournituresHT) + '</td></tr>'
-                : '')
-            + '</tbody></table>'
+            + '</div></div>'
 
             + '<div class="total"><div><div class="total-lab">Total HT</div>'
             + '<div class="total-note">TVA en sus au taux en vigueur</div></div>'
