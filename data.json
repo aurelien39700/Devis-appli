@@ -9490,14 +9490,16 @@
       "name": "Erosion",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 6
+      "order": 6,
+      "coutHoraire": 70
     },
     {
       "id": "1764019427786",
       "name": "FIL",
       "isMachine": false,
       "tauxHoraire": 90,
-      "order": 5
+      "order": 5,
+      "coutHoraire": 70
     },
     {
       "id": "1764055164678",
@@ -9542,7 +9544,8 @@
       "name": "Microperçage",
       "tauxHoraire": 70,
       "isMachine": false,
-      "order": 4
+      "order": 4,
+      "coutHoraire": 70
     },
     {
       "id": "1764061108386",
