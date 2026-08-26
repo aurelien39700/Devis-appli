@@ -10168,7 +10168,7 @@
       "numCommande": "",
       "affaire": "Insert REP Q1 Moule P3",
       "date": "2026-08-26",
-      "coeffMarge": 1.2,
+      "coeffMarge": 1,
       "data": {
         "travail": [
           {
@@ -10414,7 +10414,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T11:45:42.734Z",
-      "updatedAt": "2026-08-26T11:45:58.835Z"
+      "updatedAt": "2026-08-26T11:46:03.430Z"
     }
   ],
   "entreprise": {
