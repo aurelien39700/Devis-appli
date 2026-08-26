@@ -1066,13 +1066,18 @@
                       : (function () {
                           const pointeM = (s.totaux && (s.totaux.reelCout !== undefined
                               ? s.totaux.reelCout : s.totaux.reelMontant)) || 0;
-                          const margeReelle = prix - pointeM - m.achats;
+                          // le face-a-face demande : prix de vente HT
+                          // contre cout des heures pointees, sans les achats
+                          const margeReelle = prix - pointeM;
                           return '<div class="si pointe"><div class="si-lab">Coût des heures pointées</div>'
                               + '<div class="si-val" id="fSynPointe">' + eur(pointeM) + '</div></div>'
                               + '<div class="si"><div class="si-lab">Achats</div><div class="si-val" id="fSynAchats">' + eur(m.achats) + '</div></div>'
                               + '<div class="si prix"><div class="si-lab">Prix de vente HT</div><div class="si-val" id="fSynPrix">' + eur(prix) + '</div></div>'
                               + '<div class="si ' + (margeReelle >= 0 ? 'marge' : 'negatif') + '" id="fSynMargeTile">'
-                              + '<div class="si-lab">Marge réelle</div><div class="si-val" id="fSynMarge">' + eur(margeReelle) + '</div></div>';
+                              + '<div class="si-lab">Marge réelle</div><div class="si-val" id="fSynMarge">' + eur(margeReelle) + '</div>'
+                              + '<div class="si-sous" id="fSynMargePct">'
+                              + (prix > 0 ? Math.round(margeReelle / prix * 100) + ' % du prix de vente' : '')
+                              + '</div></div>';
                       })())
                   + '</div>'
                   + '<div class="syn-coeff"><span>Coefficient de marge</span>'
@@ -1336,8 +1341,11 @@
             // le pointe vient de la synthese chargee
             const pointeM = (etat.syntheseLocale && (etat.syntheseLocale.totaux.reelCout !== undefined
                 ? etat.syntheseLocale.totaux.reelCout : etat.syntheseLocale.totaux.reelMontant)) || 0;
-            const margeReelle = cout2 * coeff2 - pointeM - m2.achats;
+            const prixVente = cout2 * coeff2;
+            const margeReelle = prixVente - pointeM;
             pose('fSynMarge', eur(margeReelle));
+            pose('fSynMargePct', prixVente > 0
+                ? Math.round(margeReelle / prixVente * 100) + ' % du prix de vente' : '');
             const tuile = document.getElementById('fSynMargeTile');
             if (tuile) tuile.className = 'si ' + (margeReelle >= 0 ? 'marge' : 'negatif');
         } else {
