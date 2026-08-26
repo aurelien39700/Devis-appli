@@ -38,6 +38,7 @@
         fournisseursBib: [],  // bibliothèque des fournisseurs (chaînes)
         achatsBib: [],        // bibliothèque des achats (chaînes)
         recherche: '',
+        ongletGestion: 'entreprise',
         editionAffaireId: null,   // la modale affaire modifie au lieu de créer
         vue: 'pointage',
         ficheId: null,
@@ -1313,16 +1314,53 @@
         toast('PDF généré');
     }
 
-    /* ═══════════════ GESTION ═══════════════ */
+    /* ═══════════════ GESTION (en onglets pleine largeur) ═══════════════ */
+
+    const ONGLETS_GESTION = [
+        ['entreprise', 'Entreprise'], ['clients', 'Clients'], ['postes', 'Postes'],
+        ['utilisateurs', 'Utilisateurs'], ['fournisseurs', 'Fournisseurs'], ['achats', 'Achats types']
+    ];
+
     function rendreGestion() {
+        const actif = etat.ongletGestion || 'entreprise';
+        const comptes = {
+            clients: etat.clients.length,
+            postes: etat.postes.length,
+            utilisateurs: etat.users.filter(u => u.name !== 'Admin').length,
+            fournisseurs: etat.fournisseursBib.length,
+            achats: etat.achatsBib.length
+        };
+        const panneaux = {
+            entreprise: panneauEntreprise, clients: panneauClients, postes: panneauPostes,
+            utilisateurs: panneauUtilisateurs, fournisseurs: panneauFournisseurs, achats: panneauAchatsTypes
+        };
+        const brancheurs = {
+            entreprise: brancherEntreprise, clients: brancherClients, postes: brancherPostes,
+            utilisateurs: brancherUtilisateurs, fournisseurs: brancherFournisseurs, achats: brancherAchatsTypes
+        };
+
+        $('#gestionContenu').innerHTML =
+            '<div class="gonglets">' + ONGLETS_GESTION.map(o =>
+                '<button class="gonglet' + (o[0] === actif ? ' is-on' : '') + '" data-gonglet="' + o[0] + '">'
+                + o[1]
+                + (comptes[o[0]] !== undefined ? '<span class="gonglet-n">' + comptes[o[0]] + '</span>' : '')
+                + '</button>').join('') + '</div>'
+            + '<div class="bloc gest-panneau">' + panneaux[actif]() + '</div>';
+
+        $$('#gestionContenu [data-gonglet]').forEach(b => b.addEventListener('click', () => {
+            etat.ongletGestion = b.dataset.gonglet;
+            rendreGestion();
+        }));
+        brancheurs[actif]();
+    }
+
+    /* ── Entreprise ── */
+    function panneauEntreprise() {
         const ent = etat.entreprise;
         const ch = (k, label, valeur) =>
             '<div class="ch"><label>' + label + '</label>'
             + '<input type="text" value="' + attr(valeur || '') + '" data-ent="' + k + '"></div>';
-
-        $('#gestionContenu').innerHTML =
-            /* ── entreprise ── */
-            '<div class="bloc gest-large"><div class="titre"><h2>Entreprise</h2></div>'
+        return '<div class="titre"><h2>Entreprise</h2></div>'
             + '<div class="ent">'
             + '<div class="ent-logo">'
             + '<div class="ent-logo-apercu">' + (ent.logo
@@ -1341,87 +1379,9 @@
             + ch('siret', 'SIRET', ent.siret) + ch('tva', 'N° TVA', ent.tva)
             + '</div></div>'
             + '<div class="ajout" style="border-top:none;justify-content:flex-end;">'
-            + '<button class="btn btn-arc btn-sm" id="btnEnregistrerEntreprise">Enregistrer</button></div>'
-            + '</div>'
-
-            /* ── clients ── */
-            + '<div class="bloc"><div class="titre"><h2>Clients</h2></div>'
-            + etat.clients.map(c => {
-                const n = etat.affaires.filter(a => a.clientId === c.id).length;
-                return '<div class="ligne-g"><span class="n">' + esc(c.name) + '</span>'
-                    + '<span class="m">' + n + ' affaire' + (n > 1 ? 's' : '') + '</span>'
-                    + '<div class="acts">'
-                    + '<button class="btn btn-sm" data-ren-client="' + attr(c.id) + '">✎</button>'
-                    + '<button class="btn btn-sm btn-danger" data-suppr-client="' + attr(c.id) + '">✕</button>'
-                    + '</div></div>';
-            }).join('')
-            + '<div class="ajout"><input type="text" id="ajClient" placeholder="Nouveau client">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjClient">Ajouter</button></div></div>'
-
-            /* ── postes ── */
-            + '<div class="bloc"><div class="titre"><h2>Postes</h2></div>'
-            + etat.postes.map((p, idx) =>
-                '<div class="ligne-g">'
-                + '<div class="ord">'
-                + '<button data-monter="' + attr(p.id) + '"' + (idx === 0 ? ' disabled' : '')
-                + ' aria-label="Monter"><svg viewBox="0 0 24 24"><path d="M6 14l6-6 6 6"/></svg></button>'
-                + '<button data-descendre="' + attr(p.id) + '"' + (idx === etat.postes.length - 1 ? ' disabled' : '')
-                + ' aria-label="Descendre"><svg viewBox="0 0 24 24"><path d="M6 10l6 6 6-6"/></svg></button>'
-                + '</div>'
-                + '<span class="n">' + esc(p.name)
-                + (p.isMachine ? '<span class="mach">MACHINE</span>' : '') + '</span>'
-                + '<label class="check" title="Temps machine"><input type="checkbox" data-machine="' + attr(p.id) + '"'
-                + (p.isMachine ? ' checked' : '') + '><span>Mach.</span></label>'
-                + '<input type="number" min="0" step="1" class="taux-inline" value="'
-                + (p.tauxHoraire || 0) + '" data-taux="' + attr(p.id) + '" title="Taux €/h">'
-                + '<span class="m">€/h</span>'
-                + '<div class="acts">'
-                + '<button class="btn btn-sm" data-ren-poste="' + attr(p.id) + '">✎</button>'
-                + '<button class="btn btn-sm btn-danger" data-suppr-poste="' + attr(p.id) + '">✕</button>'
-                + '</div></div>').join('')
-            + '<div class="ajout"><input type="text" id="ajPoste" placeholder="Nouveau poste">'
-            + '<label class="check"><input type="checkbox" id="ajPosteMachine"><span>Machine</span></label>'
-            + '<button class="btn btn-arc btn-sm" id="btnAjPoste">Ajouter</button></div></div>'
-
-            /* ── utilisateurs ── */
-            + '<div class="bloc"><div class="titre"><h2>Utilisateurs</h2></div>'
-            + etat.users.filter(u => u.name !== 'Admin').map(u => {
-                const n = etat.entries.filter(e => e.enteredBy === u.name).length;
-                return '<div class="ligne-g"><span class="n">' + esc(u.name) + '</span>'
-                    + '<span class="m">' + n + ' saisie' + (n > 1 ? 's' : '') + '</span>'
-                    + '<div class="acts">'
-                    + '<button class="btn btn-sm" data-ren-user="' + attr(u.id) + '">✎</button>'
-                    + '<button class="btn btn-sm" data-code-user="' + attr(u.id) + '">Code</button>'
-                    + '<button class="btn btn-sm btn-danger" data-suppr-user="' + attr(u.id) + '">✕</button>'
-                    + '</div></div>';
-            }).join('')
-            + '<div class="ajout"><input type="text" id="ajUserNom" placeholder="Nom">'
-            + '<input type="password" id="ajUserCode" placeholder="Mot de passe">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjUser">Ajouter</button></div></div>'
-
-            /* ── fournisseurs (proposés sur les achats des devis) ── */
-            + '<div class="bloc"><div class="titre"><h2>Fournisseurs</h2></div>'
-            + (etat.fournisseursBib.length ? etat.fournisseursBib.map((f, i) =>
-                '<div class="ligne-g"><span class="n">' + esc(f) + '</span>'
-                + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-fourn="' + i + '">✕</button></div></div>').join('')
-                : '<p style="color:var(--ink-dim);font-size:13px;">Aucun fournisseur.</p>')
-            + '<div class="ajout"><input type="text" id="ajFourn" placeholder="Nouveau fournisseur">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjFourn">Ajouter</button></div></div>'
-
-            /* ── achats types (lignes semées sur chaque nouveau devis) ── */
-            + '<div class="bloc"><div class="titre"><h2>Achats types</h2></div>'
-            + (etat.achatsBib.length ? etat.achatsBib.map((n, i) =>
-                '<div class="ligne-g"><span class="n">' + esc(n) + '</span>'
-                + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-achatbib="' + i + '">✕</button></div></div>').join('')
-                : '<p style="color:var(--ink-dim);font-size:13px;">Aucun achat type.</p>')
-            + '<div class="ajout"><input type="text" id="ajAchatBib" placeholder="Nouvel achat type">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjAchatBib">Ajouter</button></div></div>';
-
-        brancherGestion();
+            + '<button class="btn btn-arc btn-sm" id="btnEnregistrerEntreprise">Enregistrer</button></div>';
     }
-
-    function brancherGestion() {
-        /* entreprise */
+    function brancherEntreprise() {
         $('#btnLogo').addEventListener('click', () => $('#fichierLogo').click());
         $('#fichierLogo').addEventListener('change', () => {
             const f = $('#fichierLogo').files[0];
@@ -1437,15 +1397,31 @@
         });
         $('#btnEnregistrerEntreprise').addEventListener('click', async () => {
             const corps = { logo: etat.entreprise.logo || '' };
-            $$('#gestionContenu [data-ent]').forEach(i => { corps[i.dataset.ent] = i.value.trim(); });
+            $$('#gestionContenu [data-ent]').forEach(i2 => { corps[i2.dataset.ent] = i2.value.trim(); });
             try {
                 const r = await api('/entreprise', 'POST', corps);
                 etat.entreprise = r.entreprise;
                 toast('Coordonnées enregistrées');
             } catch (err) { toast(err.message, true); }
         });
+    }
 
-        /* clients */
+    /* ── Clients ── */
+    function panneauClients() {
+        return '<div class="titre"><h2>Clients</h2></div>'
+            + etat.clients.map(c => {
+                const n = etat.affaires.filter(a => a.clientId === c.id).length;
+                return '<div class="ligne-g"><span class="n">' + esc(c.name) + '</span>'
+                    + '<span class="m">' + n + ' affaire' + (n > 1 ? 's' : '') + '</span>'
+                    + '<div class="acts">'
+                    + '<button class="btn btn-sm" data-ren-client="' + attr(c.id) + '">Renommer</button>'
+                    + '<button class="btn btn-sm btn-danger" data-suppr-client="' + attr(c.id) + '">Supprimer</button>'
+                    + '</div></div>';
+            }).join('')
+            + '<div class="ajout"><input type="text" id="ajClient" placeholder="Nouveau client">'
+            + '<button class="btn btn-arc btn-sm" id="btnAjClient">Ajouter</button></div>';
+    }
+    function brancherClients() {
         $('#btnAjClient').addEventListener('click', async () => {
             const nom = $('#ajClient').value.trim();
             if (!nom) { $('#ajClient').focus(); return; }
@@ -1471,8 +1447,35 @@
                 await chargerTout(); rendreGestion(); toast('Client supprimé');
             } catch (err) { toast(err.message, true); }
         }));
+    }
 
-        /* postes */
+    /* ── Postes ── */
+    function panneauPostes() {
+        return '<div class="titre"><h2>Postes</h2></div>'
+            + etat.postes.map((p, idx) =>
+                '<div class="ligne-g">'
+                + '<div class="ord">'
+                + '<button data-monter="' + attr(p.id) + '"' + (idx === 0 ? ' disabled' : '')
+                + ' aria-label="Monter"><svg viewBox="0 0 24 24"><path d="M6 14l6-6 6 6"/></svg></button>'
+                + '<button data-descendre="' + attr(p.id) + '"' + (idx === etat.postes.length - 1 ? ' disabled' : '')
+                + ' aria-label="Descendre"><svg viewBox="0 0 24 24"><path d="M6 10l6 6 6-6"/></svg></button>'
+                + '</div>'
+                + '<span class="n">' + esc(p.name)
+                + (p.isMachine ? '<span class="mach">MACHINE</span>' : '') + '</span>'
+                + '<label class="check" title="Temps machine"><input type="checkbox" data-machine="' + attr(p.id) + '"'
+                + (p.isMachine ? ' checked' : '') + '><span>Machine</span></label>'
+                + '<input type="number" min="0" step="1" class="taux-inline" value="'
+                + (p.tauxHoraire || 0) + '" data-taux="' + attr(p.id) + '" title="Taux €/h">'
+                + '<span class="m">€/h</span>'
+                + '<div class="acts">'
+                + '<button class="btn btn-sm" data-ren-poste="' + attr(p.id) + '">Renommer</button>'
+                + '<button class="btn btn-sm btn-danger" data-suppr-poste="' + attr(p.id) + '">Supprimer</button>'
+                + '</div></div>').join('')
+            + '<div class="ajout"><input type="text" id="ajPoste" placeholder="Nouveau poste">'
+            + '<label class="check"><input type="checkbox" id="ajPosteMachine"><span>Machine</span></label>'
+            + '<button class="btn btn-arc btn-sm" id="btnAjPoste">Ajouter</button></div>';
+    }
+    function brancherPostes() {
         $('#btnAjPoste').addEventListener('click', async () => {
             const nom = $('#ajPoste').value.trim();
             if (!nom) { $('#ajPoste').focus(); return; }
@@ -1481,10 +1484,33 @@
                 await chargerTout(); rendreGestion(); toast('Poste ajouté');
             } catch (err) { toast(err.message, true); }
         });
-        $$('#gestionContenu [data-taux]').forEach(i => i.addEventListener('change', async () => {
+        async function deplacerPoste(id, sens) {
+            const i2 = etat.postes.findIndex(p => p.id === id);
+            const j2 = i2 + sens;
+            if (i2 < 0 || j2 < 0 || j2 >= etat.postes.length) return;
+            const copie = etat.postes.slice();
+            const tmp = copie[i2]; copie[i2] = copie[j2]; copie[j2] = tmp;
             try {
-                await api('/postes/' + i.dataset.taux, 'PUT',
-                    { tauxHoraire: parseFloat(i.value) || 0 });
+                await api('/postes/reorder', 'POST',
+                    { postesOrder: copie.map((p, k) => ({ id: p.id, order: k })) });
+                await chargerTout(); rendreGestion(); toast('Ordre des postes mis à jour');
+            } catch (err) { toast(err.message, true); }
+        }
+        $$('#gestionContenu [data-monter]').forEach(b =>
+            b.addEventListener('click', () => deplacerPoste(b.dataset.monter, -1)));
+        $$('#gestionContenu [data-descendre]').forEach(b =>
+            b.addEventListener('click', () => deplacerPoste(b.dataset.descendre, 1)));
+        $$('#gestionContenu [data-machine]').forEach(c => c.addEventListener('change', async () => {
+            try {
+                await api('/postes/' + c.dataset.machine, 'PUT', { isMachine: c.checked });
+                await chargerTout(); rendreGestion();
+                toast(c.checked ? 'Poste marqué machine' : 'Poste marqué main-d\'œuvre');
+            } catch (err) { toast(err.message, true); }
+        }));
+        $$('#gestionContenu [data-taux]').forEach(i2 => i2.addEventListener('change', async () => {
+            try {
+                await api('/postes/' + i2.dataset.taux, 'PUT',
+                    { tauxHoraire: parseFloat(i2.value) || 0 });
                 await chargerTout(); toast('Taux mis à jour');
             } catch (err) { toast(err.message, true); }
         }));
@@ -1505,75 +1531,26 @@
                 await chargerTout(); rendreGestion(); toast('Poste supprimé');
             } catch (err) { toast(err.message, true); }
         }));
+    }
 
-        /* réordonnancement + bascule machine des postes */
-        async function deplacerPoste(id, sens) {
-            const i = etat.postes.findIndex(p => p.id === id);
-            const j = i + sens;
-            if (i < 0 || j < 0 || j >= etat.postes.length) return;
-            const copie = etat.postes.slice();
-            const tmp = copie[i]; copie[i] = copie[j]; copie[j] = tmp;
-            try {
-                await api('/postes/reorder', 'POST',
-                    { postesOrder: copie.map((p, k) => ({ id: p.id, order: k })) });
-                await chargerTout(); rendreGestion(); toast('Ordre des postes mis à jour');
-            } catch (err) { toast(err.message, true); }
-        }
-        $$('#gestionContenu [data-monter]').forEach(b =>
-            b.addEventListener('click', () => deplacerPoste(b.dataset.monter, -1)));
-        $$('#gestionContenu [data-descendre]').forEach(b =>
-            b.addEventListener('click', () => deplacerPoste(b.dataset.descendre, 1)));
-        $$('#gestionContenu [data-machine]').forEach(c => c.addEventListener('change', async () => {
-            try {
-                await api('/postes/' + c.dataset.machine, 'PUT', { isMachine: c.checked });
-                await chargerTout(); rendreGestion();
-                toast(c.checked ? 'Poste marqué machine' : 'Poste marqué main-d\'œuvre');
-            } catch (err) { toast(err.message, true); }
-        }));
-
-        /* fournisseurs */
-        async function sauverFournisseurs() {
-            await api('/fournisseurs', 'POST', { fournisseurs: etat.fournisseursBib });
-        }
-        $('#btnAjFourn').addEventListener('click', async () => {
-            const n = $('#ajFourn').value.trim();
-            if (!n) { $('#ajFourn').focus(); return; }
-            try {
-                etat.fournisseursBib.push(n);
-                await sauverFournisseurs();
-                rendreGestion(); toast('Fournisseur ajouté');
-            } catch (err) { toast(err.message, true); }
-        });
-        $$('#gestionContenu [data-suppr-fourn]').forEach(b => b.addEventListener('click', async () => {
-            try {
-                etat.fournisseursBib.splice(parseInt(b.dataset.supprFourn, 10), 1);
-                await sauverFournisseurs();
-                rendreGestion(); toast('Fournisseur supprimé');
-            } catch (err) { toast(err.message, true); }
-        }));
-
-        /* achats types */
-        async function sauverAchatsBib() {
-            await api('/achats', 'POST', { achats: etat.achatsBib });
-        }
-        $('#btnAjAchatBib').addEventListener('click', async () => {
-            const n = $('#ajAchatBib').value.trim();
-            if (!n) { $('#ajAchatBib').focus(); return; }
-            try {
-                etat.achatsBib.push(n);
-                await sauverAchatsBib();
-                rendreGestion(); toast('Achat type ajouté');
-            } catch (err) { toast(err.message, true); }
-        });
-        $$('#gestionContenu [data-suppr-achatbib]').forEach(b => b.addEventListener('click', async () => {
-            try {
-                etat.achatsBib.splice(parseInt(b.dataset.supprAchatbib, 10), 1);
-                await sauverAchatsBib();
-                rendreGestion(); toast('Achat type supprimé');
-            } catch (err) { toast(err.message, true); }
-        }));
-
-        /* utilisateurs */
+    /* ── Utilisateurs ── */
+    function panneauUtilisateurs() {
+        return '<div class="titre"><h2>Utilisateurs</h2></div>'
+            + etat.users.filter(u => u.name !== 'Admin').map(u => {
+                const n = etat.entries.filter(e => e.enteredBy === u.name).length;
+                return '<div class="ligne-g"><span class="n">' + esc(u.name) + '</span>'
+                    + '<span class="m">' + n + ' saisie' + (n > 1 ? 's' : '') + '</span>'
+                    + '<div class="acts">'
+                    + '<button class="btn btn-sm" data-ren-user="' + attr(u.id) + '">Renommer</button>'
+                    + '<button class="btn btn-sm" data-code-user="' + attr(u.id) + '">Changer le code</button>'
+                    + '<button class="btn btn-sm btn-danger" data-suppr-user="' + attr(u.id) + '">Supprimer</button>'
+                    + '</div></div>';
+            }).join('')
+            + '<div class="ajout"><input type="text" id="ajUserNom" placeholder="Nom">'
+            + '<input type="password" id="ajUserCode" placeholder="Mot de passe">'
+            + '<button class="btn btn-arc btn-sm" id="btnAjUser">Ajouter</button></div>';
+    }
+    function brancherUtilisateurs() {
         $('#btnAjUser').addEventListener('click', async () => {
             const nom = $('#ajUserNom').value.trim();
             const code = $('#ajUserCode').value.trim();
@@ -1607,6 +1584,70 @@
             try {
                 await api('/users/' + u.id, 'DELETE');
                 await chargerTout(); rendreGestion(); toast('Utilisateur supprimé');
+            } catch (err) { toast(err.message, true); }
+        }));
+    }
+
+    /* ── Fournisseurs ── */
+    function panneauFournisseurs() {
+        return '<div class="titre"><h2>Fournisseurs</h2></div>'
+            + (etat.fournisseursBib.length ? etat.fournisseursBib.map((f, i2) =>
+                '<div class="ligne-g"><span class="n">' + esc(f) + '</span>'
+                + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-fourn="' + i2 + '">Supprimer</button></div></div>').join('')
+                : '<p style="color:var(--ink-dim);font-size:13px;">Aucun fournisseur.</p>')
+            + '<div class="ajout"><input type="text" id="ajFourn" placeholder="Nouveau fournisseur">'
+            + '<button class="btn btn-arc btn-sm" id="btnAjFourn">Ajouter</button></div>';
+    }
+    function brancherFournisseurs() {
+        async function sauverFournisseurs() {
+            await api('/fournisseurs', 'POST', { fournisseurs: etat.fournisseursBib });
+        }
+        $('#btnAjFourn').addEventListener('click', async () => {
+            const n = $('#ajFourn').value.trim();
+            if (!n) { $('#ajFourn').focus(); return; }
+            try {
+                etat.fournisseursBib.push(n);
+                await sauverFournisseurs();
+                rendreGestion(); toast('Fournisseur ajouté');
+            } catch (err) { toast(err.message, true); }
+        });
+        $$('#gestionContenu [data-suppr-fourn]').forEach(b => b.addEventListener('click', async () => {
+            try {
+                etat.fournisseursBib.splice(parseInt(b.dataset.supprFourn, 10), 1);
+                await sauverFournisseurs();
+                rendreGestion(); toast('Fournisseur supprimé');
+            } catch (err) { toast(err.message, true); }
+        }));
+    }
+
+    /* ── Achats types ── */
+    function panneauAchatsTypes() {
+        return '<div class="titre"><h2>Achats types</h2></div>'
+            + (etat.achatsBib.length ? etat.achatsBib.map((n, i2) =>
+                '<div class="ligne-g"><span class="n">' + esc(n) + '</span>'
+                + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-achatbib="' + i2 + '">Supprimer</button></div></div>').join('')
+                : '<p style="color:var(--ink-dim);font-size:13px;">Aucun achat type.</p>')
+            + '<div class="ajout"><input type="text" id="ajAchatBib" placeholder="Nouvel achat type">'
+            + '<button class="btn btn-arc btn-sm" id="btnAjAchatBib">Ajouter</button></div>';
+    }
+    function brancherAchatsTypes() {
+        async function sauverAchatsBib() {
+            await api('/achats', 'POST', { achats: etat.achatsBib });
+        }
+        $('#btnAjAchatBib').addEventListener('click', async () => {
+            const n = $('#ajAchatBib').value.trim();
+            if (!n) { $('#ajAchatBib').focus(); return; }
+            try {
+                etat.achatsBib.push(n);
+                await sauverAchatsBib();
+                rendreGestion(); toast('Achat type ajouté');
+            } catch (err) { toast(err.message, true); }
+        });
+        $$('#gestionContenu [data-suppr-achatbib]').forEach(b => b.addEventListener('click', async () => {
+            try {
+                etat.achatsBib.splice(parseInt(b.dataset.supprAchatbib, 10), 1);
+                await sauverAchatsBib();
+                rendreGestion(); toast('Achat type supprimé');
             } catch (err) { toast(err.message, true); }
         }));
     }
