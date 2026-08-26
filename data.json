@@ -9891,7 +9891,7 @@
       "numCommande": "",
       "affaire": "MG6852",
       "date": "2026-08-26",
-      "coeffMarge": 1.2,
+      "coeffMarge": 1.25,
       "data": {
         "travail": [
           {
@@ -10137,7 +10137,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T09:13:43.056Z",
-      "updatedAt": "2026-08-26T09:14:19.872Z"
+      "updatedAt": "2026-08-26T09:41:00.756Z"
     }
   ],
   "entreprise": {
