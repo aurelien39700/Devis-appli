@@ -9572,7 +9572,8 @@
       "name": "Érosion CN",
       "isMachine": true,
       "tauxHoraire": 46,
-      "order": 12
+      "order": 12,
+      "coutHoraire": 30
     },
     {
       "id": "1764157949893",
