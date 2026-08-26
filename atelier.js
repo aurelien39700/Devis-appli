@@ -97,6 +97,13 @@
         if (e.key === 'Escape') $$('.scrim').forEach(s => s.classList.remove('is-on'));
     });
 
+    // Dans un champ numerique, cliquer selectionne la valeur : on tape,
+    // ca remplace - plus de 0 a effacer a la main.
+    document.addEventListener('focusin', e => {
+        const el = e.target;
+        if (el.tagName === 'INPUT' && el.type === 'number') el.select();
+    });
+
     /* ═══════════════ chargement des données ═══════════════ */
     async function chargerTout() {
         const [tout, devisListe, entreprise, fourn, achatsBib] = await Promise.all([
@@ -755,8 +762,8 @@
                 const e = r - b, cc = cls(e);
                 const ech = Math.max(b, r) || 1;
                 const celluleBudget = '<td class="bud">' + (modifiable
-                    ? '<input type="number" min="0" step="0.5" value="' + b
-                      + '" data-bud="' + type + i + '" aria-label="Budget ' + attr(ligne.nom) + '">'
+                    ? '<input type="number" min="0" step="0.5" value="' + (b || '')
+                      + '" placeholder="0" data-bud="' + type + i + '" aria-label="Budget ' + attr(ligne.nom) + '">'
                     : '<span class="fixe">' + h1(b) + '</span>') + '</td>';
                 if (enChiffrage) {
                     // pur chiffrage : budget, taux modifiable, montant
@@ -850,9 +857,9 @@
                         + '<td class="txt"><input type="text" list="dlFournisseurs" value="' + attr(ac.fournisseur || '')
                         + '" placeholder="Fournisseur" data-achat="fournisseur" data-i="' + i + '"></td>'
                         + '<td class="qte"><input type="number" min="0" step="1" value="'
-                        + (parseFloat(ac.quantite) || 0) + '" data-achat="quantite" data-i="' + i + '"></td>'
+                        + (parseFloat(ac.quantite) || '') + '" placeholder="0" data-achat="quantite" data-i="' + i + '"></td>'
                         + '<td class="qte"><input type="number" min="0" step="0.01" value="'
-                        + (parseFloat(ac.prixUnit) || 0) + '" data-achat="prixUnit" data-i="' + i + '"></td>'
+                        + (parseFloat(ac.prixUnit) || '') + '" placeholder="0" data-achat="prixUnit" data-i="' + i + '"></td>'
                         + '<td class="eur" style="color:var(--ink);" data-faeur="' + i + '">' + eur(mt) + '</td>'
                         + '<td style="text-align:right;"><button class="btn btn-sm btn-danger" '
                         + 'data-suppr-achat="' + i + '">✕</button></td></tr>';
