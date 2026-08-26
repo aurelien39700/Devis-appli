@@ -620,6 +620,21 @@ app.put('/api/affaires/:id', async (req, res) => {
     }
 });
 
+// POST - Archiver d'un coup toutes les affaires terminées (une seule
+// écriture : pas un commit git par affaire)
+app.post('/api/affaires/archiver-terminees', async (req, res) => {
+    try {
+        const data = await readData();
+        const cibles = data.affaires.filter(a => a.statut === 'terminee');
+        cibles.forEach(a => { a.statut = 'archivee'; });
+        if (cibles.length) await writeData(data);
+        res.json({ success: true, archivees: cibles.length });
+    } catch (error) {
+        console.error('❌ Erreur archivage groupé:', error);
+        res.status(500).json({ error: 'Erreur d\x27archivage' });
+    }
+});
+
 // PUT - Modifier le statut d'une affaire
 app.put('/api/affaires/:id/statut', async (req, res) => {
     try {

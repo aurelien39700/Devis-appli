@@ -585,7 +585,11 @@
                 (parClient[nom] = parClient[nom] || []).push(a);
             });
             return '<div class="groupe-stade">'
-                + '<div class="eyebrow section-lab">' + s.lab + ' · ' + liste.length + '</div>'
+                + '<div class="section-lab-ligne">'
+                + '<span class="eyebrow section-lab">' + s.lab + ' · ' + liste.length + '</span>'
+                + (s.k === 'terminee'
+                    ? '<button class="btn btn-sm" data-tout-archiver>Tout archiver</button>' : '')
+                + '</div>'
                 + Object.keys(parClient).sort((x, y) => x.localeCompare(y)).map(nomClient => {
                     const arr = parClient[nomClient].slice()
                         .sort((x, y) => (x.name || '').localeCompare(y.name || ''));
@@ -611,6 +615,20 @@
         const ba = $('#btnArchivees');
         if (ba) ba.addEventListener('click', () =>
             $('#grilleArchivees').classList.toggle('hidden'));
+
+        const bt = document.querySelector('#listeAffaires [data-tout-archiver]');
+        if (bt) bt.addEventListener('click', async () => {
+            const n = etat.affaires.filter(a => stadeDe(a) === 'terminee').length;
+            if (!confirm('Archiver les ' + n + ' affaires terminées ? '
+                + 'Elles resteront consultables dans les archivées.')) return;
+            try {
+                const r = await api('/affaires/archiver-terminees', 'POST', {});
+                await chargerTout();
+                rendreListeAffaires();
+                toast(r.archivees + ' affaire' + (r.archivees > 1 ? 's' : '')
+                    + ' archivée' + (r.archivees > 1 ? 's' : ''));
+            } catch (err) { toast(err.message, true); }
+        });
 
         $$('#listeAffaires [data-fiche]').forEach(cbtn => cbtn.addEventListener('click', () => {
             etat.ficheId = cbtn.dataset.fiche;
