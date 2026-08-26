@@ -9517,7 +9517,8 @@
       "name": "Fraisage CN",
       "isMachine": true,
       "tauxHoraire": 46,
-      "order": 13
+      "order": 13,
+      "coutHoraire": 30
     },
     {
       "id": "1764060067448",
@@ -9580,7 +9581,8 @@
       "name": "Érosion FIL CN",
       "isMachine": true,
       "tauxHoraire": 46,
-      "order": 14
+      "order": 14,
+      "coutHoraire": 30
     }
   ],
   "users": [
