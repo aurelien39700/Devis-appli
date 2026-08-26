@@ -289,8 +289,7 @@
                     + '<button class="btn btn-sm btn-danger" data-suppr-saisie="' + attr(e.id) + '">✕</button>'
                     + '</div>' : '')
                 + '</div>';
-        }).join('') : '<p style="color:var(--ink-dim);">Aucune saisie aujourd\'hui. '
-            + 'Appuyez sur + pour commencer.</p>';
+        }).join('') : '<p style="color:var(--ink-dim);">Aucune saisie aujourd\'hui.</p>';
 
         $$('#listeSaisies [data-modif-saisie]').forEach(b => b.addEventListener('click', () => {
             const e = etat.entries.find(x => x.id === b.dataset.modifSaisie);
@@ -605,7 +604,6 @@
         etat.editionAffaireId = affaire ? affaire.id : null;
         $('#titreModalAffaire').textContent = affaire ? 'Modifier l\'affaire' : 'Nouvelle affaire';
         $('#btnCreerAffaire').textContent = affaire ? 'Enregistrer' : 'Créer le brouillon';
-        $('#noteModalAffaire').classList.toggle('hidden', !!affaire);
         $('#naClient').innerHTML = '<option value="">Sélectionner un client</option>'
             + etat.clients.map(c => '<option value="' + attr(c.id) + '">' + esc(c.name) + '</option>').join('');
         $('#naClient').value = affaire ? (affaire.clientId || '') : '';
@@ -856,8 +854,7 @@
                    { label: 'Solde à livraison', pourcent: 70, date: '' }];
             const totalPct = echeances.reduce((x, e2) => x + (parseFloat(e2.pourcent) || 0), 0);
             conditionsHtml = '<div class="note-client">'
-                + '<label>Description sur le devis client '
-                + '<small>le client ne voit que cette note et les montants — jamais le détail des postes</small></label>'
+                + '<label>Description sur le devis client</label>'
                 + '<input type="text" value="' + attr(d.noteClient || '')
                 + '" placeholder="Ex : Conception et réalisation — reprise 4 empreintes" data-devis="noteClient">'
                 + '<div class="conds-devis">'
@@ -913,8 +910,7 @@
             + '</div>'
 
             + (!d
-                ? '<div class="cycle"><span class="eyebrow">Affaire sans devis — le pointage est libre, '
-                  + 'aucun budget à comparer</span>'
+                ? '<div class="cycle"><span class="eyebrow">Affaire sans devis</span>'
                   + '<div class="cycle-act">'
                   + (estAdmin() ? '<button class="btn btn-arc btn-sm" data-creer-devis>Créer son devis</button>' : '')
                   + '<span style="flex-basis:100%;"></span>'
@@ -932,10 +928,10 @@
             + '<div class="bilan">'
             + '<div class="case budget"><div class="case-lab"><i class="sw"></i>Heures budgétées</div>'
             + '<div class="case-val" id="fBudVal">' + h1(bud) + '<small>h</small></div>'
-            + '<div class="case-sous">le devis de cette affaire</div></div>'
+            + '</div>'
             + '<div class="case reel"><div class="case-lab"><i class="sw"></i>Heures pointées</div>'
             + '<div class="case-val">' + h1(reel) + '<small>h</small></div>'
-            + '<div class="case-sous">saisies par l\'atelier</div></div>'
+            + '</div>'
             + '<div class="case ' + cEcart + '" id="fEcartCase"><div class="case-lab"><i class="sw"></i>Écart</div>'
             + '<div class="case-val" id="fEcartVal">' + sgn(ecart, h1) + '<small>h</small></div>'
             + '<div class="case-sous" id="fEcartSous">' + (Math.abs(ecart) < 0.005 ? 'pile sur le budget'
@@ -961,9 +957,7 @@
             + '</tbody></table></div>'
             + (d
                 ? (modifiable
-                    ? '<div class="verrou" style="color:var(--m-bud-ink);">'
-                      + '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/></svg>'
-                      + 'Les heures budgétées se modifient ici et s\'enregistrent sur l\'affaire.</div>'
+                    ? ''
                     : '<div class="verrou"><svg viewBox="0 0 24 24">'
                       + '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>'
                       + 'Devis ' + (stade === 'envoye' ? 'envoyé' : 'verrouillé')
@@ -1328,8 +1322,7 @@
 
         $('#gestionContenu').innerHTML =
             /* ── entreprise ── */
-            '<div class="bloc gest-large"><div class="titre"><h2>Entreprise</h2>'
-            + '<span class="eyebrow" style="margin-left:auto;">Reprises sur les devis envoyés aux clients</span></div>'
+            '<div class="bloc gest-large"><div class="titre"><h2>Entreprise</h2></div>'
             + '<div class="ent">'
             + '<div class="ent-logo">'
             + '<div class="ent-logo-apercu">' + (ent.logo
@@ -1416,8 +1409,7 @@
             + '<button class="btn btn-arc btn-sm" id="btnAjFourn">Ajouter</button></div></div>'
 
             /* ── achats types (lignes semées sur chaque nouveau devis) ── */
-            + '<div class="bloc"><div class="titre"><h2>Achats types</h2>'
-            + '<span class="eyebrow" style="margin-left:auto;">Semés sur chaque nouveau devis</span></div>'
+            + '<div class="bloc"><div class="titre"><h2>Achats types</h2></div>'
             + (etat.achatsBib.length ? etat.achatsBib.map((n, i) =>
                 '<div class="ligne-g"><span class="n">' + esc(n) + '</span>'
                 + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-achatbib="' + i + '">✕</button></div></div>').join('')

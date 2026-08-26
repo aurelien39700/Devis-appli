@@ -559,8 +559,7 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
     <main class="views">
       <section class="view is-on" data-vue="pointage">
         <div class="bloc">
-          <div class="titre"><h2>Reprendre une affaire</h2>
-            <span class="eyebrow" style="margin-left:auto;">Un appui = le formulaire pré-rempli</span></div>
+          <div class="titre"><h2>Reprendre une affaire</h2></div>
           <div id="qaListe"></div>
         </div>
         <div class="bloc">
@@ -569,8 +568,7 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
           <div id="listeSaisies"></div>
         </div>
         <div class="bloc">
-          <div class="titre"><h2 id="titreHistorique">Historique</h2>
-            <span class="eyebrow" style="margin-left:auto;">Affaires en cours · toutes les saisies</span></div>
+          <div class="titre"><h2 id="titreHistorique">Historique</h2></div>
           <div id="listeHistorique"></div>
         </div>
       </section>
@@ -630,9 +628,6 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
           <label for="sNaDesc">Description</label>
           <textarea id="sNaDesc" placeholder="Travaux à réaliser (optionnel)"></textarea>
         </div>
-        <p style="margin:0 0 15px;font-size:12px;color:var(--ink-dim);">
-          L'affaire démarre directement en cours, sans devis — le poste Soudure est affecté.
-        </p>
       </div>
       <div class="champ" id="champPoste">
         <label for="sPoste">Poste</label>
@@ -672,10 +667,6 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
         <label for="naDesc">Description</label>
         <textarea id="naDesc" placeholder="Description des travaux (optionnel)"></textarea>
       </div>
-      <p style="margin:0;font-size:12.5px;color:var(--ink-dim);" id="noteModalAffaire">
-        L'affaire démarre en <b style="color:var(--m-bud-ink);">brouillon de devis</b>,
-        pré-rempli avec vos postes. Chiffrez-la, puis envoyez-la au client.
-      </p>
     </div>
     <div class="sheet-foot">
       <button class="btn" data-fermer="scrimAffaire">Annuler</button>
@@ -694,11 +685,6 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
       </button>
     </div>
     <div class="sheet-body">
-      <p style="margin:0 0 13px;color:var(--ink-mid);font-size:13.5px;">
-        Transmettez ce lien à votre client — par mail ou message. Il consulte le
-        devis et répond en un clic, sans compte. Son acceptation passera
-        automatiquement l'affaire en cours.
-      </p>
       <div class="lien-client" id="lienClientUrl"></div>
     </div>
     <div class="sheet-foot">
@@ -714,6 +700,6 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="atelier.js?v=20260826-3"></script>
+<script src="atelier.js?v=20260826-4"></script>
 </body>
 </html>
