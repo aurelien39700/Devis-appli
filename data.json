@@ -9526,7 +9526,8 @@
       "name": "Ébauche",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 1
+      "order": 1,
+      "coutHoraire": 70
     },
     {
       "id": "1764060074533",
