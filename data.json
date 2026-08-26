@@ -9476,14 +9476,16 @@
       "name": "Fraisage Finition",
       "tauxHoraire": 90,
       "isMachine": false,
-      "order": 8
+      "order": 8,
+      "coutHoraire": 70
     },
     {
       "id": "1764014806191",
       "name": "Ajustage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 9
+      "order": 9,
+      "coutHoraire": 70
     },
     {
       "id": "1764018748947",
@@ -9560,7 +9562,8 @@
       "name": "Electrode",
       "isMachine": false,
       "tauxHoraire": 80,
-      "order": 7
+      "order": 7,
+      "coutHoraire": 70
     },
     {
       "id": "1764076202419",
