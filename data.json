@@ -9534,7 +9534,8 @@
       "name": "Carcasse",
       "tauxHoraire": 80,
       "isMachine": false,
-      "order": 2
+      "order": 2,
+      "coutHoraire": 70
     },
     {
       "id": "1764060086821",
