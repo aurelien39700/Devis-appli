@@ -9498,6 +9498,13 @@
       "clientId": "1787745360469",
       "description": "Reprise soudure",
       "statut": "en_cours"
+    },
+    {
+      "id": "1787745435203",
+      "name": "2875",
+      "clientId": "1764014732621",
+      "description": "Soudure + reprise noyau",
+      "statut": "brouillon"
     }
   ],
   "postes": [
