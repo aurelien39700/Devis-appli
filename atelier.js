@@ -35,6 +35,10 @@
         clients: [], affaires: [], postes: [], users: [], entries: [],
         devis: {},            // par affaireId
         entreprise: {},
+        fournisseursBib: [],  // bibliothèque des fournisseurs (chaînes)
+        achatsBib: [],        // bibliothèque des achats (chaînes)
+        recherche: '',
+        editionAffaireId: null,   // la modale affaire modifie au lieu de créer
         vue: 'pointage',
         ficheId: null,
         filtre: null,         // stade filtré dans le couloir
@@ -94,10 +98,12 @@
 
     /* ═══════════════ chargement des données ═══════════════ */
     async function chargerTout() {
-        const [tout, devisListe, entreprise] = await Promise.all([
+        const [tout, devisListe, entreprise, fourn, achatsBib] = await Promise.all([
             api('/entries?_t=' + Date.now()),
             api('/devis?_t=' + Date.now()).catch(() => ({ devis: [] })),
-            api('/entreprise?_t=' + Date.now()).catch(() => ({ entreprise: {} }))
+            api('/entreprise?_t=' + Date.now()).catch(() => ({ entreprise: {} })),
+            api('/fournisseurs?_t=' + Date.now()).catch(() => ({ fournisseurs: [] })),
+            api('/achats?_t=' + Date.now()).catch(() => ({ achats: [] }))
         ]);
         etat.entries = tout.entries || [];
         etat.clients = tout.clients || [];
@@ -108,6 +114,8 @@
         etat.devis = {};
         (devisListe.devis || []).forEach(d => { etat.devis[d.affaireId] = d; });
         etat.entreprise = entreprise.entreprise || {};
+        etat.fournisseursBib = (fourn.fournisseurs || []).map(f => typeof f === 'string' ? f : (f.nom || ''));
+        etat.achatsBib = (achatsBib.achats || []).map(a => typeof a === 'string' ? a : (a.nom || ''));
         $('#syncEtat').textContent = 'Synchronisé';
         $('#syncEtat').classList.remove('hors');
     }
@@ -211,6 +219,18 @@
         else if (b.dataset.vue === 'gestion') rendreGestion();
     }));
     $('#btnRetour').addEventListener('click', () => { aller('affaires'); rendreListeAffaires(); });
+    $('#rechercheAffaires').addEventListener('input', () => {
+        etat.recherche = $('#rechercheAffaires').value.trim().toLowerCase();
+        rendreListeAffaires();
+    });
+
+    function correspondRecherche(a) {
+        if (!etat.recherche) return true;
+        const c = etat.clients.find(x => x.id === a.clientId);
+        return (a.name || '').toLowerCase().indexOf(etat.recherche) !== -1
+            || (a.description || '').toLowerCase().indexOf(etat.recherche) !== -1
+            || (c && c.name.toLowerCase().indexOf(etat.recherche) !== -1);
+    }
 
     /* ═══════════════ POINTAGE ═══════════════ */
     function rendrePointage() {
@@ -262,6 +282,87 @@
             if (!confirm('Supprimer cette saisie ?')) return;
             try {
                 await api('/entries/' + b.dataset.supprSaisie, 'DELETE');
+                await chargerTout();
+                rendrePointage();
+                toast('Saisie supprimée');
+            } catch (err) { toast(err.message, true); }
+        }));
+
+        rendreHistorique();
+    }
+
+    /* ── historique : toutes les saisies des affaires en cours,
+          groupées par affaire, comme l'interface historique ── */
+    function rendreHistorique() {
+        const conteneur = $('#listeHistorique');
+        if (!conteneur) return;
+        const admin = estAdmin();
+
+        const groupes = {};
+        etat.entries.forEach(e => {
+            const a = etat.affaires.find(x => x.id === e.affaireId);
+            if (!a) return;
+            const st = stadeDe(a);
+            if (st === 'terminee' || st === 'archivee') return;
+            if (!admin && e.enteredBy && e.enteredBy !== etat.moi.name) return;
+            (groupes[e.affaireId] = groupes[e.affaireId] || []).push(e);
+        });
+
+        const cles = Object.keys(groupes);
+        $('#titreHistorique').textContent = admin ? 'Historique' : 'Mon historique';
+        if (!cles.length) {
+            conteneur.innerHTML = '<p style="color:var(--ink-dim);">Aucune saisie sur les affaires en cours.</p>';
+            return;
+        }
+
+        conteneur.innerHTML = cles.map(k => {
+            const a = etat.affaires.find(x => x.id === k);
+            const c = etat.clients.find(x => x.id === a.clientId);
+            const liste = groupes[k].slice().sort((x, y) => String(y.date).localeCompare(String(x.date)));
+            const total = liste.reduce((s, e) => s + (parseFloat(e.hours) || 0), 0);
+
+            const parPoste = {};
+            liste.forEach(e => {
+                const p = etat.postes.find(x => x.id === e.posteId);
+                const nom = p ? p.name : 'Poste inconnu';
+                parPoste[nom] = (parPoste[nom] || 0) + (parseFloat(e.hours) || 0);
+            });
+
+            return '<div class="hist">'
+                + '<div class="hist-tete">'
+                + '<span class="hist-client">' + esc(c ? c.name : '') + '</span>'
+                + '<span class="hist-nom">' + esc(a.name) + '</span>'
+                + '<span class="hist-total">' + h1(total) + ' h</span></div>'
+                + '<div class="chips">' + Object.keys(parPoste).map(n =>
+                    '<span class="chip">' + esc(n) + ' · ' + h1(parPoste[n]) + ' h</span>').join('') + '</div>'
+                + liste.map(e => {
+                    const p = etat.postes.find(x => x.id === e.posteId);
+                    const quand = new Date(e.date).toLocaleDateString('fr-FR',
+                        { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const mienne = admin || e.enteredBy === etat.moi.name;
+                    return '<div class="saisie"><div class="saisie-info">'
+                        + '<div class="saisie-l1" style="font-size:13.5px;">'
+                        + esc(p ? p.name : 'Poste inconnu') + '</div>'
+                        + '<div class="saisie-l2">' + quand
+                        + (admin && e.enteredBy ? ' · ' + esc(e.enteredBy) : '') + '</div></div>'
+                        + '<span class="saisie-h">' + h1(parseFloat(e.hours) || 0) + ' h</span>'
+                        + (mienne ? '<div class="saisie-acts">'
+                            + '<button class="btn btn-sm" data-h-modif="' + attr(e.id) + '">Modifier</button>'
+                            + '<button class="btn btn-sm btn-danger" data-h-suppr="' + attr(e.id) + '">✕</button>'
+                            + '</div>' : '')
+                        + '</div>';
+                }).join('')
+                + '</div>';
+        }).join('');
+
+        $$('#listeHistorique [data-h-modif]').forEach(b => b.addEventListener('click', () => {
+            const e = etat.entries.find(x => x.id === b.dataset.hModif);
+            if (e) ouvrirSaisie({ edition: e });
+        }));
+        $$('#listeHistorique [data-h-suppr]').forEach(b => b.addEventListener('click', async () => {
+            if (!confirm('Supprimer cette saisie ?')) return;
+            try {
+                await api('/entries/' + b.dataset.hSuppr, 'DELETE');
                 await chargerTout();
                 rendrePointage();
                 toast('Saisie supprimée');
@@ -437,14 +538,14 @@
 
         const stades = etat.filtre ? STADES.filter(s => s.k === etat.filtre) : STADES;
         let html = stades.map(s => {
-            const liste = etat.affaires.filter(a => stadeDe(a) === s.k);
+            const liste = etat.affaires.filter(a => stadeDe(a) === s.k && correspondRecherche(a));
             if (!liste.length) return '';
             return '<div class="groupe-stade">'
                 + '<div class="eyebrow section-lab">' + s.lab + ' · ' + liste.length + '</div>'
                 + '<div class="grille">' + liste.map(carteAffaire).join('') + '</div></div>';
         }).join('');
 
-        const archivees = etat.affaires.filter(a => stadeDe(a) === 'archivee');
+        const archivees = etat.affaires.filter(a => stadeDe(a) === 'archivee' && correspondRecherche(a));
         if (!etat.filtre && archivees.length) {
             html += '<div class="repli-archivees">'
                 + '<button class="btn btn-sm" id="btnArchivees">Archivées (' + archivees.length + ')</button>'
@@ -466,13 +567,19 @@
     }
 
     /* ── nouvelle affaire (démarre en brouillon de devis) ── */
-    $('#btnNouvelle').addEventListener('click', () => {
+    function ouvrirModalAffaire(affaire) {
+        etat.editionAffaireId = affaire ? affaire.id : null;
+        $('#titreModalAffaire').textContent = affaire ? 'Modifier l\'affaire' : 'Nouvelle affaire';
+        $('#btnCreerAffaire').textContent = affaire ? 'Enregistrer' : 'Créer le brouillon';
+        $('#noteModalAffaire').classList.toggle('hidden', !!affaire);
         $('#naClient').innerHTML = '<option value="">Sélectionner un client</option>'
             + etat.clients.map(c => '<option value="' + attr(c.id) + '">' + esc(c.name) + '</option>').join('');
-        $('#naNom').value = '';
-        $('#naDesc').value = '';
+        $('#naClient').value = affaire ? (affaire.clientId || '') : '';
+        $('#naNom').value = affaire ? affaire.name : '';
+        $('#naDesc').value = affaire ? (affaire.description || '') : '';
         ouvrir('scrimAffaire');
-    });
+    }
+    $('#btnNouvelle').addEventListener('click', () => ouvrirModalAffaire(null));
 
     function devisVierge(affaire, heuresParPoste) {
         heuresParPoste = heuresParPoste || {};
@@ -492,10 +599,10 @@
                     nom: p.name, taux: p.tauxHoraire || 46,
                     temps: heuresParPoste[p.name] || 0
                 })),
-                achats: [
+                achats: (etat.achatsBib.length ? etat.achatsBib : [
                     'Carcasse', 'Éléments carcasse', 'Matière première', 'Traitement thermique',
                     'Bloc chaud', 'Sous-traitance', 'Transport'
-                ].map(n => ({ nom: n, fournisseur: '', quantite: 1, prixUnit: 0 }))
+                ]).map(n => ({ nom: n, fournisseur: '', quantite: 1, prixUnit: 0 }))
             },
             noteClient: '', delai: '', reglement: 'virement_45j', echeances: []
         };
@@ -507,6 +614,16 @@
         if (!clientId) { toast('Sélectionnez un client', true); return; }
         if (!nom) { toast('Donnez un nom à l\'affaire', true); return; }
         try {
+            if (etat.editionAffaireId) {
+                await api('/affaires/' + etat.editionAffaireId, 'PUT', {
+                    name: nom, clientId: clientId, description: $('#naDesc').value.trim()
+                });
+                fermer('scrimAffaire');
+                await chargerTout();
+                if (etat.vue === 'fiche') await ouvrirFiche(); else rendreListeAffaires();
+                toast('Affaire modifiée');
+                return;
+            }
             const a = await api('/affaires', 'POST', {
                 name: nom, clientId: clientId,
                 description: $('#naDesc').value.trim(), statut: 'brouillon'
@@ -560,7 +677,9 @@
                     + '<button class="btn btn-sm" data-voir-lien>Voir le lien client</button>'
                     + '<button class="btn btn-ok btn-sm" data-cycle="en_cours">Le client a accepté</button>';
             case 'en_cours':
-                return '<button class="btn btn-sm" data-cycle="terminee">Terminer l\'affaire</button>';
+                return (d && d.token
+                        ? '<button class="btn btn-sm" data-voir-lien>Voir le lien client</button>' : '')
+                    + '<button class="btn btn-sm" data-cycle="terminee">Terminer l\'affaire</button>';
             case 'terminee':
                 return '<button class="btn btn-sm" data-cycle="en_cours">Réactiver</button>'
                     + '<button class="btn btn-sm" data-cycle="archivee">Archiver</button>';
@@ -661,7 +780,7 @@
                     return '<tr>'
                         + '<td class="txt"><input type="text" value="' + attr(ac.nom)
                         + '" data-achat="nom" data-i="' + i + '"></td>'
-                        + '<td class="txt"><input type="text" value="' + attr(ac.fournisseur || '')
+                        + '<td class="txt"><input type="text" list="dlFournisseurs" value="' + attr(ac.fournisseur || '')
                         + '" placeholder="Fournisseur" data-achat="fournisseur" data-i="' + i + '"></td>'
                         + '<td class="qte"><input type="number" min="0" step="1" value="'
                         + (parseFloat(ac.quantite) || 0) + '" data-achat="quantite" data-i="' + i + '"></td>'
@@ -675,6 +794,9 @@
                 + (modifiable
                     ? '<div style="margin-top:11px;"><button class="btn btn-sm" data-ajout-achat>'
                       + 'Ajouter une ligne d\'achat</button></div>' : '')
+                + '<datalist id="dlFournisseurs">'
+                + etat.fournisseursBib.map(f => '<option value="' + attr(f) + '"></option>').join('')
+                + '</datalist>'
                 + '</div>';
         }
 
@@ -735,6 +857,12 @@
             + '<span class="fiche-nom">' + esc(a.name) + '</span>'
             + (a.description ? '<span class="fiche-desc">' + esc(a.description) + '</span>' : '')
             + '<span class="etat-sauve" id="etatSauve">À jour</span></div>'
+
+            + '<div class="fiche-actions">'
+            + '<button class="btn btn-sm" data-modifier-affaire>Modifier l\'affaire</button>'
+            + '<button class="btn btn-sm" data-pdf-affaire>PDF récapitulatif</button>'
+            + '<button class="btn btn-sm btn-danger" data-supprimer-affaire>Supprimer</button>'
+            + '</div>'
 
             + (!d
                 ? '<div class="cycle"><span class="eyebrow">Affaire sans devis — le pointage est libre, '
@@ -961,6 +1089,25 @@
         }));
         const voirLien = document.querySelector('#ficheContenu [data-voir-lien]');
         if (voirLien) voirLien.addEventListener('click', montrerLienClient);
+
+        const modifAff = document.querySelector('#ficheContenu [data-modifier-affaire]');
+        if (modifAff) modifAff.addEventListener('click', () => ouvrirModalAffaire(a));
+
+        const pdfAff = document.querySelector('#ficheContenu [data-pdf-affaire]');
+        if (pdfAff) pdfAff.addEventListener('click', () => genererPdfAffaire(a));
+
+        const supprAff = document.querySelector('#ficheContenu [data-supprimer-affaire]');
+        if (supprAff) supprAff.addEventListener('click', async () => {
+            if (!confirm('Supprimer définitivement l\'affaire « ' + a.name
+                + ' », ses saisies et son devis ? Cette action est irréversible.')) return;
+            try {
+                await api('/affaires/' + a.id, 'DELETE');
+                await chargerTout();
+                aller('affaires');
+                rendreListeAffaires();
+                toast('Affaire supprimée');
+            } catch (err) { toast(err.message, true); }
+        });
     }
 
     // Recalcule bilan/synthèse de la fiche depuis le devis local, sans
@@ -994,6 +1141,75 @@
             toast('Lien copié');
         } catch (e) { toast('Copie impossible — sélectionnez le lien à la main', true); }
     });
+
+    /* ═══════════════ PDF récapitulatif d'une affaire ═══════════════ */
+    function genererPdfAffaire(a) {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            toast('Génération PDF indisponible (bibliothèque non chargée)', true);
+            return;
+        }
+        const client = etat.clients.find(x => x.id === a.clientId);
+        const saisies = etat.entries.filter(e => e.affaireId === a.id);
+        if (!saisies.length) { toast('Aucune saisie sur cette affaire', true); return; }
+
+        const parPoste = {};
+        let total = 0;
+        saisies.forEach(e => {
+            const p = etat.postes.find(x => x.id === e.posteId);
+            const nom = p ? p.name : 'Inconnu';
+            parPoste[nom] = (parPoste[nom] || 0) + (parseFloat(e.hours) || 0);
+            total += parseFloat(e.hours) || 0;
+        });
+
+        const doc = new window.jspdf.jsPDF();
+        doc.setFontSize(20);
+        doc.setTextColor(10, 95, 192);
+        doc.text('RÉCAPITULATIF D\'AFFAIRE', 105, 20, { align: 'center' });
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Date : ' + new Date().toLocaleDateString('fr-FR'), 20, 32);
+        doc.text('Client : ' + (client ? client.name : 'Inconnu'), 20, 40);
+        doc.text('Affaire : ' + a.name, 20, 47);
+        if (a.description) {
+            doc.text(doc.splitTextToSize('Description : ' + a.description, 170), 20, 54);
+        }
+
+        let y = a.description ? 68 : 60;
+        doc.setFontSize(14);
+        doc.setTextColor(10, 95, 192);
+        doc.text('HEURES PAR POSTE', 20, y);
+        y += 9;
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        Object.keys(parPoste).forEach(nom => {
+            doc.text(nom + ' : ' + parPoste[nom].toFixed(1) + ' h', 25, y);
+            y += 7;
+        });
+        y += 4;
+        doc.setFontSize(14);
+        doc.setTextColor(10, 95, 192);
+        doc.text('TOTAL : ' + total.toFixed(1) + ' heures', 20, y);
+
+        y += 13;
+        doc.text('DÉTAIL DES SAISIES', 20, y);
+        y += 9;
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        saisies.slice().sort((x, z) => String(x.date).localeCompare(String(z.date)))
+            .forEach((e, i) => {
+                if (y > 272) { doc.addPage(); y = 20; }
+                const p = etat.postes.find(x => x.id === e.posteId);
+                doc.text((i + 1) + '. ' + new Date(e.date).toLocaleDateString('fr-FR')
+                    + ' - ' + (p ? p.name : 'Inconnu') + ' : '
+                    + (parseFloat(e.hours) || 0) + ' h'
+                    + (e.enteredBy ? '   (' + e.enteredBy + ')' : ''), 25, y);
+                y += 6;
+            });
+
+        doc.save('Affaire_' + String(a.name).replace(/[^a-z0-9]/gi, '_') + '_'
+            + new Date().toISOString().split('T')[0] + '.pdf');
+        toast('PDF généré');
+    }
 
     /* ═══════════════ GESTION ═══════════════ */
     function rendreGestion() {
@@ -1043,9 +1259,18 @@
 
             /* ── postes ── */
             + '<div class="bloc"><div class="titre"><h2>Postes</h2></div>'
-            + etat.postes.map(p =>
-                '<div class="ligne-g"><span class="n">' + esc(p.name)
+            + etat.postes.map((p, idx) =>
+                '<div class="ligne-g">'
+                + '<div class="ord">'
+                + '<button data-monter="' + attr(p.id) + '"' + (idx === 0 ? ' disabled' : '')
+                + ' aria-label="Monter"><svg viewBox="0 0 24 24"><path d="M6 14l6-6 6 6"/></svg></button>'
+                + '<button data-descendre="' + attr(p.id) + '"' + (idx === etat.postes.length - 1 ? ' disabled' : '')
+                + ' aria-label="Descendre"><svg viewBox="0 0 24 24"><path d="M6 10l6 6 6-6"/></svg></button>'
+                + '</div>'
+                + '<span class="n">' + esc(p.name)
                 + (p.isMachine ? '<span class="mach">MACHINE</span>' : '') + '</span>'
+                + '<label class="check" title="Temps machine"><input type="checkbox" data-machine="' + attr(p.id) + '"'
+                + (p.isMachine ? ' checked' : '') + '><span>Mach.</span></label>'
                 + '<input type="number" min="0" step="1" class="taux-inline" value="'
                 + (p.tauxHoraire || 0) + '" data-taux="' + attr(p.id) + '" title="Taux €/h">'
                 + '<span class="m">€/h</span>'
@@ -1071,7 +1296,26 @@
             }).join('')
             + '<div class="ajout"><input type="text" id="ajUserNom" placeholder="Nom">'
             + '<input type="password" id="ajUserCode" placeholder="Mot de passe">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjUser">Ajouter</button></div></div>';
+            + '<button class="btn btn-arc btn-sm" id="btnAjUser">Ajouter</button></div></div>'
+
+            /* ── fournisseurs (proposés sur les achats des devis) ── */
+            + '<div class="bloc"><div class="titre"><h2>Fournisseurs</h2></div>'
+            + (etat.fournisseursBib.length ? etat.fournisseursBib.map((f, i) =>
+                '<div class="ligne-g"><span class="n">' + esc(f) + '</span>'
+                + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-fourn="' + i + '">✕</button></div></div>').join('')
+                : '<p style="color:var(--ink-dim);font-size:13px;">Aucun fournisseur.</p>')
+            + '<div class="ajout"><input type="text" id="ajFourn" placeholder="Nouveau fournisseur">'
+            + '<button class="btn btn-arc btn-sm" id="btnAjFourn">Ajouter</button></div></div>'
+
+            /* ── achats types (lignes semées sur chaque nouveau devis) ── */
+            + '<div class="bloc"><div class="titre"><h2>Achats types</h2>'
+            + '<span class="eyebrow" style="margin-left:auto;">Semés sur chaque nouveau devis</span></div>'
+            + (etat.achatsBib.length ? etat.achatsBib.map((n, i) =>
+                '<div class="ligne-g"><span class="n">' + esc(n) + '</span>'
+                + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-achatbib="' + i + '">✕</button></div></div>').join('')
+                : '<p style="color:var(--ink-dim);font-size:13px;">Aucun achat type.</p>')
+            + '<div class="ajout"><input type="text" id="ajAchatBib" placeholder="Nouvel achat type">'
+            + '<button class="btn btn-arc btn-sm" id="btnAjAchatBib">Ajouter</button></div></div>';
 
         brancherGestion();
     }
@@ -1159,6 +1403,73 @@
             try {
                 await api('/postes/' + p.id, 'DELETE');
                 await chargerTout(); rendreGestion(); toast('Poste supprimé');
+            } catch (err) { toast(err.message, true); }
+        }));
+
+        /* réordonnancement + bascule machine des postes */
+        async function deplacerPoste(id, sens) {
+            const i = etat.postes.findIndex(p => p.id === id);
+            const j = i + sens;
+            if (i < 0 || j < 0 || j >= etat.postes.length) return;
+            const copie = etat.postes.slice();
+            const tmp = copie[i]; copie[i] = copie[j]; copie[j] = tmp;
+            try {
+                await api('/postes/reorder', 'POST',
+                    { postesOrder: copie.map((p, k) => ({ id: p.id, order: k })) });
+                await chargerTout(); rendreGestion(); toast('Ordre des postes mis à jour');
+            } catch (err) { toast(err.message, true); }
+        }
+        $$('#gestionContenu [data-monter]').forEach(b =>
+            b.addEventListener('click', () => deplacerPoste(b.dataset.monter, -1)));
+        $$('#gestionContenu [data-descendre]').forEach(b =>
+            b.addEventListener('click', () => deplacerPoste(b.dataset.descendre, 1)));
+        $$('#gestionContenu [data-machine]').forEach(c => c.addEventListener('change', async () => {
+            try {
+                await api('/postes/' + c.dataset.machine, 'PUT', { isMachine: c.checked });
+                await chargerTout(); rendreGestion();
+                toast(c.checked ? 'Poste marqué machine' : 'Poste marqué main-d\'œuvre');
+            } catch (err) { toast(err.message, true); }
+        }));
+
+        /* fournisseurs */
+        async function sauverFournisseurs() {
+            await api('/fournisseurs', 'POST', { fournisseurs: etat.fournisseursBib });
+        }
+        $('#btnAjFourn').addEventListener('click', async () => {
+            const n = $('#ajFourn').value.trim();
+            if (!n) { $('#ajFourn').focus(); return; }
+            try {
+                etat.fournisseursBib.push(n);
+                await sauverFournisseurs();
+                rendreGestion(); toast('Fournisseur ajouté');
+            } catch (err) { toast(err.message, true); }
+        });
+        $$('#gestionContenu [data-suppr-fourn]').forEach(b => b.addEventListener('click', async () => {
+            try {
+                etat.fournisseursBib.splice(parseInt(b.dataset.supprFourn, 10), 1);
+                await sauverFournisseurs();
+                rendreGestion(); toast('Fournisseur supprimé');
+            } catch (err) { toast(err.message, true); }
+        }));
+
+        /* achats types */
+        async function sauverAchatsBib() {
+            await api('/achats', 'POST', { achats: etat.achatsBib });
+        }
+        $('#btnAjAchatBib').addEventListener('click', async () => {
+            const n = $('#ajAchatBib').value.trim();
+            if (!n) { $('#ajAchatBib').focus(); return; }
+            try {
+                etat.achatsBib.push(n);
+                await sauverAchatsBib();
+                rendreGestion(); toast('Achat type ajouté');
+            } catch (err) { toast(err.message, true); }
+        });
+        $$('#gestionContenu [data-suppr-achatbib]').forEach(b => b.addEventListener('click', async () => {
+            try {
+                etat.achatsBib.splice(parseInt(b.dataset.supprAchatbib, 10), 1);
+                await sauverAchatsBib();
+                rendreGestion(); toast('Achat type supprimé');
             } catch (err) { toast(err.message, true); }
         }));
 

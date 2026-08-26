@@ -383,6 +383,34 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 .sheet-foot .btn-arc,.sheet-foot .btn-ok{flex:2;}
 .lien-client{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r-md);background:var(--arc-soft);border:1px solid var(--arc);font-family:var(--f-data);font-size:12.5px;color:var(--arc);word-break:break-all;}
 
+/* recherche */
+.recherche{position:relative;margin-bottom:14px;max-width:420px;}
+.recherche svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--ink-dim);fill:none;stroke-width:1.8;}
+.recherche input{width:100%;padding:11px 13px 11px 37px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:14px;transition:border-color .18s;}
+.recherche input:focus{border-color:var(--arc);outline:none;}
+.recherche input::placeholder{color:var(--ink-dim);}
+
+/* historique groupé par affaire */
+.hist{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;margin-bottom:11px;}
+.hist:last-child{margin-bottom:0;}
+.hist-tete{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;margin-bottom:8px;}
+.hist-client{font-family:var(--f-data);font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-dim);}
+.hist-nom{font-family:var(--f-display);font-size:18px;font-weight:800;letter-spacing:-.03em;}
+.hist-total{margin-left:auto;font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:14px;font-weight:700;background:var(--arc);color:var(--on-arc);border-radius:20px;padding:3px 12px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.chip{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--arc-soft);color:var(--arc);border:1px solid var(--arc);}
+.hist .saisie{background:var(--panel);}
+
+/* actions de la fiche */
+.fiche-actions{display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px;}
+
+/* réordonnancement des postes */
+.ord{display:flex;flex-direction:column;gap:3px;flex:none;}
+.ord button{width:24px;height:17px;display:grid;place-items:center;border:1px solid var(--line);border-radius:3px;color:var(--ink-dim);background:var(--panel);transition:color .16s,border-color .16s;}
+.ord button svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.ord button:hover:not(:disabled){color:var(--arc);border-color:var(--arc);}
+.ord button:disabled{opacity:.3;cursor:not-allowed;}
+
 /* toast */
 .toast{position:fixed;right:22px;bottom:22px;z-index:80;display:flex;align-items:center;gap:10px;padding:13px 17px;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--ok);color:var(--ink);font-size:13.5px;font-weight:500;box-shadow:var(--shadow);transform:translateY(90px);opacity:0;transition:transform .34s cubic-bezier(.24,1.2,.4,1),opacity .28s;}
 .toast.is-on{transform:none;opacity:1;}
@@ -528,9 +556,18 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
             <span class="tot" id="totJour">0 h</span></div>
           <div id="listeSaisies"></div>
         </div>
+        <div class="bloc">
+          <div class="titre"><h2 id="titreHistorique">Historique</h2>
+            <span class="eyebrow" style="margin-left:auto;">Affaires en cours · toutes les saisies</span></div>
+          <div id="listeHistorique"></div>
+        </div>
       </section>
 
       <section class="view" data-vue="affaires">
+        <div class="recherche">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="text" id="rechercheAffaires" placeholder="Rechercher une affaire, un client, une description">
+        </div>
         <div class="couloir" id="couloir"></div>
         <div id="listeAffaires"></div>
       </section>
@@ -605,7 +642,7 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 <div class="scrim" id="scrimAffaire" role="dialog" aria-modal="true" aria-label="Nouvelle affaire">
   <div class="sheet">
     <div class="sheet-head">
-      <h2>Nouvelle affaire</h2>
+      <h2 id="titreModalAffaire">Nouvelle affaire</h2>
       <button class="icon-btn" data-fermer="scrimAffaire" aria-label="Fermer">
         <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
@@ -623,7 +660,7 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
         <label for="naDesc">Description</label>
         <textarea id="naDesc" placeholder="Description des travaux (optionnel)"></textarea>
       </div>
-      <p style="margin:0;font-size:12.5px;color:var(--ink-dim);">
+      <p style="margin:0;font-size:12.5px;color:var(--ink-dim);" id="noteModalAffaire">
         L'affaire démarre en <b style="color:var(--m-bud-ink);">brouillon de devis</b>,
         pré-rempli avec vos postes. Chiffrez-la, puis envoyez-la au client.
       </p>
@@ -664,6 +701,7 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
   <span id="toastTexte"></span>
 </div>
 
-<script src="atelier.js?v=20260825-1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="atelier.js?v=20260826-1"></script>
 </body>
 </html>
