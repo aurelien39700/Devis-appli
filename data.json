@@ -9508,7 +9508,8 @@
       "name": "Montage / Demontage",
       "tauxHoraire": 75,
       "isMachine": false,
-      "order": 10
+      "order": 10,
+      "coutHoraire": 75
     },
     {
       "id": "1764055523549",
