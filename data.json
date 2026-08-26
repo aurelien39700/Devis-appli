@@ -10012,7 +10012,7 @@
             "nom": "Soudure",
             "taux": 80,
             "semaines": [
-              0,
+              50,
               0,
               0,
               0,
@@ -10096,7 +10096,7 @@
       "reglement": "virement_45j",
       "echeances": [],
       "createdAt": "2026-08-26T06:56:45.379Z",
-      "updatedAt": "2026-08-26T06:56:45.379Z"
+      "updatedAt": "2026-08-26T07:00:08.408Z"
     },
     {
       "affaireId": "1787727406559",
