@@ -11509,7 +11509,7 @@
             "nom": "Éléments carcasse",
             "fournisseur": "",
             "quantite": 2,
-            "prixUnit": 0
+            "prixUnit": 17
           },
           {
             "nom": "Matière première",
@@ -11555,7 +11555,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T12:36:07.338Z",
-      "updatedAt": "2026-08-27T12:38:10.828Z"
+      "updatedAt": "2026-08-27T12:38:12.373Z"
     }
   ],
   "entreprise": {
