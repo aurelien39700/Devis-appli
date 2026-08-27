@@ -9662,7 +9662,7 @@
       "name": "TEST",
       "clientId": "1764014447938",
       "description": "TEST",
-      "statut": "envoye"
+      "statut": "en_cours"
     }
   ],
   "postes": [
@@ -12373,7 +12373,12 @@
       "interlocuteurId": "",
       "createdAt": "2026-08-27T14:58:50.765Z",
       "updatedAt": "2026-08-27T15:00:05.291Z",
-      "token": "c00071fb0a72c155"
+      "token": "c00071fb0a72c155",
+      "reponseClient": {
+        "action": "accepte",
+        "date": "2026-08-27T15:01:25.976Z",
+        "motif": ""
+      }
     }
   ],
   "entreprise": {
