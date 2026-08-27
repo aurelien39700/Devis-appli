@@ -12165,7 +12165,7 @@
             "nom": "Rectification",
             "taux": 80,
             "semaines": [
-              0,
+              10,
               0,
               0,
               0,
@@ -12362,7 +12362,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T13:41:40.264Z",
-      "updatedAt": "2026-08-27T13:41:46.209Z"
+      "updatedAt": "2026-08-27T13:41:47.724Z"
     }
   ],
   "entreprise": {
