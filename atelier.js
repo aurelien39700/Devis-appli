@@ -548,6 +548,11 @@
                     : (d.reponseClient && d.reponseClient.action === 'refuse'
                         ? 'refusé par le client' : 'en attente de réponse client'))
                 + '</div>';
+        } else if (bud === 0) {
+            // devis present mais pas encore chiffre : une barre 100 % rouge
+            // sur la moindre heure pointee serait un faux signal
+            bas = '<div class="carte-chiffres"><span>pointé <b>' + h1(reel) + ' h</b></span>'
+                + '<span class="e neutre">budget à chiffrer</span></div>';
         } else {
             const e = reel - bud, cc = cls(e);
             const ech = Math.max(bud, reel) || 1;
@@ -1119,6 +1124,7 @@
 
     /* ── enregistrement du devis de la fiche ── */
     let minuteurDevis = null;
+    let devisEnAttente = false; // une modification locale attend son PUT
     function etatSauve(texte, classe) {
         const el = $('#etatSauve');
         if (!el) return;
@@ -1126,6 +1132,7 @@
         el.className = 'etat-sauve' + (classe ? ' ' + classe : '');
     }
     function programmerEnregistrement() {
+        devisEnAttente = true;
         etatSauve('Modifié...', 'encours');
         clearTimeout(minuteurDevis);
         minuteurDevis = setTimeout(enregistrerDevis, 800);
@@ -1144,6 +1151,7 @@
             });
             etat.devisLocal = sauve;
             etat.devis[etat.ficheId] = sauve;
+            devisEnAttente = false;
             const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             etatSauve('Enregistré à ' + heure);
         } catch (err) {
@@ -1151,6 +1159,58 @@
             toast(err.message, true);
         }
     }
+
+    // Si l onglet se ferme ou passe en arriere-plan avant la fin du delai
+    // d enregistrement (800 ms), le PUT partirait dans le vide : on l envoie
+    // immediatement en keepalive pour ne rien perdre.
+    window.addEventListener('pagehide', () => {
+        if (!devisEnAttente || !etat.devisLocal || !etat.ficheId) return;
+        clearTimeout(minuteurDevis);
+        const d = etat.devisLocal;
+        try {
+            fetch(API + '/devis/' + etat.ficheId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client: d.client, numCommande: d.numCommande, affaire: d.affaire,
+                    date: d.date, coeffMarge: d.coeffMarge, data: d.data,
+                    noteClient: d.noteClient, delai: d.delai,
+                    reglement: d.reglement, echeances: d.echeances,
+                    interlocuteurId: d.interlocuteurId || ''
+                }),
+                keepalive: true
+            });
+        } catch (e) { /* le prochain chargement retombera sur le serveur */ }
+    });
+
+    // La synchronisation periodique saute volontairement la fiche : au retour
+    // sur l onglet (ex. apres l editeur detaille), on recharge donc le devis
+    // et la synthese du serveur — sinon la fiche re-enregistrerait sa copie
+    // perimee et ecraserait les achats saisis dans l editeur.
+    async function rafraichirFicheDepuisServeur() {
+        try {
+            const [synthese, devis] = await Promise.all([
+                api('/affaires/' + etat.ficheId + '/synthese?_t=' + Date.now()),
+                api('/devis/' + etat.ficheId + '?_t=' + Date.now()).catch(err => {
+                    if (err.status === 404) return null;
+                    throw err;
+                })
+            ]);
+            etat.syntheseLocale = synthese;
+            etat.devisLocal = devis;
+            if (devis) etat.devis[etat.ficheId] = devis;
+            rendreFiche();
+        } catch (e) { /* on garde l affichage actuel */ }
+    }
+    window.addEventListener('focus', () => {
+        if (!etat.moi || etat.vue !== 'fiche' || !etat.ficheId) return;
+        if (devisEnAttente) return; // la saisie locale prime
+        if (document.querySelector('.scrim.is-on')) return;
+        const actif = document.activeElement;
+        if (actif && (actif.tagName === 'INPUT' || actif.tagName === 'SELECT'
+            || actif.tagName === 'TEXTAREA')) return;
+        rafraichirFicheDepuisServeur();
+    });
 
     function brancherFiche(a, d, modifiable) {
         // budget par poste
@@ -2057,7 +2117,6 @@
 
         const admin = estAdmin();
         $$('[data-admin]').forEach(el => el.classList.toggle('hidden', !admin));
-        $('#lienAncienne').classList.toggle('hidden', !admin);
         $('#avatar').textContent = admin ? 'AD'
             : etat.moi.name.slice(0, 2).toUpperCase();
         $('#opNom').textContent = etat.moi.name;

@@ -57,6 +57,7 @@
                 body: JSON.stringify(payload())
             });
             if (!r.ok) throw new Error('HTTP ' + r.status);
+            enAttente = false;
             etat('Enregistré', 'ok');
             rafraichirComparaison();
             return true;
@@ -68,16 +69,34 @@
     }
 
     let minuteur = null;
+    let enAttente = false; // une modification attend son envoi au serveur
     // Point de passage unique : les 12 appels de devis-app.js et les
     // écouteurs de champs passent tous par ici.
     window.sauvegarderAuto = function () {
         try {
             localStorage.setItem('devis_affaire_' + AFFAIRE_ID, JSON.stringify(payload()));
         } catch (e) { /* stockage indisponible */ }
+        enAttente = true;
         etat('Modifié...', 'encours');
         clearTimeout(minuteur);
         minuteur = setTimeout(envoyer, 900);
     };
+
+    // Fermer l onglet dans les 900 ms suivant la derniere saisie perdait
+    // cette saisie (le PUT differe ne partait jamais) : on l envoie
+    // immediatement en keepalive.
+    window.addEventListener('pagehide', function () {
+        if (!enAttente) return;
+        clearTimeout(minuteur);
+        try {
+            fetch(API + '/devis/' + AFFAIRE_ID, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload()),
+                keepalive: true
+            });
+        } catch (e) { /* la copie locale reste */ }
+    });
 
     window.sauvegarder = async function () {
         clearTimeout(minuteur);
@@ -124,6 +143,33 @@
             return false;
         }
         return false; // 404 : aucun devis encore
+    }
+
+    // Premier devis d'une affaire : le chargement d'origine a rempli
+    // `data` avec le dernier devis du localStorage global (devis_somepre),
+    // qui appartient à une AUTRE affaire — ses heures et surtout ses achats
+    // n'ont rien à faire ici. On repart d'une page blanche, achats compris,
+    // reconstruits depuis la bibliothèque du serveur.
+    function repartirDeZero() {
+        (data.travail || []).forEach(function (p) { p.semaines = [0, 0, 0, 0, 0, 0, 0, 0]; });
+        (data.machine || []).forEach(function (m) { m.temps = 0; });
+        try {
+            data.achats = achatsItems.map(function (a) {
+                return {
+                    nom: typeof a === 'string' ? a : ((a && a.nom) || ''),
+                    fournisseur: '', quantite: 1, prixUnit: 0
+                };
+            });
+        } catch (e) {
+            (data.achats || []).forEach(function (ac) {
+                ac.fournisseur = ''; ac.quantite = 1; ac.prixUnit = 0;
+            });
+        }
+        $('#client').value = '';
+        $('#numCommande').value = '';
+        $('#affaire').value = '';
+        $('#date').value = new Date().toISOString().split('T')[0];
+        $('#coeffMarge').value = 1.20;
     }
 
     // Premier devis d'une affaire : on part des heures déjà pointées,
@@ -236,6 +282,23 @@
             + '</tr></tbody></table></div>';
     }
 
+    /* --------------------------------------------------- retour sur l'onglet */
+
+    window.addEventListener('focus', async function () {
+        if (enAttente) return; // la saisie locale prime
+        const actif = document.activeElement;
+        if (actif && (actif.tagName === 'INPUT' || actif.tagName === 'SELECT'
+            || actif.tagName === 'TEXTAREA')) return;
+        const ok = await chargerDevis();
+        if (ok) {
+            renderTravail();
+            renderMachine();
+            renderAchats();
+            calculer();
+            rafraichirComparaison();
+        }
+    });
+
     /* ------------------------------------------------------------ démarrage */
 
     const onloadOriginal = window.onload;
@@ -264,7 +327,10 @@
 
         // 3. le devis de cette affaire, ou une amorce sur les heures pointées
         const existe = await chargerDevis();
-        if (!existe && synthese) amorcerDepuisReel(synthese);
+        if (!existe) {
+            repartirDeZero();
+            if (synthese) amorcerDepuisReel(synthese);
+        }
 
         renderTravail();
         renderMachine();
