@@ -12133,7 +12133,7 @@
             "nom": "Étude",
             "taux": 90,
             "semaines": [
-              80,
+              10,
               0,
               0,
               0,
@@ -12372,7 +12372,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T14:58:50.765Z",
-      "updatedAt": "2026-08-27T14:58:59.641Z"
+      "updatedAt": "2026-08-27T14:59:01.935Z"
     }
   ],
   "entreprise": {
