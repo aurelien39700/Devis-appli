@@ -11138,7 +11138,7 @@
             "nom": "Montage / Demontage",
             "taux": 75,
             "semaines": [
-              0,
+              1.5,
               0,
               0,
               0,
@@ -11237,7 +11237,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T09:47:16.853Z",
-      "updatedAt": "2026-08-27T09:47:28.839Z"
+      "updatedAt": "2026-08-27T09:47:33.780Z"
     }
   ],
   "entreprise": {
