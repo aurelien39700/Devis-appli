@@ -12133,7 +12133,7 @@
             "nom": "Étude",
             "taux": 90,
             "semaines": [
-              10,
+              80,
               0,
               0,
               0,
@@ -12161,7 +12161,7 @@
             "nom": "Carcasse",
             "taux": 80,
             "semaines": [
-              0,
+              5,
               0,
               0,
               0,
@@ -12259,7 +12259,7 @@
             "nom": "Ajustage",
             "taux": 75,
             "semaines": [
-              0,
+              10,
               0,
               0,
               0,
@@ -12372,7 +12372,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T14:58:50.765Z",
-      "updatedAt": "2026-08-27T14:59:01.935Z"
+      "updatedAt": "2026-08-27T14:59:04.983Z"
     }
   ],
   "entreprise": {
