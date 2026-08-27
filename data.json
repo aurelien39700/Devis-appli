@@ -10737,7 +10737,7 @@
         ],
         "achats": [
           {
-            "nom": "Carcasse",
+            "nom": "",
             "fournisseur": "",
             "quantite": 1,
             "prixUnit": 0
@@ -10792,7 +10792,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T11:56:35.305Z",
-      "updatedAt": "2026-08-27T12:38:00.924Z"
+      "updatedAt": "2026-08-27T12:40:24.790Z"
     },
     {
       "affaireId": "1787745435203",
