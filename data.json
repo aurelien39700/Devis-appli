@@ -12366,13 +12366,13 @@
           }
         ]
       },
-      "noteClient": "",
+      "noteClient": "TEST",
       "delai": "",
       "reglement": "virement_45j",
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T14:58:50.765Z",
-      "updatedAt": "2026-08-27T14:59:04.983Z"
+      "updatedAt": "2026-08-27T14:59:12.791Z"
     }
   ],
   "entreprise": {
