@@ -9662,7 +9662,7 @@
       "name": "TEST",
       "clientId": "1764014447938",
       "description": "TEST",
-      "statut": "brouillon"
+      "statut": "envoye"
     }
   ],
   "postes": [
@@ -12372,7 +12372,8 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T14:58:50.765Z",
-      "updatedAt": "2026-08-27T15:00:05.291Z"
+      "updatedAt": "2026-08-27T15:00:05.291Z",
+      "token": "c00071fb0a72c155"
     }
   ],
   "entreprise": {
