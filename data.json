@@ -11802,7 +11802,7 @@
             "nom": "Sous-traitance",
             "fournisseur": "USIPRO",
             "quantite": 1,
-            "prixUnit": 0
+            "prixUnit": 8580
           },
           {
             "nom": "Transport",
@@ -11824,7 +11824,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T12:48:58.835Z",
-      "updatedAt": "2026-08-27T12:51:19.841Z"
+      "updatedAt": "2026-08-27T12:51:51.406Z"
     }
   ],
   "entreprise": {
