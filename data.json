@@ -11697,7 +11697,7 @@
             "nom": "Fraisage Finition",
             "taux": 90,
             "semaines": [
-              0,
+              6,
               0,
               0,
               0,
@@ -11824,7 +11824,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T12:48:58.835Z",
-      "updatedAt": "2026-08-27T12:51:51.406Z"
+      "updatedAt": "2026-08-27T12:52:16.407Z"
     }
   ],
   "entreprise": {
