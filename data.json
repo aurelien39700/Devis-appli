@@ -9616,6 +9616,13 @@
       "clientId": "1764015790842",
       "description": "Modif Event Broche Centrale",
       "statut": "en_cours"
+    },
+    {
+      "id": "1787834935884",
+      "name": "TG12",
+      "clientId": "1764014760229",
+      "description": "Noyau empreinte nouvelle version",
+      "statut": "brouillon"
     }
   ],
   "postes": [
