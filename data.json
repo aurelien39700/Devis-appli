@@ -10783,6 +10783,12 @@
             "fournisseur": "",
             "quantite": 1,
             "prixUnit": 0
+          },
+          {
+            "nom": "",
+            "fournisseur": "",
+            "quantite": 1,
+            "prixUnit": 0
           }
         ]
       },
@@ -10792,7 +10798,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T11:56:35.305Z",
-      "updatedAt": "2026-08-27T12:40:28.410Z"
+      "updatedAt": "2026-08-27T12:40:35.594Z"
     },
     {
       "affaireId": "1787745435203",
