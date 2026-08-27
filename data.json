@@ -9662,7 +9662,8 @@
       "name": "TEST",
       "clientId": "1764014447938",
       "description": "TEST",
-      "statut": "en_cours"
+      "statut": "en_cours",
+      "venteTemps": true
     }
   ],
   "postes": [
