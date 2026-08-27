@@ -9623,6 +9623,13 @@
       "clientId": "1764014760229",
       "description": "Noyau empreinte nouvelle version",
       "statut": "en_cours"
+    },
+    {
+      "id": "1787835333391",
+      "name": "P2 Empreinte à refaire",
+      "clientId": "1764015790842",
+      "description": "",
+      "statut": "brouillon"
     }
   ],
   "postes": [
