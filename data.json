@@ -9663,7 +9663,7 @@
       "clientId": "1764014447938",
       "description": "TEST",
       "statut": "en_cours",
-      "venteTemps": true
+      "venteTemps": false
     }
   ],
   "postes": [
