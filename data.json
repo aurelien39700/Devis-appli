@@ -11507,7 +11507,7 @@
           },
           {
             "nom": "Éléments carcasse",
-            "fournisseur": "Ejecteur E1710-500",
+            "fournisseur": "MEUSBURGER",
             "quantite": 2,
             "prixUnit": 17
           },
@@ -11555,7 +11555,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T12:36:07.338Z",
-      "updatedAt": "2026-08-27T12:38:26.003Z"
+      "updatedAt": "2026-08-27T12:38:41.144Z"
     }
   ],
   "entreprise": {
