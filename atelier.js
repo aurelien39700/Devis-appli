@@ -137,6 +137,17 @@
         return etat.entries.filter(e => e.affaireId === id)
             .reduce((s, e) => s + (parseFloat(e.hours) || 0), 0);
     }
+    // Prix de vente HT au temps passé : heures pointées valorisées au taux
+    // horaire de leur poste, coefficient de régie compris.
+    function montantRegieAffaire(a) {
+        const coeffR = parseFloat(a.coeffRegie) || 1.2;
+        let mnt = 0;
+        etat.entries.filter(e => e.affaireId === a.id).forEach(e => {
+            const p = etat.postes.find(x => x.id === e.posteId);
+            mnt += (parseFloat(e.hours) || 0) * (p ? (parseFloat(p.tauxHoraire) || 0) : 0);
+        });
+        return mnt * coeffR;
+    }
     function budgetDevis(d) {
         if (!d || !d.data) return 0;
         const t = (d.data.travail || []).reduce((s, p) =>
@@ -537,7 +548,7 @@
         let bas;
         if (!d) {
             bas = '<div class="carte-chiffres"><span>pointé <b>' + h1(reel) + ' h</b></span>'
-                + '<span class="e neutre">sans devis</span></div>';
+                + '<span class="e neutre">' + eur(montantRegieAffaire(a)) + ' au temps passé</span></div>';
         } else if (stade === 'brouillon' || stade === 'envoye') {
             const m = montantsDevis(d);
             const prix = (m.heures + m.achats) * (parseFloat(d.coeffMarge) || 1.2);
@@ -548,11 +559,11 @@
                     : (d.reponseClient && d.reponseClient.action === 'refuse'
                         ? 'refusé par le client' : 'en attente de réponse client'))
                 + '</div>';
-        } else if (bud === 0) {
-            // devis present mais pas encore chiffre : une barre 100 % rouge
-            // sur la moindre heure pointee serait un faux signal
+        } else if (bud === 0 && montantsDevis(d).achats === 0) {
+            // devis present mais encore vide : l'affaire se vend au temps
+            // passé — le PV estimé remplace une barre 100 % rouge trompeuse
             bas = '<div class="carte-chiffres"><span>pointé <b>' + h1(reel) + ' h</b></span>'
-                + '<span class="e neutre">budget à chiffrer</span></div>';
+                + '<span class="e neutre">' + eur(montantRegieAffaire(a)) + ' au temps passé</span></div>';
         } else {
             const e = reel - bud, cc = cls(e);
             const ech = Math.max(bud, reel) || 1;
@@ -781,12 +792,17 @@
         const bud = s.totaux.budgetHeures;
         const reel = s.totaux.reelHeures;
         const ecart = reel - bud, cEcart = cls(ecart);
+        // Devis absent OU encore vide (aucune heure budgétée, aucun achat) :
+        // hors chiffrage, l'affaire se vend au temps passé — l'admin voit
+        // le prix de vente HT des heures pointées, marge comprise.
+        const mTot = montantsDevis(d);
+        const enRegie = !enChiffrage && (!d || (bud === 0 && mTot.achats === 0));
 
         /* ── lignes : celles du devis + le pointé hors devis ── */
         const reelParNom = {};
         s.postes.forEach(p => { reelParNom[p.nom] = p; });
         let lignes = '';
-        if (d) {
+        if (d && !enRegie) {
             const rendreLigne = (ligne, type, i) => {
                 const lid = type + i;
                 const b = type === 't'
@@ -995,7 +1011,7 @@
 
             + reponseHtml
 
-            + ((enChiffrage || !d) ? '' :
+            + ((enChiffrage || enRegie) ? '' :
               '<div class="bilan">'
             + '<div class="case budget"><div class="case-lab"><i class="sw"></i>Heures budgétées</div>'
             + '<div class="case-val" id="fBudVal">' + h1(bud) + '<small>h</small></div>'
@@ -1008,7 +1024,8 @@
             + '<div class="case-sous" id="fEcartSous">' + (Math.abs(ecart) < 0.005 ? 'pile sur le budget'
                 : ecart > 0 ? 'de dépassement' : 'de marge restante') + '</div></div></div>')
 
-            + '<div class="bloc"><div class="titre"><h2>' + (enChiffrage ? 'Devis' : 'Devis et heures') + '</h2>'
+            + '<div class="bloc"><div class="titre"><h2>' + (enChiffrage ? 'Devis'
+                : (enRegie ? 'Heures pointées' : 'Devis et heures')) + '</h2>'
             + (d && modifiable
                 ? '<a class="btn btn-sm" style="text-decoration:none;" '
                   + 'href="devis_app.html?affaire=' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">'
@@ -1058,7 +1075,7 @@
 
             + achatsHtml
 
-            + (d
+            + (d && !enRegie
                 ? '<div class="bloc"><div class="titre"><h2>Synthèse financière</h2></div>'
                   + '<div class="syn">'
                   + (enChiffrage
@@ -1100,6 +1117,10 @@
                     const prixR = factM * coeffR;
                     const margeR = prixR - coutM;
                     return '<div class="bloc"><div class="titre"><h2>Vente au temps passé</h2></div>'
+                        + (d ? '<p style="margin:-4px 0 14px;color:var(--ink-dim);font-size:12.5px;">'
+                            + 'Le devis de cette affaire est encore vide : les heures pointées '
+                            + 'sont vendues au taux, coefficient compris. Chiffrez le devis pour '
+                            + 'passer au suivi sur budget.</p>' : '')
                         + '<div class="syn">'
                         + '<div class="si pointe"><div class="si-lab">Temps passé au taux</div>'
                         + '<div class="si-val" id="fRegieBase">' + eur(factM) + '</div></div>'
