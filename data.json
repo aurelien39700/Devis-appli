@@ -8771,7 +8771,8 @@
       "name": "P2 MK3",
       "clientId": "1764015790842",
       "description": "Moule Bi matière",
-      "statut": "en_cours"
+      "statut": "en_cours",
+      "coeffRegie": 1.1
     },
     {
       "id": "1764061178087",
