@@ -12179,7 +12179,7 @@
             "nom": "Microperçage",
             "taux": 70,
             "semaines": [
-              0,
+              1,
               0,
               0,
               0,
@@ -12193,7 +12193,7 @@
             "nom": "FIL",
             "taux": 90,
             "semaines": [
-              0,
+              1,
               0,
               0,
               0,
@@ -12362,7 +12362,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T13:40:40.618Z",
-      "updatedAt": "2026-08-27T13:40:52.232Z"
+      "updatedAt": "2026-08-27T13:40:54.417Z"
     }
   ],
   "entreprise": {
