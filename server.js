@@ -616,6 +616,11 @@ app.put('/api/affaires/:id', async (req, res) => {
         if (req.body.coeffRegie !== undefined) {
             data.affaires[index].coeffRegie = parseFloat(req.body.coeffRegie) || 1.2;
         }
+        // vente au temps passé malgré un devis chiffré : l'interrupteur
+        // de la synthèse est retenu sur l'affaire
+        if (req.body.venteTemps !== undefined) {
+            data.affaires[index].venteTemps = !!req.body.venteTemps;
+        }
 
         await writeData(data);
         res.json(data.affaires[index]);

@@ -574,7 +574,9 @@
                 + '<div class="mini"><div class="fill ' + cc + '" style="width:'
                 + Math.round(reel / ech * 100) + '%"></div>'
                 + (bud > 0 ? '<div class="cible" style="left:' + Math.round(bud / ech * 100) + '%"></div>' : '')
-                + '</div>';
+                + '</div>'
+                + (a.venteTemps ? '<div class="carte-note">vendue au temps passé — '
+                    + eur(montantRegieAffaire(a)) + '</div>' : '');
         }
         return '<button class="carte" data-fiche="' + attr(a.id) + '">'
             + '<div class="carte-haut"><div style="min-width:0;">'
@@ -1086,6 +1088,29 @@
                         + '<div class="si marge"><div class="si-lab">Marge prévue</div><div class="si-val" id="fSynMarge">' + eur(prix - cout) + '</div></div>'
                       /* au suivi : le coût du POINTÉ face au prix de vente */
                       : (function () {
+                          if (a.venteTemps) {
+                              // vente au temps passé choisie malgré le devis :
+                              // même lecture que sans devis, le devis en repère
+                              const factM = (s.totaux && s.totaux.reelMontant) || 0;
+                              const coutM = (s.totaux && (s.totaux.reelCout !== undefined
+                                  ? s.totaux.reelCout : s.totaux.reelMontant)) || 0;
+                              const coeffR = parseFloat(a.coeffRegie) || 1.2;
+                              const prixR = factM * coeffR;
+                              const margeR = prixR - coutM;
+                              return '<div class="si pointe"><div class="si-lab">Temps passé au taux</div>'
+                                  + '<div class="si-val" id="fRegieBase">' + eur(factM) + '</div></div>'
+                                  + '<div class="si"><div class="si-lab">Coût des heures</div>'
+                                  + '<div class="si-val">' + eur(coutM) + '</div></div>'
+                                  + '<div class="si prix"><div class="si-lab">Prix de vente HT au temps passé</div>'
+                                  + '<div class="si-val" id="fRegiePrix">' + eur(prixR) + '</div>'
+                                  + '<div class="si-sous">le devis aurait donné ' + eur(prix) + '</div></div>'
+                                  + '<div class="si ' + (margeR >= 0 ? 'marge' : 'negatif') + '" id="fRegieMargeTile">'
+                                  + '<div class="si-lab">Marge réelle</div>'
+                                  + '<div class="si-val" id="fRegieMarge">' + eur(margeR) + '</div>'
+                                  + '<div class="si-sous" id="fRegiePct">'
+                                  + (prixR > 0 ? Math.round(margeR / prixR * 100) + ' % du prix de vente' : '')
+                                  + '</div></div>';
+                          }
                           const pointeM = (s.totaux && (s.totaux.reelCout !== undefined
                               ? s.totaux.reelCout : s.totaux.reelMontant)) || 0;
                           // le face-a-face demande : prix de vente HT
@@ -1102,10 +1127,18 @@
                               + '</div></div>';
                       })())
                   + '</div>'
-                  + '<div class="syn-coeff"><span>Coefficient de marge</span>'
-                  + '<input type="number" step="0.05" min="1" value="' + coeff + '" data-devis="coeffMarge"'
-                  + (modifiable ? '' : ' disabled') + '>'
-                  + (modifiable ? '' : '<span>— verrouillé avec le devis</span>') + '</div>'
+                  + (!enChiffrage && a.venteTemps
+                      ? '<div class="syn-coeff"><span>Coefficient de marge</span>'
+                        + '<input type="number" step="0.05" min="1" value="'
+                        + (parseFloat(a.coeffRegie) || 1.2) + '" data-coeff-regie></div>'
+                      : '<div class="syn-coeff"><span>Coefficient de marge</span>'
+                        + '<input type="number" step="0.05" min="1" value="' + coeff + '" data-devis="coeffMarge"'
+                        + (modifiable ? '' : ' disabled') + '>'
+                        + (modifiable ? '' : '<span>— verrouillé avec le devis</span>') + '</div>')
+                  + (enChiffrage ? ''
+                      : '<label class="syn-vente"><input type="checkbox" data-vente-temps'
+                        + (a.venteTemps ? ' checked' : '')
+                        + '><span>Vendre cette affaire au temps passé plutôt qu\'au devis</span></label>')
                   + '</div>'
                 : (function () {
                     // Vente au temps passé : l'affaire n'a pas de devis, on
@@ -1314,6 +1347,16 @@
             etat.devisLocal.data.achats.push({ nom: '', fournisseur: '', quantite: 1, prixUnit: 0 });
             programmerEnregistrement();
             rendreFiche();
+        });
+
+        // interrupteur : vendre au temps passé malgré le devis chiffré
+        const venteInp = document.querySelector('#ficheContenu [data-vente-temps]');
+        if (venteInp) venteInp.addEventListener('change', async () => {
+            a.venteTemps = venteInp.checked;
+            rendreFiche();
+            try {
+                await api('/affaires/' + a.id, 'PUT', { venteTemps: a.venteTemps });
+            } catch (err) { toast(err.message, true); }
         });
 
         // coefficient de la vente au temps passé : recalcul immédiat,
