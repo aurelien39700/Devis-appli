@@ -9632,7 +9632,7 @@
       "clientId": "1764015790842",
       "description": "Modif Event Broche Centrale",
       "statut": "en_cours",
-      "venteTemps": true
+      "venteTemps": false
     },
     {
       "id": "1787834935884",
