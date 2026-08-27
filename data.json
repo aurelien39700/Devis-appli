@@ -11316,7 +11316,7 @@
             "nom": "Étude",
             "taux": 90,
             "semaines": [
-              0,
+              0.25,
               0,
               0,
               0,
@@ -11555,7 +11555,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T12:36:07.338Z",
-      "updatedAt": "2026-08-27T12:36:07.338Z"
+      "updatedAt": "2026-08-27T12:36:18.105Z"
     }
   ],
   "entreprise": {
