@@ -243,7 +243,7 @@
     }
     $$('.nav-item').forEach(b => b.addEventListener('click', () => {
         aller(b.dataset.vue);
-        if (b.dataset.vue === 'affaires') rendreListeAffaires();
+        if (b.dataset.vue === 'affaires') { etat.cascadeAffaires = true; rendreListeAffaires(); }
         else if (b.dataset.vue === 'pointage') rendrePointage();
         else if (b.dataset.vue === 'gestion') rendreGestion();
     }));
@@ -309,7 +309,8 @@
             const heure = new Date(e.date).toLocaleTimeString('fr-FR',
                 { hour: '2-digit', minute: '2-digit' });
             const mienne = admin || e.enteredBy === etat.moi.name;
-            return '<div class="saisie"><div class="saisie-info">'
+            return '<div class="saisie' + (e.id === etat.saisieNeuve ? ' neuve' : '')
+                + '"><div class="saisie-info">'
                 + '<div class="saisie-l1">' + esc(a ? a.name : 'Affaire inconnue') + '</div>'
                 + '<div class="saisie-l2">' + heure + ' · ' + esc(p ? p.name : 'Poste inconnu')
                 + (admin && e.enteredBy ? ' · ' + esc(e.enteredBy) : '') + '</div></div>'
@@ -388,7 +389,8 @@
                     const quand = new Date(e.date).toLocaleDateString('fr-FR',
                         { day: '2-digit', month: '2-digit', year: 'numeric' });
                     const mienne = admin || e.enteredBy === etat.moi.name;
-                    return '<div class="saisie"><div class="saisie-info">'
+                    return '<div class="saisie' + (e.id === etat.saisieNeuve ? ' neuve' : '')
+                        + '"><div class="saisie-info">'
                         + '<div class="saisie-l1" style="font-size:13.5px;">'
                         + esc(p ? p.name : 'Poste inconnu') + '</div>'
                         + '<div class="saisie-l2">' + quand
@@ -518,10 +520,14 @@
                 await api('/entries/' + saisieEdition.id, 'PUT',
                     { affaireId: affaireId, posteId: posteId, hours: heures });
             } else {
-                await api('/entries', 'POST', {
+                const neuve = await api('/entries', 'POST', {
                     affaireId: affaireId, posteId: posteId,
                     hours: heures, enteredBy: etat.moi.name
                 });
+                if (neuve && neuve.id) {
+                    etat.saisieNeuve = neuve.id;
+                    setTimeout(() => { etat.saisieNeuve = null; }, 2000);
+                }
             }
             fermer('scrimSaisie');
             await chargerTout();
@@ -536,13 +542,18 @@
 
     /* ═══════════════ AFFAIRES : couloir + cartes ═══════════════ */
     function rendreCouloir() {
+        const prec = etat._couloirPrec || null;
+        const compte = {};
         $('#couloir').innerHTML = STADES.map(s => {
             const n = etat.affaires.filter(a => stadeDe(a) === s.k).length;
+            compte[s.k] = n;
+            const bouge = prec && prec[s.k] !== undefined && prec[s.k] !== n;
             return '<button class="couloir-etape c-' + s.k + (etat.filtre === s.k ? ' is-on' : '')
                 + '" data-stade="' + s.k + '">'
-                + '<div class="couloir-n">' + n + '</div>'
+                + '<div class="couloir-n' + (bouge ? ' bondit' : '') + '">' + n + '</div>'
                 + '<div class="couloir-lab">' + s.lab + '</div></button>';
         }).join('');
+        etat._couloirPrec = compte;
         $$('#couloir [data-stade]').forEach(b => b.addEventListener('click', () => {
             etat.filtre = etat.filtre === b.dataset.stade ? null : b.dataset.stade;
             rendreListeAffaires();
@@ -599,6 +610,15 @@
 
     function rendreListeAffaires() {
         rendreCouloir();
+        // cascade uniquement a l arrivee sur la vue, jamais sur les
+        // rafraichissements de la synchronisation periodique
+        if (etat.cascadeAffaires) {
+            etat.cascadeAffaires = false;
+            const hote = $('#listeAffaires');
+            hote.classList.add('entree');
+            clearTimeout(etat._cascadeT);
+            etat._cascadeT = setTimeout(() => hote.classList.remove('entree'), 800);
+        }
         $('#badgeAffaires').textContent = etat.affaires.length;
 
         const stades = etat.filtre ? STADES.filter(s => s.k === etat.filtre) : STADES;
@@ -650,6 +670,17 @@
             if (!confirm('Archiver les ' + n + ' affaires terminées ? '
                 + 'Elles resteront consultables dans les archivées.')) return;
             try {
+                const ids = etat.affaires.filter(a => stadeDe(a) === 'terminee').map(a => a.id);
+                const cartes = $$('#listeAffaires [data-fiche]')
+                    .filter(c2 => ids.indexOf(c2.dataset.fiche) !== -1);
+                if (!matchMedia('(prefers-reduced-motion: reduce)').matches && cartes.length) {
+                    cartes.forEach((c2, i) => {
+                        c2.style.animationDelay = Math.min(i * 60, 420) + 'ms';
+                        c2.classList.add('sen-va');
+                    });
+                    await new Promise(res2 => setTimeout(res2,
+                        Math.min(380 + cartes.length * 60, 850)));
+                }
                 const r = await api('/affaires/archiver-terminees', 'POST', {});
                 await chargerTout();
                 rendreListeAffaires();
@@ -737,6 +768,54 @@
 
     /* ═══════════════ FICHE AFFAIRE ═══════════════ */
 
+    // Les chiffres comptent : à l'ouverture d'une fiche, les tuiles de
+    // synthèse montent jusqu'à leur valeur, les jauges se remplissent,
+    // et un dépassement pulse une fois.
+    function animerChiffresFiche() {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const cibles = [];
+        $$('#ficheContenu .si-val, #ficheContenu .case-val').forEach(el => {
+            if (el.querySelector('input')) return;
+            const m = el.textContent.trim()
+                .match(/^([+-−]?)([ds  ]+(?:,(d+))?)([^d]*)$/);
+            if (!m) return;
+            const val = parseFloat(m[2].replace(/[s  ]/g, '').replace(',', '.'));
+            if (!isFinite(val) || val === 0) return;
+            cibles.push({ el: el, html: el.innerHTML, signe: m[1], val: val,
+                dec: m[3] ? m[3].length : 0, suffixe: m[4] || '' });
+        });
+        const jauges = $$('#ficheContenu .mini .fill').map(f => {
+            const largeur = f.style.width;
+            f.style.transition = 'none';
+            f.style.width = '0%';
+            return { el: f, largeur: largeur };
+        });
+        const debut = Date.now(), duree = 850;
+        const pas = () => {
+            const p = Math.min(1, (Date.now() - debut) / duree);
+            const e2 = 1 - Math.pow(1 - p, 3);
+            cibles.forEach(c => {
+                if (p >= 1) { c.el.innerHTML = c.html; return; }
+                c.el.textContent = c.signe + (c.val * e2).toLocaleString('fr-FR',
+                    { minimumFractionDigits: c.dec, maximumFractionDigits: c.dec }) + c.suffixe;
+            });
+            if (p < 1) { requestAnimationFrame(pas); return; }
+            jauges.forEach(j => {
+                if (j.el.classList.contains('depasse')) {
+                    j.el.classList.add('clignote');
+                    setTimeout(() => j.el.classList.remove('clignote'), 800);
+                }
+            });
+        };
+        requestAnimationFrame(() => {
+            jauges.forEach(j => {
+                j.el.style.transition = 'width .8s cubic-bezier(.22,.9,.3,1)';
+                j.el.style.width = j.largeur;
+            });
+            pas();
+        });
+    }
+
     // Ouverture animée : un fantôme de la carte cliquée (nom + client)
     // s'étend jusqu'à la zone de contenu pendant que la fiche se charge,
     // puis s'efface ; les blocs de la fiche arrivent ensuite en cascade.
@@ -786,6 +865,7 @@
             const fc = $('#ficheContenu');
             fc.classList.add('entree');
             setTimeout(() => fc.classList.remove('entree'), 750);
+            animerChiffresFiche();
         } catch (err) {
             $('#ficheContenu').innerHTML =
                 '<p style="color:var(--stop);">' + esc(err.message) + '</p>';
@@ -1254,6 +1334,12 @@
             devisEnAttente = false;
             const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             etatSauve('Enregistré à ' + heure);
+            const es = $('#etatSauve');
+            if (es) {
+                es.classList.remove('pulse');
+                void es.offsetWidth;
+                es.classList.add('pulse');
+            }
         } catch (err) {
             etatSauve('Échec de l\'enregistrement', 'erreur');
             toast(err.message, true);
@@ -1451,6 +1537,8 @@
                 await api('/affaires/' + a.id + '/statut', 'PUT', { statut: cible });
                 await chargerTout();
                 await ouvrirFiche();
+                const pasActif = document.querySelector('#ficheContenu .pas.actif');
+                if (pasActif) pasActif.classList.add('bascule');
                 if (cible === 'envoye') montrerLienClient();
                 else toast({ brouillon: 'Repassé en brouillon — le budget est modifiable',
                              en_cours: 'Devis validé — l\x27affaire est en cours',
@@ -2209,6 +2297,9 @@
     /* ═══════════════ divers ═══════════════ */
     $('#btnTheme').addEventListener('click', () => {
         const root = document.documentElement;
+        root.classList.add('theme-fondu');
+        clearTimeout(etat._fonduT);
+        etat._fonduT = setTimeout(() => root.classList.remove('theme-fondu'), 420);
         const sombre = !matchMedia('(prefers-color-scheme: light)').matches;
         const actuel = root.getAttribute('data-theme') || (sombre ? 'dark' : 'light');
         const suivant = actuel === 'dark' ? 'light' : 'dark';
@@ -2239,7 +2330,7 @@
             $('#syncEtat').classList.add('hors');
         }
         aller(admin ? 'affaires' : 'pointage');
-        if (admin) rendreListeAffaires();
+        if (admin) { etat.cascadeAffaires = true; rendreListeAffaires(); }
         rendrePointage();
     }
 

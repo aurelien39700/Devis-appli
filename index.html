@@ -409,9 +409,37 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 #scrimSaisie.is-on .champ:nth-child(2){animation-delay:.14s;}
 #scrimSaisie.is-on .champ:nth-child(3){animation-delay:.2s;}
 #scrimSaisie.is-on .champ:nth-child(n+4){animation-delay:.25s;}
+/* ── vie de l atelier ── */
+@keyframes bondit{0%{transform:scale(1);}40%{transform:scale(1.32);}100%{transform:scale(1);}}
+@keyframes basculePas{from{transform:rotateX(90deg);opacity:0;}to{transform:none;opacity:1;}}
+@keyframes clignoteJauge{0%,100%{box-shadow:0 0 0 0 rgba(255,94,82,0);}50%{box-shadow:0 0 0 5px var(--stop-soft);}}
+@keyframes arriveLigne{from{opacity:0;transform:translateY(-10px);background:var(--arc-soft);}45%{opacity:1;transform:none;background:var(--arc-soft);}to{background:transparent;}}
+@keyframes traceCoche{to{stroke-dashoffset:0;}}
+@keyframes replieCarte{to{opacity:0;transform:scale(.85) translateY(12px);}}
+@keyframes deplieBandeau{from{opacity:0;transform:scaleY(.55);transform-origin:top center;}to{opacity:1;transform:none;}}
+@keyframes pulseVert{0%{text-shadow:0 0 0 rgba(0,0,0,0);}35%{text-shadow:0 0 13px var(--ok);}100%{text-shadow:0 0 0 rgba(0,0,0,0);}}
+.couloir-n.bondit{animation:bondit .45s cubic-bezier(.3,1.3,.4,1);}
+.pas.bascule{animation:basculePas .45s cubic-bezier(.24,1.1,.4,1);}
+.mini .fill.clignote{animation:clignoteJauge .7s ease-out 1;}
+.saisie.neuve{animation:arriveLigne 1.2s cubic-bezier(.22,.9,.3,1);border-radius:var(--r-sm);}
+.toast.is-on svg path{stroke-dasharray:30;stroke-dashoffset:30;animation:traceCoche .4s ease-out .12s forwards;}
+.carte.sen-va{animation:replieCarte .38s ease-in forwards;pointer-events:none;}
+#ficheContenu.entree .reponse-client{animation:deplieBandeau .5s cubic-bezier(.24,1.1,.4,1);}
+.etat-sauve.pulse{animation:pulseVert .9s ease-out 1;}
+#listeAffaires.entree .carte{animation:rise .4s cubic-bezier(.22,.9,.3,1) backwards;}
+#listeAffaires.entree .grille .carte:nth-child(2){animation-delay:.05s;}
+#listeAffaires.entree .grille .carte:nth-child(3){animation-delay:.1s;}
+#listeAffaires.entree .grille .carte:nth-child(4){animation-delay:.15s;}
+#listeAffaires.entree .grille .carte:nth-child(n+5){animation-delay:.2s;}
+html.theme-fondu,html.theme-fondu *,html.theme-fondu *::before,html.theme-fondu *::after{transition:background-color .35s ease,color .35s ease,border-color .35s ease,fill .35s ease,stroke .35s ease !important;}
 @media (prefers-reduced-motion: reduce){
   .fab.appuye svg,.fab.appuye::after,#scrimSaisie.is-on .champ{animation:none;}
   .scrim.depuis-fab .sheet{transform:translateY(16px) scale(.97);}
+  .couloir-n.bondit,.pas.bascule,.mini .fill.clignote,.saisie.neuve,.toast.is-on svg path,
+  #ficheContenu.entree .reponse-client,.etat-sauve.pulse,#listeAffaires.entree .carte{animation:none;}
+  .toast.is-on svg path{stroke-dashoffset:0;}
+  .carte.sen-va{animation:none;opacity:0;}
+  html.theme-fondu,html.theme-fondu *{transition:none !important;}
 }
 .sheet-head{flex:none;display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);}
 .sheet-head h2{font-size:16px;font-weight:700;}
@@ -859,6 +887,6 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="atelier.js?v=20260827-5"></script>
+<script src="atelier.js?v=20260827-6"></script>
 </body>
 </html>
