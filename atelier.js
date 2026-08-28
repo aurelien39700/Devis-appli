@@ -777,9 +777,9 @@
         $$('#ficheContenu .si-val, #ficheContenu .case-val').forEach(el => {
             if (el.querySelector('input')) return;
             const m = el.textContent.trim()
-                .match(/^([+-−]?)([ds  ]+(?:,(d+))?)([^d]*)$/);
+                .match(/^([+\-−]?)([\d\s  ]+(?:,(\d+))?)([^\d]*)$/);
             if (!m) return;
-            const val = parseFloat(m[2].replace(/[s  ]/g, '').replace(',', '.'));
+            const val = parseFloat(m[2].replace(/[\s  ]/g, '').replace(',', '.'));
             if (!isFinite(val) || val === 0) return;
             cibles.push({ el: el, html: el.innerHTML, signe: m[1], val: val,
                 dec: m[3] ? m[3].length : 0, suffixe: m[4] || '' });
