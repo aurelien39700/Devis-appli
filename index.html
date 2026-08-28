@@ -397,6 +397,22 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 .scrim.is-on{opacity:1;pointer-events:auto;}
 .sheet{width:min(440px,100%);max-height:88vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;transform:translateY(16px) scale(.97);opacity:0;transition:transform .3s cubic-bezier(.24,1.1,.4,1),opacity .26s;}
 .scrim.is-on .sheet{transform:none;opacity:1;}
+/* ── saisie d heures : la croix tourne, la fenetre jaillit du bouton ── */
+.fab.appuye svg{animation:vrille .5s cubic-bezier(.3,1.25,.4,1);}
+@keyframes vrille{from{transform:rotate(0deg);}to{transform:rotate(180deg);}}
+.fab.appuye::after{content:'';position:absolute;inset:-2px;border-radius:50%;border:2.5px solid var(--arc);animation:onde .55s ease-out forwards;pointer-events:none;}
+@keyframes onde{from{transform:scale(1);opacity:.85;}to{transform:scale(2.2);opacity:0;}}
+.scrim.depuis-fab .sheet{transform:translate(min(30vw,260px),min(36vh,300px)) scale(.2);transform-origin:100% 100%;}
+.scrim.depuis-fab.is-on .sheet{transform:none;}
+#scrimSaisie.is-on .champ{animation:rise .38s cubic-bezier(.22,.9,.3,1) backwards;}
+#scrimSaisie.is-on .champ:nth-child(1){animation-delay:.08s;}
+#scrimSaisie.is-on .champ:nth-child(2){animation-delay:.14s;}
+#scrimSaisie.is-on .champ:nth-child(3){animation-delay:.2s;}
+#scrimSaisie.is-on .champ:nth-child(n+4){animation-delay:.25s;}
+@media (prefers-reduced-motion: reduce){
+  .fab.appuye svg,.fab.appuye::after,#scrimSaisie.is-on .champ{animation:none;}
+  .scrim.depuis-fab .sheet{transform:translateY(16px) scale(.97);}
+}
 .sheet-head{flex:none;display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);}
 .sheet-head h2{font-size:16px;font-weight:700;}
 .sheet-head .icon-btn{margin-left:auto;}
@@ -539,6 +555,7 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
   th:first-child,td.nom{position:sticky;left:0;z-index:2;background:var(--panel);box-shadow:1px 0 0 var(--line);max-width:120px;overflow:hidden;text-overflow:ellipsis;}
   tbody tr:hover td.nom{background:var(--panel-2);}
   .fab{bottom:calc(76px + env(safe-area-inset-bottom));}
+  .scrim.depuis-fab .sheet{transform:translateY(70vh) scale(.7);}
   .champ input,.champ select,.champ textarea{font-size:16px;}
   .conds-devis{grid-template-columns:minmax(0,1fr);}
   .scrim{place-items:end center;padding:0;}
@@ -842,6 +859,6 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="atelier.js?v=20260827-4"></script>
+<script src="atelier.js?v=20260827-5"></script>
 </body>
 </html>

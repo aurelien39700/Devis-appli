@@ -423,6 +423,9 @@
     function ouvrirSaisie(opts) {
         opts = opts || {};
         saisieEdition = opts.edition || null;
+        // depuis la croix, la fenetre jaillit du bouton ; depuis une ligne
+        // (reprise, modification), elle garde son arrivee habituelle
+        $('#scrimSaisie').classList.toggle('depuis-fab', !!opts.depuisFab);
 
         $('#titreSaisie').textContent = saisieEdition ? 'Modifier la saisie' : 'Nouvelle saisie';
         $('#btnEnregistrerSaisie').textContent = saisieEdition ? 'Mettre à jour' : 'Ajouter';
@@ -475,7 +478,14 @@
     }
     $('#sClient').addEventListener('change', majSelectAffaires);
     $('#sAffaire').addEventListener('change', basculeNouvelleAffaire);
-    $('#fab').addEventListener('click', () => ouvrirSaisie());
+    $('#fab').addEventListener('click', () => {
+        const fab = $('#fab');
+        fab.classList.remove('appuye');
+        void fab.offsetWidth; // relance l'animation a chaque appui
+        fab.classList.add('appuye');
+        setTimeout(() => fab.classList.remove('appuye'), 620);
+        ouvrirSaisie({ depuisFab: true });
+    });
 
     $('#btnEnregistrerSaisie').addEventListener('click', async () => {
         const btn = $('#btnEnregistrerSaisie');
