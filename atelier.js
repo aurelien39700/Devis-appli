@@ -650,6 +650,7 @@
 
         $$('#listeAffaires [data-fiche]').forEach(cbtn => cbtn.addEventListener('click', () => {
             etat.ficheId = cbtn.dataset.fiche;
+            animerOuvertureDepuis(cbtn);
             ouvrirFiche();
         }));
     }
@@ -725,6 +726,38 @@
     });
 
     /* ═══════════════ FICHE AFFAIRE ═══════════════ */
+
+    // Ouverture animée : un fantôme de la carte cliquée (nom + client)
+    // s'étend jusqu'à la zone de contenu pendant que la fiche se charge,
+    // puis s'efface ; les blocs de la fiche arrivent ensuite en cascade.
+    function animerOuvertureDepuis(carte) {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const zoneEl = document.querySelector('.views');
+        if (!zoneEl || !carte.getBoundingClientRect) return;
+        const r = carte.getBoundingClientRect();
+        const zone = zoneEl.getBoundingClientRect();
+        const ghost = document.createElement('div');
+        ghost.className = 'carte-fantome';
+        const nom = carte.querySelector('.carte-nom');
+        const cli = carte.querySelector('.carte-client');
+        ghost.innerHTML = (cli ? '<div class="fantome-client">' + cli.innerHTML + '</div>' : '')
+            + (nom ? '<div class="fantome-nom">' + nom.innerHTML + '</div>' : '');
+        ghost.style.left = r.left + 'px';
+        ghost.style.top = r.top + 'px';
+        ghost.style.width = r.width + 'px';
+        ghost.style.height = r.height + 'px';
+        document.body.appendChild(ghost);
+        carte.classList.add('part');
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            ghost.style.left = zone.left + 'px';
+            ghost.style.top = Math.max(zone.top, 60) + 'px';
+            ghost.style.width = zone.width + 'px';
+            ghost.style.height = Math.min(window.innerHeight - Math.max(zone.top, 60) - 16, 430) + 'px';
+            ghost.style.opacity = '0';
+        }));
+        setTimeout(() => ghost.remove(), 620);
+    }
+
     async function ouvrirFiche() {
         aller('fiche');
         $('#ficheContenu').innerHTML =
@@ -740,6 +773,9 @@
             etat.syntheseLocale = synthese;
             etat.devisLocal = devis;
             rendreFiche();
+            const fc = $('#ficheContenu');
+            fc.classList.add('entree');
+            setTimeout(() => fc.classList.remove('entree'), 750);
         } catch (err) {
             $('#ficheContenu').innerHTML =
                 '<p style="color:var(--stop);">' + esc(err.message) + '</p>';

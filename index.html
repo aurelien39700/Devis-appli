@@ -137,6 +137,19 @@ h1,h2,h3{margin:0;font-family:var(--f-display);letter-spacing:-.03em;text-wrap:b
 .views{flex:1;padding:24px;max-width:1240px;width:100%;}
 .view{display:none;}
 .view.is-on{display:block;animation:rise .45s cubic-bezier(.22,.9,.3,1);}
+/* ── ouverture d une affaire : la carte s etend en panneau ── */
+.carte-fantome{position:fixed;z-index:70;pointer-events:none;overflow:hidden;background:var(--panel);border:1.5px solid var(--arc);border-radius:var(--r-lg);box-shadow:0 22px 60px -18px rgba(0,0,0,.55),0 0 0 5px var(--arc-soft);transition:left .3s cubic-bezier(.3,.85,.25,1),top .3s cubic-bezier(.3,.85,.25,1),width .3s cubic-bezier(.3,.85,.25,1),height .3s cubic-bezier(.3,.85,.25,1),opacity .22s ease .27s;}
+.carte-fantome .fantome-client{position:absolute;left:18px;top:13px;font-family:var(--f-data);font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--arc);}
+.carte-fantome .fantome-nom{position:absolute;left:18px;top:29px;font-family:var(--f-display);font-size:20px;font-weight:800;letter-spacing:-.03em;color:var(--ink);white-space:nowrap;}
+.carte.part{transform:scale(.96);opacity:.35;transition:transform .2s,opacity .2s;}
+#ficheContenu.entree > *{animation:rise .42s cubic-bezier(.22,.9,.3,1) backwards;}
+#ficheContenu.entree > *:nth-child(2){animation-delay:.06s;}
+#ficheContenu.entree > *:nth-child(3){animation-delay:.11s;}
+#ficheContenu.entree > *:nth-child(4){animation-delay:.16s;}
+#ficheContenu.entree > *:nth-child(5){animation-delay:.21s;}
+#ficheContenu.entree > *:nth-child(6){animation-delay:.26s;}
+#ficheContenu.entree > *:nth-child(n+7){animation-delay:.3s;}
+@media (prefers-reduced-motion: reduce){.carte-fantome{display:none;}#ficheContenu.entree > *{animation:none;}}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;border-radius:var(--r-md);font-size:13.5px;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--ink);white-space:nowrap;transition:transform .15s,border-color .18s,color .18s,background .18s;}
 .btn:hover{border-color:var(--arc);color:var(--arc);}
@@ -829,6 +842,6 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="atelier.js?v=20260827-3"></script>
+<script src="atelier.js?v=20260827-4"></script>
 </body>
 </html>
