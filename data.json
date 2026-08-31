@@ -9672,6 +9672,13 @@
       "clientId": "1764015790842",
       "description": "",
       "statut": "en_cours"
+    },
+    {
+      "id": "1788170377400",
+      "name": "Clavette 10mm",
+      "clientId": "1764016652926",
+      "description": "Réalisation de clavette dans pignon",
+      "statut": "brouillon"
     }
   ],
   "postes": [
