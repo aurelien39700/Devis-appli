@@ -8823,6 +8823,14 @@
       "hours": 0.75,
       "enteredBy": "jojo",
       "date": "2026-09-01T12:06:31.146Z"
+    },
+    {
+      "id": "1788267581917",
+      "affaireId": "1787672578656",
+      "posteId": "1764019427786",
+      "hours": 1,
+      "enteredBy": "Aurélien",
+      "date": "2026-09-01T12:59:41.917Z"
     }
   ],
   "clients": [
