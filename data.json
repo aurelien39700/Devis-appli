@@ -9770,7 +9770,7 @@
       "clientId": "1764014760229",
       "description": "Noyau empreinte nouvelle version",
       "statut": "en_cours",
-      "venteTemps": false
+      "venteTemps": true
     },
     {
       "id": "1787835333391",
