@@ -9801,6 +9801,13 @@
       "clientId": "1764016652926",
       "description": "Réalisation de clavette dans pignon",
       "statut": "terminee"
+    },
+    {
+      "id": "1788272376914",
+      "name": "MG0036",
+      "clientId": "1764014447938",
+      "description": "Soudure + reprise Broche REP 202",
+      "statut": "brouillon"
     }
   ],
   "postes": [
