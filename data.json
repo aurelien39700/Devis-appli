@@ -11739,7 +11739,7 @@
       "numCommande": "",
       "affaire": "TG12",
       "date": "2026-08-27",
-      "coeffMarge": 1.3444446,
+      "coeffMarge": 1.34444468,
       "data": {
         "travail": [
           {
@@ -11985,7 +11985,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-27T12:48:58.835Z",
-      "updatedAt": "2026-09-01T11:24:01.589Z"
+      "updatedAt": "2026-09-01T11:24:03.749Z"
     },
     {
       "affaireId": "1787835333391",
