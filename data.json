@@ -8807,6 +8807,14 @@
       "hours": 8,
       "enteredBy": "jojo",
       "date": "2026-09-01T08:35:07.922Z"
+    },
+    {
+      "id": "1788257087295",
+      "affaireId": "1787653511192",
+      "posteId": "1764060067448",
+      "hours": 1.5,
+      "enteredBy": "Administrateur",
+      "date": "2026-09-01T10:04:47.295Z"
     }
   ],
   "clients": [
