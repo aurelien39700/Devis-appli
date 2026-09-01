@@ -9769,7 +9769,8 @@
       "name": "TG12",
       "clientId": "1764014760229",
       "description": "Noyau empreinte nouvelle version",
-      "statut": "en_cours"
+      "statut": "en_cours",
+      "venteTemps": true
     },
     {
       "id": "1787835333391",
