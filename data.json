@@ -13770,7 +13770,7 @@
             "nom": "Soudure",
             "taux": 80,
             "semaines": [
-              0,
+              8,
               0,
               0,
               0,
@@ -13855,7 +13855,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-09-02T12:46:03.771Z",
-      "updatedAt": "2026-09-02T12:46:03.771Z"
+      "updatedAt": "2026-09-02T12:46:31.970Z"
     }
   ],
   "entreprise": {
