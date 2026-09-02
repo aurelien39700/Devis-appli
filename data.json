@@ -9875,7 +9875,7 @@
       "name": "CELIA",
       "clientId": "1764014732621",
       "description": "Suppression gravure + rayonnage filet",
-      "statut": "brouillon"
+      "statut": "envoye"
     }
   ],
   "postes": [
@@ -13855,7 +13855,8 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-09-02T12:46:03.771Z",
-      "updatedAt": "2026-09-02T13:02:32.678Z"
+      "updatedAt": "2026-09-02T13:02:32.678Z",
+      "token": "47de2f11ebba0915"
     }
   ],
   "entreprise": {
