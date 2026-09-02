@@ -13839,7 +13839,7 @@
             "nom": "Transport",
             "fournisseur": "",
             "quantite": 1,
-            "prixUnit": 0
+            "prixUnit": 50
           },
           {
             "nom": "Polissage",
@@ -13855,7 +13855,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-09-02T12:46:03.771Z",
-      "updatedAt": "2026-09-02T12:47:39.022Z"
+      "updatedAt": "2026-09-02T12:47:42.016Z"
     }
   ],
   "entreprise": {
