@@ -8911,6 +8911,14 @@
       "hours": 0.5,
       "enteredBy": "jojo",
       "date": "2026-09-03T06:10:36.124Z"
+    },
+    {
+      "id": "1788430664686",
+      "affaireId": "1788355774599",
+      "posteId": "1764019427786",
+      "hours": 1.25,
+      "enteredBy": "Aurélien",
+      "date": "2026-09-03T10:17:44.686Z"
     }
   ],
   "clients": [
