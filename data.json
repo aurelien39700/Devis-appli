@@ -8943,6 +8943,14 @@
       "hours": 3,
       "enteredBy": "Aurélien",
       "date": "2026-09-03T13:52:24.345Z"
+    },
+    {
+      "id": "1788443896512",
+      "affaireId": "1787672578656",
+      "posteId": "1764014781418",
+      "hours": 4,
+      "enteredBy": "Aurélien",
+      "date": "2026-09-03T13:58:16.512Z"
     }
   ],
   "clients": [
