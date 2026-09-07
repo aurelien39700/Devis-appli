@@ -10042,6 +10042,13 @@
       "clientId": "1764014732621",
       "description": "réparation noyau REP200",
       "statut": "en_cours"
+    },
+    {
+      "id": "1788788304674",
+      "name": "Moule 2",
+      "clientId": "1764014760229",
+      "description": "Extraction queue d'éjection",
+      "statut": "brouillon"
     }
   ],
   "postes": [
