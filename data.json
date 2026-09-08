@@ -10191,6 +10191,13 @@
       "clientId": "1764014447938",
       "description": "Soudure + reprise noyau",
       "statut": "en_cours"
+    },
+    {
+      "id": "1788859195014",
+      "name": "AM08157",
+      "clientId": "1788859150618",
+      "description": "Bavure Moule Chine - MAP",
+      "statut": "brouillon"
     }
   ],
   "postes": [
