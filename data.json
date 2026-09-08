@@ -10161,6 +10161,13 @@
       "clientId": "1764014760229",
       "description": "Extraction queue d'éjection",
       "statut": "archivee"
+    },
+    {
+      "id": "1788854060080",
+      "name": "MG9866",
+      "clientId": "1764014447938",
+      "description": "Soudure + reprise noyau",
+      "statut": "brouillon"
     }
   ],
   "postes": [
