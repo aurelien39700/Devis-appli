@@ -14112,7 +14112,7 @@
             "nom": "Ajustage",
             "taux": 75,
             "semaines": [
-              0,
+              4,
               0,
               0,
               0,
@@ -14226,7 +14226,7 @@
       "interlocuteurId": "",
       "token": "47de2f11ebba0915",
       "createdAt": "2026-09-02T12:46:03.771Z",
-      "updatedAt": "2026-09-08T15:39:03.939Z"
+      "updatedAt": "2026-09-08T15:39:10.755Z"
     },
     {
       "affaireId": "1788355774599",
