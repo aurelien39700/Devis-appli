@@ -14160,7 +14160,7 @@
           {
             "nom": "Fraisage CN",
             "taux": 46,
-            "temps": 14
+            "temps": 6
           },
           {
             "nom": "Érosion FIL CN",
@@ -14226,7 +14226,7 @@
       "interlocuteurId": "",
       "token": "47de2f11ebba0915",
       "createdAt": "2026-09-02T12:46:03.771Z",
-      "updatedAt": "2026-09-08T15:38:31.772Z"
+      "updatedAt": "2026-09-08T15:38:41.159Z"
     },
     {
       "affaireId": "1788355774599",
