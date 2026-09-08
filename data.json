@@ -14070,7 +14070,7 @@
             "nom": "Erosion",
             "taux": 80,
             "semaines": [
-              4,
+              2,
               0,
               0,
               0,
@@ -14226,7 +14226,7 @@
       "interlocuteurId": "",
       "token": "47de2f11ebba0915",
       "createdAt": "2026-09-02T12:46:03.771Z",
-      "updatedAt": "2026-09-08T15:38:50.432Z"
+      "updatedAt": "2026-09-08T15:39:03.939Z"
     },
     {
       "affaireId": "1788355774599",
