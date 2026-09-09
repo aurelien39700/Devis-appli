@@ -14740,7 +14740,7 @@
             "nom": "Carcasse",
             "fournisseur": "",
             "quantite": 1,
-            "prixUnit": 0
+            "prixUnit": 100
           },
           {
             "nom": "Éléments carcasse",
@@ -14792,7 +14792,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-09-04T07:09:19.343Z",
-      "updatedAt": "2026-09-04T07:09:25.125Z"
+      "updatedAt": "2026-09-09T09:53:19.980Z"
     },
     {
       "affaireId": "1788788304674",
