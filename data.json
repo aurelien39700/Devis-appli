@@ -9263,6 +9263,14 @@
       "hours": 1,
       "enteredBy": "Administrateur",
       "date": "2026-09-09T09:52:57.794Z"
+    },
+    {
+      "id": "1789015588920",
+      "affaireId": "1788341420312",
+      "posteId": "1764061151273",
+      "hours": 0.5,
+      "enteredBy": "jojo",
+      "date": "2026-09-10T04:46:28.920Z"
     }
   ],
   "clients": [
