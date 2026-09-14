@@ -9303,6 +9303,14 @@
       "hours": 6,
       "enteredBy": "Thomas",
       "date": "2026-09-14T06:47:44.321Z"
+    },
+    {
+      "id": "1789371150322",
+      "affaireId": "1788854060080",
+      "posteId": "1764055523549",
+      "hours": 1.5,
+      "enteredBy": "jojo",
+      "date": "2026-09-14T07:32:30.322Z"
     }
   ],
   "clients": [
