@@ -9287,6 +9287,14 @@
       "hours": 1,
       "enteredBy": "Thomas",
       "date": "2026-09-14T06:28:58.932Z"
+    },
+    {
+      "id": "1789367352292",
+      "affaireId": "1788341519595",
+      "posteId": "1764061108386",
+      "hours": 0.5,
+      "enteredBy": "Thomas",
+      "date": "2026-09-14T06:29:12.292Z"
     }
   ],
   "clients": [
