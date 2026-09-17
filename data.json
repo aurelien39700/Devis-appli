@@ -10585,6 +10585,13 @@
       "clientId": "1764014447938",
       "description": "M30X2",
       "statut": "en_cours"
+    },
+    {
+      "id": "1789632770524",
+      "name": "MB5463",
+      "clientId": "1764014447938",
+      "description": "Noyau à réparer + 1 neuf",
+      "statut": "brouillon"
     }
   ],
   "postes": [
