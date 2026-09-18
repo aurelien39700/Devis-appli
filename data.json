@@ -10615,7 +10615,7 @@
       "name": "MG9866",
       "clientId": "1764014447938",
       "description": "Soudure + reprise noyau",
-      "statut": "terminee"
+      "statut": "archivee"
     },
     {
       "id": "1788859195014",
@@ -15655,7 +15655,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-09-08T07:54:23.404Z",
-      "updatedAt": "2026-09-18T07:12:53.906Z"
+      "updatedAt": "2026-09-18T07:12:56.728Z"
     },
     {
       "affaireId": "1788859195014",
