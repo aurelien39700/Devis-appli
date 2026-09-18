@@ -10672,6 +10672,13 @@
       "clientId": "1764014760229",
       "description": "Demi coquille a réparer + 1 empilage",
       "statut": "en_cours"
+    },
+    {
+      "id": "1789721312833",
+      "name": "3023",
+      "clientId": "1764014760229",
+      "description": "Modif noyau",
+      "statut": "brouillon"
     }
   ],
   "postes": [
