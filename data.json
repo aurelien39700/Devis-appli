@@ -11370,7 +11370,7 @@
             "nom": "Étude",
             "taux": 90,
             "semaines": [
-              0.5,
+              2,
               0,
               0,
               0,
@@ -11557,7 +11557,7 @@
             "nom": "Carcasse",
             "fournisseur": "",
             "quantite": 1,
-            "prixUnit": 0
+            "prixUnit": 418
           },
           {
             "nom": "Éléments carcasse",
@@ -11609,7 +11609,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T11:45:42.734Z",
-      "updatedAt": "2026-09-18T09:11:48.801Z"
+      "updatedAt": "2026-09-18T09:11:54.229Z"
     },
     {
       "affaireId": "1787745391811",
