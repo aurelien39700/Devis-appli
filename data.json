@@ -11370,7 +11370,7 @@
             "nom": "Étude",
             "taux": 90,
             "semaines": [
-              0,
+              0.5,
               0,
               0,
               0,
@@ -11609,7 +11609,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-08-26T11:45:42.734Z",
-      "updatedAt": "2026-08-26T11:46:05.513Z"
+      "updatedAt": "2026-09-18T09:10:55.507Z"
     },
     {
       "affaireId": "1787745391811",
