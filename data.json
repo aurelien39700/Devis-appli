@@ -10678,7 +10678,7 @@
       "name": "3023",
       "clientId": "1764014760229",
       "description": "Modif noyau",
-      "statut": "brouillon"
+      "statut": "envoye"
     }
   ],
   "postes": [
@@ -17955,7 +17955,8 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-09-18T08:48:36.168Z",
-      "updatedAt": "2026-09-18T08:50:55.606Z"
+      "updatedAt": "2026-09-18T08:50:55.606Z",
+      "token": "1877f9b53e4f8226"
     }
   ],
   "entreprise": {
