@@ -8225,14 +8225,6 @@
       "date": "2026-07-08T14:54:06.075Z"
     },
     {
-      "id": "1783603534962",
-      "affaireId": "1783603492033",
-      "posteId": "1764060071044",
-      "hours": "4",
-      "enteredBy": "Henri",
-      "date": "2026-07-09T13:25:35.453Z"
-    },
-    {
       "id": "1783670073843",
       "affaireId": "1783411049600",
       "posteId": "1764014781418",
@@ -10380,13 +10372,6 @@
       "clientId": "1764014732621",
       "description": "réparation cales montante",
       "statut": "archivee"
-    },
-    {
-      "id": "1783603492033",
-      "name": "MD7251",
-      "clientId": "1764014447938",
-      "description": "4 broche tiroir",
-      "statut": "en_cours"
     },
     {
       "id": "1784790986238",
