@@ -17890,7 +17890,7 @@
           {
             "nom": "Fraisage CN",
             "taux": 46,
-            "temps": 0
+            "temps": 4
           },
           {
             "nom": "Érosion FIL CN",
@@ -17955,7 +17955,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-09-18T08:48:36.168Z",
-      "updatedAt": "2026-09-18T08:49:50.296Z"
+      "updatedAt": "2026-09-18T08:49:58.019Z"
     }
   ],
   "entreprise": {
