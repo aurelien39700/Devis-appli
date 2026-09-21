@@ -9615,6 +9615,14 @@
       "hours": 0.5,
       "enteredBy": "Administrateur",
       "date": "2026-09-21T11:47:45.611Z"
+    },
+    {
+      "id": "1789993085908",
+      "affaireId": "1789991203355",
+      "posteId": "1764060067448",
+      "hours": 0.5,
+      "enteredBy": "Administrateur",
+      "date": "2026-09-21T12:18:05.908Z"
     }
   ],
   "clients": [
