@@ -10749,6 +10749,13 @@
       "clientId": "1764014447938",
       "description": "Réfection 4 pin point dans noyau",
       "statut": "en_cours"
+    },
+    {
+      "id": "1789999612826",
+      "name": "MD1004",
+      "clientId": "1764014447938",
+      "description": "Réfection Zone centrale",
+      "statut": "brouillon"
     }
   ],
   "postes": [
