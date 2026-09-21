@@ -10694,6 +10694,13 @@
       "clientId": "1764014447938",
       "description": "Réparation zone usée par les gaz",
       "statut": "en_cours"
+    },
+    {
+      "id": "1789991203355",
+      "name": "MC6738",
+      "clientId": "1764014447938",
+      "description": "Réfection 4 pin point dans noyau",
+      "statut": "brouillon"
     }
   ],
   "postes": [
