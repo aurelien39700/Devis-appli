@@ -9663,6 +9663,14 @@
       "hours": 0.5,
       "enteredBy": "Administrateur",
       "date": "2026-09-22T06:56:13.521Z"
+    },
+    {
+      "id": "1790064886964",
+      "affaireId": "1789999612826",
+      "posteId": "1764061151273",
+      "hours": 0.5,
+      "enteredBy": "jojo",
+      "date": "2026-09-22T08:14:46.964Z"
     }
   ],
   "clients": [
