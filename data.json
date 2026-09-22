@@ -9711,6 +9711,14 @@
       "hours": 6,
       "enteredBy": "Thomas",
       "date": "2026-09-22T14:31:36.120Z"
+    },
+    {
+      "id": "1790088422556",
+      "affaireId": "1789999612826",
+      "posteId": "1764018748947",
+      "hours": 1,
+      "enteredBy": "Administrateur",
+      "date": "2026-09-22T14:47:02.556Z"
     }
   ],
   "clients": [
