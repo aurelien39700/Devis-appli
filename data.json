@@ -11025,6 +11025,13 @@
       "clientId": "1764014447938",
       "description": "M30x2 à réaliser",
       "statut": "en_cours"
+    },
+    {
+      "id": "1790322891018",
+      "name": "MG8310",
+      "clientId": "1764014447938",
+      "description": "Broche REP44 à réaiser",
+      "statut": "brouillon"
     }
   ],
   "postes": [
