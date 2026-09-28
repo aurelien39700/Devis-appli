@@ -9911,6 +9911,14 @@
       "hours": 1,
       "enteredBy": "jojo",
       "date": "2026-09-28T05:12:42.299Z"
+    },
+    {
+      "id": "1790578273747",
+      "affaireId": "1790325726569",
+      "posteId": "1764014781418",
+      "hours": 5,
+      "enteredBy": "Thomas",
+      "date": "2026-09-28T06:51:13.747Z"
     }
   ],
   "clients": [
