@@ -11137,6 +11137,13 @@
       "clientId": "1764014447938",
       "description": "Ejecteur Cassé",
       "statut": "en_cours"
+    },
+    {
+      "id": "1790595078682",
+      "name": "Insert Charnière",
+      "clientId": "1764014760229",
+      "description": "",
+      "statut": "brouillon"
     }
   ],
   "postes": [
