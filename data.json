@@ -11092,6 +11092,13 @@
       "clientId": "1764015790842",
       "description": "A démonter pour voir",
       "statut": "en_cours"
+    },
+    {
+      "id": "1790581458826",
+      "name": "MB9541",
+      "clientId": "1764014447938",
+      "description": "Insert ejecteur cassé",
+      "statut": "brouillon"
     }
   ],
   "postes": [
