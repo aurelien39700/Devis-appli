@@ -11272,6 +11272,13 @@
       "clientId": "1764014760229",
       "description": "",
       "statut": "en_cours"
+    },
+    {
+      "id": "1790673670256",
+      "name": "M42982",
+      "clientId": "1764014447938",
+      "description": "Soudure ejecteur cassé supression du trou",
+      "statut": "brouillon"
     }
   ],
   "postes": [
