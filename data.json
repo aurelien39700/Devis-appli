@@ -11357,6 +11357,13 @@
       "clientId": "1764014447938",
       "description": "Ajout Goupille",
       "statut": "en_cours"
+    },
+    {
+      "id": "1790767955572",
+      "name": "4-2229",
+      "clientId": "1790767902309",
+      "description": "Usinage forme électroérosion-fil (4 pièces)",
+      "statut": "brouillon"
     }
   ],
   "postes": [
