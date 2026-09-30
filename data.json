@@ -11303,6 +11303,13 @@
       "clientId": "1764014447938",
       "description": "Soudure ejecteur cassé supression du trou",
       "statut": "en_cours"
+    },
+    {
+      "id": "1790759959934",
+      "name": "MD1333",
+      "clientId": "1764014447938",
+      "description": "Ajout Goupille",
+      "statut": "brouillon"
     }
   ],
   "postes": [
