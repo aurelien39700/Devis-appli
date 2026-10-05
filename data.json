@@ -11616,6 +11616,13 @@
       "clientId": "1764015790842",
       "description": "Bavure emp 4",
       "statut": "en_cours"
+    },
+    {
+      "id": "1791202100537",
+      "name": "Moule 2",
+      "clientId": "1764014760229",
+      "description": "Soudure + reprise noyau",
+      "statut": "brouillon"
     }
   ],
   "postes": [
