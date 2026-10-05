@@ -11601,6 +11601,13 @@
       "clientId": "1764014447938",
       "description": "2 Ejecteurs tubulaire",
       "statut": "en_cours"
+    },
+    {
+      "id": "1791200887984",
+      "name": "FS130-373 Corps INF EP",
+      "clientId": "1764015790842",
+      "description": "Bavure emp 4",
+      "statut": "brouillon"
     }
   ],
   "postes": [
