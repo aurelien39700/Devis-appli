@@ -11623,6 +11623,13 @@
       "clientId": "1764014760229",
       "description": "Soudure + reprise noyau",
       "statut": "en_cours"
+    },
+    {
+      "id": "1791202139689",
+      "name": "MF9487",
+      "clientId": "1764014447938",
+      "description": "Soudure + reprise zones usées",
+      "statut": "brouillon"
     }
   ],
   "postes": [
