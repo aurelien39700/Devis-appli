@@ -12010,6 +12010,13 @@
       "clientId": "1764014447938",
       "description": "2 inserts pignon",
       "statut": "en_cours"
+    },
+    {
+      "id": "1791801103896",
+      "name": "B908-109",
+      "clientId": "1791801058905",
+      "description": "Soudure + reprise largeur 16N7",
+      "statut": "brouillon"
     }
   ],
   "postes": [
