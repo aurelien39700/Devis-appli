@@ -12165,6 +12165,13 @@
       "clientId": "1764014447938",
       "description": "Soudure + reprise",
       "statut": "en_cours"
+    },
+    {
+      "id": "1791984864741",
+      "name": "Bras Pince",
+      "clientId": "1791801058905",
+      "description": "Découpe FIL",
+      "statut": "brouillon"
     }
   ],
   "postes": [
