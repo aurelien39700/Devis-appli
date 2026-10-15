@@ -19226,7 +19226,7 @@
             "nom": "Sous-traitance",
             "fournisseur": "",
             "quantite": 1,
-            "prixUnit": 300
+            "prixUnit": 0
           },
           {
             "nom": "Transport",
@@ -19248,7 +19248,7 @@
       "echeances": [],
       "interlocuteurId": "",
       "createdAt": "2026-09-18T07:30:46.314Z",
-      "updatedAt": "2026-10-15T05:37:10.775Z"
+      "updatedAt": "2026-10-15T06:05:52.997Z"
     },
     {
       "affaireId": "1789721312833",
