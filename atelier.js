@@ -42,8 +42,14 @@
         achatsReels: {},      // total des achats réels par affaire
         histOuverts: {},      // historique : affaires dépliées
         histTout: {},         // historique : affaires montrant toutes leurs saisies
+        histPeriode: '7',     // historique : '7', '30' (jours) ou 'tout'
+        histRecherche: '',    // historique : filtre affaire / client
         recherche: '',
-        ongletGestion: 'entreprise',
+        ongletGestion: 'postes',
+        gestionDetail: false,     // au téléphone : une section de Gestion est ouverte
+        clientsFiltre: 'tous',
+        clientsRecherche: '',
+        clientOuvert: null,       // client affiché dans le panneau à côté de la liste
         editionAffaireId: null,
         editionClientId: null,    // le client édité dans la modale d'identité
         ficheClientId: null,      // la fiche client ouverte
@@ -375,27 +381,77 @@
 
     /* ── historique : toutes les saisies des affaires en cours,
           groupées par affaire, comme l'interface historique ── */
+    // Historique : une ligne compacte par affaire, limitée à une période
+    // (7 jours par défaut) et filtrable par recherche ; le détail des
+    // saisies s'ouvre au clic sur la ligne.
+    const PERIODES_HIST = [['7', '7 jours'], ['30', '30 jours'], ['tout', 'Tout']];
+    function quandCourt(iso) {
+        const j = Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(iso).setHours(0, 0, 0, 0)) / 864e5);
+        if (j <= 0) return "aujourd'hui";
+        if (j === 1) return 'hier';
+        if (j < 7) return 'il y a ' + j + ' j';
+        return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    }
     function rendreHistorique() {
         const conteneur = $('#listeHistorique');
         if (!conteneur) return;
         const admin = estAdmin();
+        $('#titreHistorique').textContent = admin ? 'Historique' : 'Mon historique';
+        conteneur.innerHTML = '<div class="hist-outils">'
+            + '<div class="hist-periodes" role="group" aria-label="Période">' + PERIODES_HIST.map(p =>
+                '<button type="button" data-h-periode="' + p[0] + '" aria-pressed="' + (etat.histPeriode === p[0]) + '">'
+                + p[1] + '</button>').join('') + '</div>'
+            + '<input type="search" id="histRecherche" placeholder="Rechercher une affaire ou un client" value="'
+            + attr(etat.histRecherche) + '" aria-label="Rechercher dans l\x27historique">'
+            + '</div><div id="histListe"></div>';
+        $$('#listeHistorique [data-h-periode]').forEach(b => b.addEventListener('click', () => {
+            etat.histPeriode = b.dataset.hPeriode;
+            rendreHistorique();
+        }));
+        $('#histRecherche').addEventListener('input', ev => {
+            etat.histRecherche = ev.target.value;
+            rendreListeHistorique();
+        });
+        rendreListeHistorique();
+    }
+
+    function rendreListeHistorique() {
+        const hote = $('#histListe');
+        if (!hote) return;
+        const admin = estAdmin();
+        const limite = etat.histPeriode === 'tout' ? '' :
+            new Date(Date.now() - parseInt(etat.histPeriode, 10) * 864e5).toISOString();
+        const q = etat.histRecherche.trim().toLowerCase();
 
         const groupes = {};
         etat.entries.forEach(e => {
+            if (limite && String(e.date) < limite) return;
             const a = etat.affaires.find(x => x.id === e.affaireId);
             if (!a) return;
             const st = stadeDe(a);
             if (st === 'terminee' || st === 'archivee') return;
             if (!admin && e.enteredBy && e.enteredBy !== etat.moi.name) return;
+            if (q) {
+                const c = etat.clients.find(x => x.id === a.clientId);
+                if ((a.name + ' ' + (a.description || '') + ' ' + (c ? c.name : '')).toLowerCase().indexOf(q) === -1) return;
+            }
             (groupes[e.affaireId] = groupes[e.affaireId] || []).push(e);
         });
 
         // les affaires pointées le plus récemment en premier
         const derniere = k => groupes[k].reduce((m, e) => String(e.date) > m ? String(e.date) : m, '');
         const cles = Object.keys(groupes).sort((x, y) => derniere(y).localeCompare(derniere(x)));
-        $('#titreHistorique').textContent = admin ? 'Historique' : 'Mon historique';
+        const libPeriode = etat.histPeriode === 'tout' ? '' : ' ces ' + etat.histPeriode + ' derniers jours';
         if (!cles.length) {
-            conteneur.innerHTML = '<p style="color:var(--ink-dim);">Aucune saisie sur les affaires en cours.</p>';
+            hote.innerHTML = '<div class="hist-vide">'
+                + (q ? 'Aucune affaire ne correspond à « ' + esc(etat.histRecherche.trim()) + ' »' + libPeriode + '.'
+                     : 'Aucune saisie sur les affaires en cours' + libPeriode + '.')
+                + (etat.histPeriode !== 'tout'
+                    ? ' <button type="button" class="lien-btn" data-h-periode-vide="' + (etat.histPeriode === '7' ? '30' : 'tout') + '">'
+                      + (etat.histPeriode === '7' ? 'Voir 30 jours' : 'Tout voir') + '</button>' : '')
+                + '</div>';
+            const b = hote.querySelector('[data-h-periode-vide]');
+            if (b) b.addEventListener('click', () => { etat.histPeriode = b.dataset.hPeriodeVide; rendreHistorique(); });
             return;
         }
 
@@ -406,11 +462,13 @@
         }
 
         const PAR_DEFAUT = 5;
-        conteneur.innerHTML = cles.map(k => {
+        let totalPeriode = 0;
+        hote.innerHTML = '<div class="hist-liste">' + cles.map(k => {
             const a = etat.affaires.find(x => x.id === k);
             const c = etat.clients.find(x => x.id === a.clientId);
             const liste = groupes[k].slice().sort((x, y) => String(y.date).localeCompare(String(x.date)));
             const total = liste.reduce((s, e) => s + (parseFloat(e.hours) || 0), 0);
+            totalPeriode += total;
             const ouvert = !!etat.histOuverts[k];
             const tout = !!etat.histTout[k];
             const visibles = tout ? liste : liste.slice(0, PAR_DEFAUT);
@@ -423,18 +481,19 @@
             });
 
             return '<div class="hist' + (ouvert ? ' ouvert' : '') + '">'
-                + '<button type="button" class="hist-tete" data-h-toggle="' + attr(k) + '" aria-expanded="' + ouvert + '">'
-                + '<span class="hist-client">' + esc(c ? c.name : '') + '</span>'
-                + '<span class="hist-nom">' + esc(a.name) + '</span>'
-                + (a.description ? '<span class="hist-desc">' + esc(a.description) + '</span>' : '')
-                + '<span class="hist-nb">' + liste.length + (liste.length > 1 ? ' saisies' : ' saisie') + '</span>'
+                + '<button type="button" class="hist-ligne" data-h-toggle="' + attr(k) + '" aria-expanded="' + ouvert + '">'
+                + '<span class="hist-id"><span class="hist-nom">' + esc(a.name) + '</span>'
+                + '<span class="hist-client">' + esc(c ? c.name : '') + '</span></span>'
+                + '<span class="hist-quand">' + quandCourt(liste[0].date) + '</span>'
                 + '<span class="hist-total">' + h1(total) + ' h</span>'
                 + '<svg class="hist-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
                 + '</button>'
-                + '<div class="chips">' + Object.keys(parPoste).map(n =>
-                    '<span class="chip">' + esc(n) + ' · ' + h1(parPoste[n]) + ' h</span>').join('') + '</div>'
                 + (ouvert
-                    ? '<div class="hist-saisies">' + visibles.map(e => {
+                    ? '<div class="hist-saisies">'
+                    + (a.description ? '<div class="hist-desc">' + esc(a.description) + '</div>' : '')
+                    + '<div class="chips">' + Object.keys(parPoste).map(n =>
+                        '<span class="chip">' + esc(n) + ' · ' + h1(parPoste[n]) + ' h</span>').join('') + '</div>'
+                    + visibles.map(e => {
                         const p = etat.postes.find(x => x.id === e.posteId);
                         const quand = new Date(e.date).toLocaleDateString('fr-FR',
                             { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -461,23 +520,25 @@
                     + '</div>'
                     : '')
                 + '</div>';
-        }).join('');
+        }).join('') + '</div>'
+            + '<div class="hist-resume">' + cles.length + (cles.length > 1 ? ' affaires' : ' affaire')
+            + (libPeriode ? ' sur ' + etat.histPeriode + ' jours' : '') + ' · ' + h1(totalPeriode) + ' h</div>';
 
-        $$('#listeHistorique [data-h-toggle]').forEach(b => b.addEventListener('click', () => {
+        $$('#histListe [data-h-toggle]').forEach(b => b.addEventListener('click', () => {
             const k = b.dataset.hToggle;
             etat.histOuverts[k] = !etat.histOuverts[k];
-            rendreHistorique();
+            rendreListeHistorique();
         }));
-        $$('#listeHistorique [data-h-tout]').forEach(b => b.addEventListener('click', () => {
+        $$('#histListe [data-h-tout]').forEach(b => b.addEventListener('click', () => {
             const k = b.dataset.hTout;
             etat.histTout[k] = !etat.histTout[k];
-            rendreHistorique();
+            rendreListeHistorique();
         }));
-        $$('#listeHistorique [data-h-modif]').forEach(b => b.addEventListener('click', () => {
+        $$('#histListe [data-h-modif]').forEach(b => b.addEventListener('click', () => {
             const e = etat.entries.find(x => x.id === b.dataset.hModif);
             if (e) ouvrirSaisie({ edition: e });
         }));
-        $$('#listeHistorique [data-h-suppr]').forEach(b => b.addEventListener('click', async () => {
+        $$('#histListe [data-h-suppr]').forEach(b => b.addEventListener('click', async () => {
             if (!confirm('Supprimer cette saisie ?')) return;
             try {
                 await api('/entries/' + b.dataset.hSuppr, 'DELETE');
@@ -1904,72 +1965,127 @@
 
     /* ═══════════════ GESTION (en onglets pleine largeur) ═══════════════ */
 
-    const ONGLETS_GESTION = [
-        ['entreprise', 'Entreprise'], ['clients', 'Clients'], ['postes', 'Postes'],
-        ['utilisateurs', 'Utilisateurs'], ['fournisseurs', 'Fournisseurs'], ['achats', 'Achats types']
-    ];
-
+    /* Gestion : sous-navigation groupée (menu à gauche ; au téléphone, page
+       d'accueil dont chaque section s'ouvre en plein écran) + panneau de travail. */
+    const SVG_G = {
+        ent: '<svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5M8 9h1M15 9h1M8 13h1M15 13h1"/></svg>',
+        cli: '<svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>',
+        usr: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/></svg>',
+        pos: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>',
+        bib: '<svg viewBox="0 0 24 24"><path d="M4 5h5v15H4zM10 5h5v15h-5zM16 6l3.5-1 3 14-3.5 1z"/></svg>',
+        chev: '<svg viewBox="0 0 24 24" class="gx-chev"><path d="m9 6 6 6-6 6"/></svg>',
+        plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+        dots: '<svg viewBox="0 0 24 24" class="gx-dots"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+        poignee: '<svg viewBox="0 0 10 20" class="gx-poignee-svg"><circle cx="3" cy="4" r="1.5"/><circle cx="7" cy="4" r="1.5"/><circle cx="3" cy="10" r="1.5"/><circle cx="7" cy="10" r="1.5"/><circle cx="3" cy="16" r="1.5"/><circle cx="7" cy="16" r="1.5"/></svg>'
+    };
+    const JOUR_MS = 864e5;
+    const joursDepuis = iso => iso ? Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(iso).setHours(0, 0, 0, 0)) / JOUR_MS) : Infinity;
+    function depuisQuand(iso) {
+        const j = joursDepuis(iso);
+        if (j === Infinity) return null;
+        if (j <= 0) return "aujourd'hui";
+        if (j === 1) return 'hier';
+        if (j < 30) return 'il y a ' + j + ' j';
+        if (j < 365) return 'il y a ' + Math.round(j / 30) + ' mois';
+        return 'il y a plus d\x27un an';
+    }
+    const clientIncomplet = c => !c.adresse || !c.tva;
+    const utilisateursAtelier = () => etat.users.filter(u => u.name !== 'Admin');
+    function sectionsGestion() {
+        return [
+            { groupe: 'Entreprise', items: [
+                { k: 'entreprise', ico: SVG_G.ent, t: 'Coordonnées & devis', s: 'Ce qui figure sur vos devis' }] },
+            { groupe: 'Personnes', items: [
+                { k: 'clients', ico: SVG_G.cli, t: 'Clients',
+                  s: etat.clients.length + ' clients · ' + etat.clients.filter(c =>
+                      etat.affaires.some(a => a.clientId === c.id && stadeDe(a) === 'en_cours')).length + ' actifs',
+                  alerte: etat.clients.some(clientIncomplet) },
+                { k: 'utilisateurs', ico: SVG_G.usr, t: 'Utilisateurs', s: utilisateursAtelier().length + ' comptes atelier' }] },
+            { groupe: 'Atelier', items: [
+                { k: 'postes', ico: SVG_G.pos, t: 'Postes & taux',
+                  s: etat.postes.filter(p => !p.isMachine).length + ' main-d\x27œuvre · ' + etat.postes.filter(p => p.isMachine).length + ' machines' },
+                { k: 'biblio', ico: SVG_G.bib, t: 'Achats & fournisseurs',
+                  s: (etat.achatsBib.length + etat.fournisseursBib.length) + ' libellés proposés' }] }
+        ];
+    }
+    const PANNEAUX_GESTION = {};
     function rendreGestion() {
-        const actif = etat.ongletGestion || 'entreprise';
-        const comptes = {
-            clients: etat.clients.length,
-            postes: etat.postes.length,
-            utilisateurs: etat.users.filter(u => u.name !== 'Admin').length,
-            fournisseurs: etat.fournisseursBib.length,
-            achats: etat.achatsBib.length
-        };
-        const panneaux = {
-            entreprise: panneauEntreprise, clients: panneauClients, postes: panneauPostes,
-            utilisateurs: panneauUtilisateurs, fournisseurs: panneauFournisseurs, achats: panneauAchatsTypes
-        };
-        const brancheurs = {
-            entreprise: brancherEntreprise, clients: brancherClients, postes: brancherPostes,
-            utilisateurs: brancherUtilisateurs, fournisseurs: brancherFournisseurs, achats: brancherAchatsTypes
-        };
-
-        $('#gestionContenu').innerHTML =
-            '<div class="gonglets">' + ONGLETS_GESTION.map(o =>
-                '<button class="gonglet' + (o[0] === actif ? ' is-on' : '') + '" data-gonglet="' + o[0] + '">'
-                + o[1]
-                + (comptes[o[0]] !== undefined ? '<span class="gonglet-n">' + comptes[o[0]] + '</span>' : '')
-                + '</button>').join('') + '</div>'
-            + '<div class="bloc gest-panneau">' + panneaux[actif]() + '</div>';
-
-        $$('#gestionContenu [data-gonglet]').forEach(b => b.addEventListener('click', () => {
-            etat.ongletGestion = b.dataset.gonglet;
+        if (!PANNEAUX_GESTION[etat.ongletGestion]) etat.ongletGestion = 'postes';
+        const actif = etat.ongletGestion;
+        $('#gestionContenu').innerHTML = '<div class="gx' + (etat.gestionDetail ? ' detail' : '') + '">'
+            + '<nav class="gx-nav" aria-label="Sections de Gestion">' + sectionsGestion().map(g =>
+                '<div class="gx-groupe"><div class="eyebrow">' + g.groupe + '</div>' + g.items.map(i =>
+                    '<button type="button" class="gx-lien" data-gsection="' + i.k + '"' + (i.k === actif ? ' aria-current="page"' : '') + '>'
+                    + i.ico + '<span class="gx-lien-t"><b>' + i.t + '</b><small>' + esc(i.s) + '</small></span>'
+                    + (i.alerte ? '<span class="gx-alerte" title="Informations à compléter"></span>' : '')
+                    + SVG_G.chev + '</button>').join('') + '</div>').join('') + '</nav>'
+            + '<div class="gx-panneau"><button type="button" class="gx-retour" data-gretour>‹ Gestion</button>'
+            + PANNEAUX_GESTION[actif][0]() + '</div></div>';
+        $$('#gestionContenu [data-gsection]').forEach(b => b.addEventListener('click', () => {
+            etat.ongletGestion = b.dataset.gsection;
+            etat.gestionDetail = true;
             rendreGestion();
+            if (matchMedia('(max-width:720px)').matches) window.scrollTo(0, 0);
         }));
-        brancheurs[actif]();
+        $('#gestionContenu [data-gretour]').addEventListener('click', () => {
+            etat.gestionDetail = false;
+            rendreGestion();
+        });
+        PANNEAUX_GESTION[actif][1]();
+    }
+    function enteteGestion(titre, texte, action) {
+        return '<div class="gx-tete"><div><h2>' + titre + '</h2><p>' + texte + '</p></div>' + (action || '') + '</div>';
     }
 
-    /* ── Entreprise ── */
+    /* ── Coordonnées & devis : formulaire + aperçu en direct de l'en-tête du devis ── */
+    const CHAMPS_ENT = ['nom', 'forme', 'siret', 'tva', 'adresse', 'cp', 'ville', 'tel', 'site'];
     function panneauEntreprise() {
         const ent = etat.entreprise;
-        const ch = (k, label, valeur) =>
-            '<div class="ch"><label>' + label + '</label>'
-            + '<input type="text" value="' + attr(valeur || '') + '" data-ent="' + k + '"></div>';
-        return '<div class="titre"><h2>Entreprise</h2></div>'
-            + '<div class="ent">'
-            + '<div class="ent-logo">'
-            + '<div class="ent-logo-apercu">' + (ent.logo
-                ? '<img src="' + attr(ent.logo) + '" alt="Logo">'
-                : '<div class="mark" style="width:52px;height:52px;"></div>') + '</div>'
+        const ch = (k, label, large) => '<div class="gx-champ' + (large ? ' large' : '') + '"><label for="ent_' + k + '">' + label + '</label>'
+            + '<input type="text" id="ent_' + k + '" value="' + attr(ent[k] || '') + '" data-ent="' + k + '"></div>';
+        return enteteGestion('Coordonnées & devis', 'Ces informations sont imprimées en tête de chaque devis envoyé au client.')
+            + '<div class="gx-ent"><div class="gx-ent-form">'
+            + '<fieldset class="gx-fs"><legend>Identité</legend>' + ch('nom', 'Raison sociale') + ch('forme', 'Forme juridique')
+            + ch('siret', 'SIRET') + ch('tva', 'N° TVA')
+            + '<div class="gx-depot">' + (ent.logo ? '<img src="' + attr(ent.logo) + '" alt="Logo actuel">' : '<span class="logo-somepre" style="width:110px"></span>')
+            + '<p>Logo imprimé sur les devis (PNG ou SVG, 300 Ko max).</p>'
             + '<input type="file" id="fichierLogo" accept="image/png,image/jpeg,image/svg+xml" class="hidden">'
-            + '<button class="btn btn-sm" id="btnLogo">Changer le logo</button>'
-            + '<span class="ent-logo-note">PNG ou SVG, 300 Ko max</span>'
-            + '</div>'
-            + '<div class="ent-champs">'
-            + ch('nom', 'Nom', ent.nom) + ch('forme', 'Forme juridique', ent.forme)
-            + '<div class="ch ch-l"><label>Adresse</label><input type="text" value="'
-            + attr(ent.adresse || '') + '" data-ent="adresse"></div>'
-            + ch('cp', 'Code postal', ent.cp) + ch('ville', 'Ville', ent.ville)
-            + ch('tel', 'Téléphone', ent.tel) + ch('site', 'Site web', ent.site)
-            + ch('siret', 'SIRET', ent.siret) + ch('tva', 'N° TVA', ent.tva)
-            + '</div></div>'
-            + '<div class="ajout" style="border-top:none;justify-content:flex-end;">'
-            + '<button class="btn btn-arc btn-sm" id="btnEnregistrerEntreprise">Enregistrer</button></div>';
+            + '<button type="button" class="btn btn-sm" id="btnLogo">Changer</button></div></fieldset>'
+            + '<fieldset class="gx-fs"><legend>Coordonnées</legend>' + ch('adresse', 'Adresse', true) + ch('cp', 'Code postal')
+            + ch('ville', 'Ville') + ch('tel', 'Téléphone') + ch('site', 'Site web') + '</fieldset>'
+            + '<div class="gx-enr" id="barreEnt" hidden><span>Modifications non enregistrées</span>'
+            + '<button type="button" class="btn btn-sm" id="btnAnnulerEnt">Annuler</button>'
+            + '<button type="button" class="btn btn-arc btn-sm" id="btnEnregistrerEntreprise">Enregistrer</button></div>'
+            + '</div><div class="gx-apercu"><div class="eyebrow">Aperçu sur le devis client</div><div class="gx-feuille" id="gxFeuille"></div></div></div>';
+    }
+    function apercuDevis() {
+        const v = k => esc((($('#ent_' + k) || {}).value || '').trim());
+        const exemple = Object.keys(etat.devis).map(k => etat.devis[k]).filter(d => d.affaire)
+            .sort((x, y) => String(y.date).localeCompare(String(x.date)))[0];
+        $('#gxFeuille').innerHTML = '<div class="gx-f-haut">'
+            + (etat.entreprise.logo ? '<img src="' + attr(etat.entreprise.logo) + '" alt="">' : '<span></span>')
+            + '<div class="gx-f-coord"><b>' + v('nom') + ' ' + v('forme') + '</b><br>' + v('adresse') + '<br>'
+            + v('cp') + ' ' + v('ville') + (v('tel') ? '<br>Tél. ' + v('tel') : '') + (v('site') ? '<br>' + v('site') : '') + '</div></div><hr>'
+            + '<div class="gx-f-titre">DEVIS ' + esc(exemple ? exemple.affaire : 'N°') + '</div>'
+            + '<div>Client : ' + esc(exemple ? exemple.client : '—') + '</div>'
+            + '<i style="width:92%"></i><i style="width:76%"></i><i style="width:84%"></i>'
+            + '<div class="gx-f-pied">' + v('nom') + ' ' + v('forme') + (v('siret') ? ' · SIRET ' + v('siret') : '')
+            + (v('tva') ? ' · TVA ' + v('tva') : '') + '</div>';
     }
     function brancherEntreprise() {
+        const initial = {};
+        CHAMPS_ENT.forEach(k => { initial[k] = etat.entreprise[k] || ''; });
+        const majBarre = () => {
+            $('#barreEnt').hidden = CHAMPS_ENT.every(k => $('#ent_' + k).value === initial[k]) && !etat.logoModifie;
+        };
+        apercuDevis();
+        majBarre();
+        $$('#gestionContenu [data-ent]').forEach(i2 => i2.addEventListener('input', () => { apercuDevis(); majBarre(); }));
+        $('#btnAnnulerEnt').addEventListener('click', () => {
+            etat.logoModifie = false;
+            etat.entreprise = Object.assign({}, etat.entrepriseServeur || etat.entreprise);
+            rendreGestion();
+        });
         $('#btnLogo').addEventListener('click', () => $('#fichierLogo').click());
         $('#fichierLogo').addEventListener('change', () => {
             const f = $('#fichierLogo').files[0];
@@ -1977,53 +2093,136 @@
             if (f.size > 300 * 1024) { toast('Logo trop lourd (300 Ko maximum)', true); return; }
             const lecteur = new FileReader();
             lecteur.onload = () => {
+                // garder les champs saisis, remplacer seulement le logo
+                if (!etat.entrepriseServeur) etat.entrepriseServeur = Object.assign({}, etat.entreprise);
+                CHAMPS_ENT.forEach(k => { etat.entreprise[k] = $('#ent_' + k).value; });
                 etat.entreprise.logo = lecteur.result;
+                etat.logoModifie = true;
                 rendreGestion();
-                toast('Logo chargé — pensez à Enregistrer');
             };
             lecteur.readAsDataURL(f);
         });
         $('#btnEnregistrerEntreprise').addEventListener('click', async () => {
             const corps = { logo: etat.entreprise.logo || '' };
-            $$('#gestionContenu [data-ent]').forEach(i2 => { corps[i2.dataset.ent] = i2.value.trim(); });
+            CHAMPS_ENT.forEach(k => { corps[k] = $('#ent_' + k).value.trim(); });
             try {
                 const r = await api('/entreprise', 'POST', corps);
                 etat.entreprise = r.entreprise;
+                etat.entrepriseServeur = null;
+                etat.logoModifie = false;
+                rendreGestion();
                 toast('Coordonnées enregistrées');
             } catch (err) { toast(err.message, true); }
         });
     }
 
-    /* ── Clients ── */
-    function panneauClients() {
-        return '<div class="titre"><h2>Clients</h2></div>'
-            + etat.clients.map(c => {
-                const n = etat.affaires.filter(a => a.clientId === c.id).length;
-                const nc = (c.contacts || []).length;
-                return '<div class="ligne-g"><span class="n">' + esc(c.name) + '</span>'
-                    + '<span class="m">' + n + ' affaire' + (n > 1 ? 's' : '')
-                    + (nc ? ' · ' + nc + ' interlocuteur' + (nc > 1 ? 's' : '') : '') + '</span>'
-                    + '<div class="acts">'
-                    + '<button class="btn btn-sm" data-ouvrir-client="' + attr(c.id) + '">Ouvrir</button>'
-                    + '</div></div>';
-            }).join('')
-            + '<div class="ajout"><input type="text" id="ajClient" placeholder="Nouveau client">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjClient">Ajouter</button></div>';
+    /* ── Clients : recherche, filtres, tableau + panneau du client ── */
+    function statsClient(c) {
+        const affaires = etat.affaires.filter(a => a.clientId === c.id);
+        const ids = new Set(affaires.map(a => a.id));
+        let heures = 0, derniere = '';
+        etat.entries.forEach(e => {
+            if (!ids.has(e.affaireId)) return;
+            heures += parseFloat(e.hours) || 0;
+            if (String(e.date) > derniere) derniere = String(e.date);
+        });
+        return { total: affaires.length, enCours: affaires.filter(a => stadeDe(a) === 'en_cours').length,
+                 heures: heures, derniere: derniere || null };
     }
-    function brancherClients() {
-        $('#btnAjClient').addEventListener('click', async () => {
-            const nom = $('#ajClient').value.trim();
-            if (!nom) { $('#ajClient').focus(); return; }
+    const FILTRES_CLIENTS = [['tous', 'Tous'], ['actifs', 'Affaire en cours'], ['dormants', 'Sans activité depuis 3 mois']];
+    function panneauClients() {
+        const incomplets = etat.clients.filter(clientIncomplet).length;
+        return enteteGestion('Clients', 'Retrouvez un client, ses affaires en cours et les informations reprises sur ses devis.',
+                '<button type="button" class="btn btn-arc btn-sm" id="btnNouveauClient">' + SVG_G.plus + 'Nouveau client</button>')
+            + (incomplets ? '<div class="gx-bandeau">⚠ <span><b>' + incomplets + (incomplets > 1 ? ' clients n\x27ont' : ' client n\x27a')
+                + '</b> pas d\x27adresse ou de n° de TVA. Ces informations manquent sur leurs devis.</span></div>' : '')
+            + '<div class="gx-outils"><input type="search" id="rechClients" placeholder="Rechercher un client" value="'
+            + attr(etat.clientsRecherche) + '" aria-label="Rechercher un client">'
+            + '<div class="gx-filtres">' + FILTRES_CLIENTS.map(f => '<button type="button" class="gx-filtre" data-cfiltre="' + f[0]
+                + '" aria-pressed="' + (etat.clientsFiltre === f[0]) + '">' + f[1] + '</button>').join('') + '</div></div>'
+            + '<div class="gx-clients' + (etat.clientOuvert ? ' avec-tiroir' : '') + '"><div class="gx-liste-clients" id="listeClientsG"></div>'
+            + '<div id="tiroirClient"></div></div>';
+    }
+    function rendreListeClients() {
+        const q = etat.clientsRecherche.trim().toLowerCase();
+        const lignes = etat.clients.map(c => ({ c: c, s: statsClient(c) }))
+            .filter(x => (!q || x.c.name.toLowerCase().indexOf(q) !== -1)
+                && (etat.clientsFiltre === 'tous' || (etat.clientsFiltre === 'actifs' ? x.s.enCours > 0 : joursDepuis(x.s.derniere) > 90)))
+            .sort((x, y) => String(y.s.derniere || '').localeCompare(String(x.s.derniere || '')) || x.c.name.localeCompare(y.c.name));
+        const etatFiche = c => clientIncomplet(c) ? '<span class="gx-pastille warn">À compléter</span>' : '<span class="gx-pastille ok">Complète</span>';
+        $('#listeClientsG').innerHTML = lignes.length
+            ? '<div class="gx-table"><table><thead><tr><th>Client</th><th class="d">En cours</th><th class="d">Affaires</th>'
+              + '<th class="d">Heures pointées</th><th>Dernière activité</th><th>Fiche</th></tr></thead><tbody>'
+              + lignes.map(x => '<tr data-gclient="' + attr(x.c.id) + '" tabindex="0" aria-selected="' + (etat.clientOuvert === x.c.id) + '">'
+                + '<td class="gx-cnom">' + esc(x.c.name) + '</td>'
+                + '<td class="d">' + (x.s.enCours ? '<span class="gx-pastille arc">' + x.s.enCours + '</span>' : '<span class="gx-vide">—</span>') + '</td>'
+                + '<td class="d">' + x.s.total + '</td>'
+                + '<td class="d">' + (x.s.heures ? h1(x.s.heures) + ' h' : '<span class="gx-vide">—</span>') + '</td>'
+                + '<td>' + (depuisQuand(x.s.derniere) || '<span class="gx-vide">aucune</span>') + '</td>'
+                + '<td>' + etatFiche(x.c) + '</td></tr>').join('') + '</tbody></table></div>'
+              + '<div class="gx-cartes">' + lignes.map(x => '<button type="button" class="gx-ccarte" data-gclient="' + attr(x.c.id) + '">'
+                + '<span class="gx-ccarte-t"><b>' + esc(x.c.name) + '</b><span>' + (x.s.enCours ? x.s.enCours + ' en cours · ' : '')
+                + x.s.total + (x.s.total > 1 ? ' affaires' : ' affaire') + ' · ' + (depuisQuand(x.s.derniere) || 'aucune activité') + '</span></span>'
+                + etatFiche(x.c) + '</button>').join('') + '</div>'
+            : '<div class="gx-vide-bloc">Aucun client ne correspond.</div>';
+        $$('#listeClientsG [data-gclient]').forEach(r => {
+            r.addEventListener('click', () => ouvrirTiroirClient(r.dataset.gclient));
+            r.addEventListener('keydown', ev => { if (ev.key === 'Enter') ouvrirTiroirClient(r.dataset.gclient); });
+        });
+    }
+    function ouvrirTiroirClient(id) {
+        const c = etat.clients.find(x => x.id === id);
+        if (!c) { etat.clientOuvert = null; return; }
+        etat.clientOuvert = id;
+        etat.ficheClientId = id; // pour la modale des interlocuteurs
+        const s = statsClient(c);
+        const contacts = c.contacts || [];
+        document.querySelector('.gx-clients').classList.add('avec-tiroir');
+        $('#tiroirClient').innerHTML = '<div class="gx-tiroir"><div class="gx-tiroir-tete"><h3>' + esc(c.name) + '</h3>'
+            + '<button type="button" class="gx-fermer" id="fermerTiroir" aria-label="Fermer">×</button></div>'
+            + '<div class="gx-chiffres"><div><b>' + s.enCours + '</b><span>en cours</span></div><div><b>' + s.total
+            + '</b><span>affaires</span></div><div><b>' + Math.round(s.heures) + '</b><span>heures</span></div></div>'
+            + '<div class="gx-champ"><label for="tcAdresse">Adresse</label><input id="tcAdresse" placeholder="À compléter : imprimée sur le devis" value="' + attr(c.adresse || '') + '"></div>'
+            + '<div class="gx-champ"><label for="tcTva">N° TVA intracommunautaire</label><input id="tcTva" placeholder="À compléter" value="' + attr(c.tva || '') + '"></div>'
+            + '<div><div class="eyebrow" style="margin-bottom:6px">Interlocuteurs</div>'
+            + (contacts.length ? '<div class="gx-contacts">' + contacts.map((p, i) => '<button type="button" class="gx-contact" data-tcontact="' + i + '">'
+                + '<b>' + esc(p.nom) + '</b><span>' + esc([p.fonction, p.email, p.tel].filter(Boolean).join(' · ') || 'Aucune coordonnée') + '</span></button>').join('') + '</div>' : '')
+            + '<button type="button" class="btn btn-sm gx-ajout-contact" id="tcAjoutContact">' + SVG_G.plus + 'Ajouter un interlocuteur</button></div>'
+            + '<div class="gx-tiroir-actions"><button type="button" class="btn btn-sm" id="tcFiche">Fiche complète et affaires</button>'
+            + '<button type="button" class="btn btn-sm" id="tcRenommer">Renommer</button></div></div>';
+        $('#fermerTiroir').addEventListener('click', () => {
+            etat.clientOuvert = null;
+            $('#tiroirClient').innerHTML = '';
+            document.querySelector('.gx-clients').classList.remove('avec-tiroir');
+            rendreListeClients();
+        });
+        const enregistrerChamp = (champ, cle) => $(champ).addEventListener('change', async () => {
             try {
-                await api('/clients', 'POST', { name: nom });
-                await chargerTout(); rendreGestion(); toast('Client ajouté');
+                await api('/clients/' + c.id, 'PUT', { [cle]: $(champ).value.trim() });
+                await chargerTout();
+                rendreListeClients();
+                toast(cle === 'tva' ? 'N° TVA enregistré' : 'Adresse enregistrée');
             } catch (err) { toast(err.message, true); }
         });
-        $$('#gestionContenu [data-ouvrir-client]').forEach(b => b.addEventListener('click', () => {
-            etat.ficheClientId = b.dataset.ouvrirClient;
-            rendreFicheClient();
-            aller('ficheClient');
+        enregistrerChamp('#tcAdresse', 'adresse');
+        enregistrerChamp('#tcTva', 'tva');
+        $('#tcAjoutContact').addEventListener('click', () => ouvrirPersonne(null));
+        $$('#tiroirClient [data-tcontact]').forEach(b => b.addEventListener('click', () => ouvrirPersonne(parseInt(b.dataset.tcontact, 10))));
+        $('#tcFiche').addEventListener('click', () => { etat.ficheClientId = c.id; rendreFicheClient(); aller('ficheClient'); });
+        $('#tcRenommer').addEventListener('click', () => ouvrirModalClient(c));
+        rendreListeClients();
+        if (matchMedia('(max-width:720px)').matches) $('#tiroirClient').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function brancherClients() {
+        rendreListeClients();
+        $('#btnNouveauClient').addEventListener('click', () => ouvrirModalClient(null));
+        $('#rechClients').addEventListener('input', ev => { etat.clientsRecherche = ev.target.value; rendreListeClients(); });
+        $$('#gestionContenu [data-cfiltre]').forEach(b => b.addEventListener('click', () => {
+            etat.clientsFiltre = b.dataset.cfiltre;
+            $$('#gestionContenu [data-cfiltre]').forEach(x => x.setAttribute('aria-pressed', x === b));
+            rendreListeClients();
         }));
+        if (etat.clientOuvert) ouvrirTiroirClient(etat.clientOuvert);
     }
 
     /* ── FICHE CLIENT : identité, interlocuteurs en cartes, affaires ── */
@@ -2186,7 +2385,7 @@
             await api('/clients/' + c.id, 'PUT', { contacts: contacts });
             fermer('scrimPersonne');
             await chargerTout();
-            rendreFicheClient();
+            if (etat.vue === 'gestion') rendreGestion(); else rendreFicheClient();
             toast(etat.editionContactIdx === null ? nom + ' ajouté' : nom + ' mis à jour');
         } catch (err) { toast(err.message, true); }
     });
@@ -2217,116 +2416,186 @@
         } catch (err) { toast(err.message, true); }
     });
 
-    /* ── Postes ── */
+    /* ── Postes & taux : deux groupes, glisser-déposer, nom et taux modifiables sur place ── */
+    function heuresPoste30j() {
+        const limite = new Date(Date.now() - 30 * JOUR_MS).toISOString();
+        const h = {};
+        etat.entries.forEach(e => {
+            if (String(e.date) < limite) return;
+            h[e.posteId] = (h[e.posteId] || 0) + (parseFloat(e.hours) || 0);
+        });
+        return h;
+    }
     function panneauPostes() {
-        return '<div class="titre"><h2>Postes</h2></div>'
-            + etat.postes.map((p, idx) =>
-                '<div class="ligne-g">'
-                + '<div class="ord">'
-                + '<button data-monter="' + attr(p.id) + '"' + (idx === 0 ? ' disabled' : '')
-                + ' aria-label="Monter"><svg viewBox="0 0 24 24"><path d="M6 14l6-6 6 6"/></svg></button>'
-                + '<button data-descendre="' + attr(p.id) + '"' + (idx === etat.postes.length - 1 ? ' disabled' : '')
-                + ' aria-label="Descendre"><svg viewBox="0 0 24 24"><path d="M6 10l6 6 6-6"/></svg></button>'
-                + '</div>'
-                + '<span class="n">' + esc(p.name)
-                + (p.isMachine ? '<span class="mach">MACHINE</span>' : '') + '</span>'
-                + '<label class="check" title="Temps machine"><input type="checkbox" data-machine="' + attr(p.id) + '"'
-                + (p.isMachine ? ' checked' : '') + '><span>Machine</span></label>'
-                + '<span class="m">taux</span>'
-                + '<input type="number" min="0" step="1" class="taux-inline" value="'
-                + (p.tauxHoraire || 0) + '" data-taux="' + attr(p.id) + '" title="Taux facturé €/h">'
-                + '<span class="m">€/h</span>'
-                + '<div class="acts">'
-                + '<button class="btn btn-sm" data-ren-poste="' + attr(p.id) + '">Renommer</button>'
-                + '<button class="btn btn-sm btn-danger" data-suppr-poste="' + attr(p.id) + '">Supprimer</button>'
-                + '</div></div>').join('')
-            + '<div class="ajout"><input type="text" id="ajPoste" placeholder="Nouveau poste">'
+        const h30 = heuresPoste30j();
+        const max = Math.max(1, ...etat.postes.map(p => h30[p.id] || 0));
+        const ligne = p => '<div class="gx-poste" draggable="true" data-gposte="' + attr(p.id) + '">'
+            + '<span class="gx-poignee" title="Glisser pour réordonner">' + SVG_G.poignee + '</span>'
+            + '<input class="gx-pnom" value="' + attr(p.name) + '" data-pnom="' + attr(p.id) + '" aria-label="Nom du poste">'
+            + '<span class="gx-activite"><span class="gx-jauge"><i style="width:' + Math.round((h30[p.id] || 0) / max * 100) + '%"></i></span>'
+            + '<span>' + (h30[p.id] ? h1(h30[p.id]) + ' h' : 'aucune') + '</span></span>'
+            + '<label class="gx-taux"><input type="number" min="0" step="1" value="' + (parseFloat(p.tauxHoraire) || 0)
+            + '" data-taux="' + attr(p.id) + '" aria-label="Taux horaire ' + attr(p.name) + '"><span>€/h</span></label>'
+            + '<div class="gx-menu-zone"><button type="button" class="gx-menu-btn" data-pmenu="' + attr(p.id) + '" aria-label="Actions pour ' + attr(p.name) + '" aria-expanded="false">' + SVG_G.dots + '</button>'
+            + '<div class="gx-menu" hidden>'
+            + '<button type="button" data-pmonter="' + attr(p.id) + '">Monter</button>'
+            + '<button type="button" data-pdescendre="' + attr(p.id) + '">Descendre</button>'
+            + '<button type="button" data-pmachine="' + attr(p.id) + '">' + (p.isMachine ? 'Passer en main-d\x27œuvre' : 'Passer en machine') + '</button>'
+            + '<button type="button" class="rouge" data-psuppr="' + attr(p.id) + '">Supprimer…</button></div></div></div>';
+        const legende = '<div class="gx-legende"><span></span><span>Poste</span><span>Pointé sur 30 jours</span><span>Taux facturé</span><span></span></div>';
+        const groupe = (titre, sous, liste, g) => '<div class="gx-carte gx-gpostes" data-ggroupe="' + g + '"><div class="gx-gtitre"><h3>' + titre
+            + '</h3><span>' + sous + '</span></div>' + legende + (liste.map(ligne).join('') || '<div class="gx-vide-bloc">Aucun poste.</div>') + '</div>';
+        const mo = etat.postes.filter(p => !p.isMachine), ma = etat.postes.filter(p => p.isMachine);
+        return enteteGestion('Postes & taux', 'Le taux horaire sert au chiffrage des devis et au prix de vente réel des affaires.',
+                '<button type="button" class="btn btn-arc btn-sm" id="btnNouveauPoste">' + SVG_G.plus + 'Nouveau poste</button>')
+            + '<form class="gx-ajout-poste" id="formPoste" hidden><input type="text" id="ajPoste" placeholder="Nom du poste" aria-label="Nom du nouveau poste">'
             + '<label class="check"><input type="checkbox" id="ajPosteMachine"><span>Machine</span></label>'
-            + '<button class="btn btn-arc btn-sm" id="btnAjPoste">Ajouter</button></div>';
+            + '<button type="submit" class="btn btn-arc btn-sm">Ajouter</button></form>'
+            + groupe('Main-d\x27œuvre', mo.length + (mo.length > 1 ? ' postes' : ' poste'), mo, 'mo')
+            + groupe('Machines', ma.length + (ma.length > 1 ? ' postes' : ' poste') + ' · temps machine', ma, 'ma');
+    }
+    async function enregistrerOrdrePostes(ordre) {
+        try {
+            await api('/postes/reorder', 'POST', { postesOrder: ordre.map((id, k) => ({ id: id, order: k })) });
+            await chargerTout(); rendreGestion(); toast('Ordre des postes mis à jour');
+        } catch (err) { toast(err.message, true); }
     }
     function brancherPostes() {
-        $('#btnAjPoste').addEventListener('click', async () => {
+        $('#btnNouveauPoste').addEventListener('click', () => { $('#formPoste').hidden = false; $('#ajPoste').focus(); });
+        $('#formPoste').addEventListener('submit', async ev => {
+            ev.preventDefault();
             const nom = $('#ajPoste').value.trim();
             if (!nom) { $('#ajPoste').focus(); return; }
             try {
                 await api('/postes', 'POST', { name: nom, isMachine: $('#ajPosteMachine').checked });
-                await chargerTout(); rendreGestion(); toast('Poste ajouté');
+                await chargerTout(); rendreGestion(); toast('Poste « ' + nom + ' » ajouté');
             } catch (err) { toast(err.message, true); }
         });
-        async function deplacerPoste(id, sens) {
-            const i2 = etat.postes.findIndex(p => p.id === id);
-            const j2 = i2 + sens;
-            if (i2 < 0 || j2 < 0 || j2 >= etat.postes.length) return;
-            const copie = etat.postes.slice();
-            const tmp = copie[i2]; copie[i2] = copie[j2]; copie[j2] = tmp;
+        $$('#gestionContenu [data-pnom]').forEach(i2 => i2.addEventListener('change', async () => {
+            const p = etat.postes.find(x => x.id === i2.dataset.pnom);
+            const nom = i2.value.trim();
+            if (!nom) { i2.value = p.name; return; }
+            if (nom === p.name) return;
             try {
-                await api('/postes/reorder', 'POST',
-                    { postesOrder: copie.map((p, k) => ({ id: p.id, order: k })) });
-                await chargerTout(); rendreGestion(); toast('Ordre des postes mis à jour');
-            } catch (err) { toast(err.message, true); }
-        }
-        $$('#gestionContenu [data-monter]').forEach(b =>
-            b.addEventListener('click', () => deplacerPoste(b.dataset.monter, -1)));
-        $$('#gestionContenu [data-descendre]').forEach(b =>
-            b.addEventListener('click', () => deplacerPoste(b.dataset.descendre, 1)));
-        $$('#gestionContenu [data-machine]').forEach(c => c.addEventListener('change', async () => {
-            try {
-                await api('/postes/' + c.dataset.machine, 'PUT', { isMachine: c.checked });
-                await chargerTout(); rendreGestion();
-                toast(c.checked ? 'Poste marqué machine' : 'Poste marqué main-d\'œuvre');
+                await api('/postes/' + p.id, 'PUT', { name: nom });
+                await chargerTout(); toast('Poste renommé en « ' + nom + ' »');
             } catch (err) { toast(err.message, true); }
         }));
         $$('#gestionContenu [data-taux]').forEach(i2 => i2.addEventListener('change', async () => {
+            const p = etat.postes.find(x => x.id === i2.dataset.taux);
             try {
-                await api('/postes/' + i2.dataset.taux, 'PUT',
-                    { tauxHoraire: parseFloat(i2.value) || 0 });
-                await chargerTout(); toast('Taux mis à jour');
+                await api('/postes/' + p.id, 'PUT', { tauxHoraire: parseFloat(i2.value) || 0 });
+                await chargerTout(); toast('Taux ' + p.name + ' : ' + (parseFloat(i2.value) || 0) + ' €/h');
             } catch (err) { toast(err.message, true); }
         }));
-        $$('#gestionContenu [data-ren-poste]').forEach(b => b.addEventListener('click', async () => {
-            const p = etat.postes.find(x => x.id === b.dataset.renPoste);
-            const nom = prompt('Nouveau nom du poste :', p.name);
-            if (!nom || nom.trim() === p.name) return;
+        // menus « ⋯ »
+        $$('#gestionContenu [data-pmenu]').forEach(b => b.addEventListener('click', ev => {
+            ev.stopPropagation();
+            const m = b.nextElementSibling, ouvrirMenu = m.hidden;
+            $$('#gestionContenu .gx-menu').forEach(x => { x.hidden = true; });
+            $$('#gestionContenu [data-pmenu]').forEach(x => x.setAttribute('aria-expanded', 'false'));
+            m.hidden = !ouvrirMenu; b.setAttribute('aria-expanded', String(ouvrirMenu));
+        }));
+        const ids = () => etat.postes.map(p => p.id);
+        const deplacer = (id, sens) => {
+            const L = ids(), i2 = L.indexOf(id), j2 = i2 + sens;
+            if (i2 < 0 || j2 < 0 || j2 >= L.length) return;
+            L.splice(j2, 0, L.splice(i2, 1)[0]);
+            enregistrerOrdrePostes(L);
+        };
+        $$('#gestionContenu [data-pmonter]').forEach(b => b.addEventListener('click', () => deplacer(b.dataset.pmonter, -1)));
+        $$('#gestionContenu [data-pdescendre]').forEach(b => b.addEventListener('click', () => deplacer(b.dataset.pdescendre, 1)));
+        $$('#gestionContenu [data-pmachine]').forEach(b => b.addEventListener('click', async () => {
+            const p = etat.postes.find(x => x.id === b.dataset.pmachine);
             try {
-                await api('/postes/' + p.id, 'PUT', { name: nom.trim() });
-                await chargerTout(); rendreGestion(); toast('Poste renommé');
+                await api('/postes/' + p.id, 'PUT', { isMachine: !p.isMachine });
+                await chargerTout(); rendreGestion();
+                toast(p.name + (p.isMachine ? ' passe en main-d\x27œuvre' : ' passe en machine'));
             } catch (err) { toast(err.message, true); }
         }));
-        $$('#gestionContenu [data-suppr-poste]').forEach(b => b.addEventListener('click', async () => {
-            const p = etat.postes.find(x => x.id === b.dataset.supprPoste);
-            if (!confirm('Supprimer le poste « ' + p.name + ' » ?')) return;
+        $$('#gestionContenu [data-psuppr]').forEach(b => b.addEventListener('click', async () => {
+            const p = etat.postes.find(x => x.id === b.dataset.psuppr);
+            const n = etat.entries.filter(e => e.posteId === p.id).length;
+            if (!confirm('Supprimer le poste « ' + p.name + ' » ?' + (n ? '\n' + n + ' saisies y sont rattachées : elles resteront, sans poste.' : ''))) return;
             try {
                 await api('/postes/' + p.id, 'DELETE');
                 await chargerTout(); rendreGestion(); toast('Poste supprimé');
             } catch (err) { toast(err.message, true); }
         }));
+        // glisser-déposer (ordinateur) à l'intérieur d'un même groupe
+        let glisse = null;
+        $$('#gestionContenu .gx-poste').forEach(l => {
+            l.addEventListener('dragstart', ev => {
+                if (ev.target.closest('input')) { ev.preventDefault(); return; }
+                glisse = l; l.classList.add('glisse'); ev.dataTransfer.effectAllowed = 'move';
+            });
+            l.addEventListener('dragend', () => { l.classList.remove('glisse'); $$('.gx-poste.cible').forEach(x => x.classList.remove('cible')); });
+            l.addEventListener('dragover', ev => {
+                if (!glisse || glisse === l || glisse.parentNode !== l.parentNode) return;
+                ev.preventDefault();
+                $$('.gx-poste.cible').forEach(x => x.classList.remove('cible'));
+                l.classList.add('cible');
+            });
+            l.addEventListener('drop', ev => {
+                ev.preventDefault();
+                if (!glisse || glisse === l || glisse.parentNode !== l.parentNode) return;
+                const L = ids();
+                L.splice(L.indexOf(glisse.dataset.gposte), 1);
+                L.splice(L.indexOf(l.dataset.gposte), 0, glisse.dataset.gposte);
+                enregistrerOrdrePostes(L);
+            });
+        });
     }
+    // un clic ailleurs referme les menus « ⋯ » de Gestion
+    document.addEventListener('click', ev => {
+        if (ev.target.closest('.gx-menu-zone')) return;
+        $$('#gestionContenu .gx-menu').forEach(m => { m.hidden = true; });
+    });
 
-    /* ── Utilisateurs ── */
+    /* ── Utilisateurs : une carte par personne, actions dans un menu ── */
+    const TEINTES_USERS = ['#4DA6FF', '#2FD07A', '#E0A54A', '#B18CFF', '#FF8A7A', '#5FD3D3', '#F2C94C'];
     function panneauUtilisateurs() {
-        return '<div class="titre"><h2>Utilisateurs</h2></div>'
-            + etat.users.filter(u => u.name !== 'Admin').map(u => {
-                const n = etat.entries.filter(e => e.enteredBy === u.name).length;
-                return '<div class="ligne-g"><span class="n">' + esc(u.name) + '</span>'
-                    + '<span class="m">' + n + ' saisie' + (n > 1 ? 's' : '') + '</span>'
-                    + '<div class="acts">'
-                    + '<button class="btn btn-sm" data-ren-user="' + attr(u.id) + '">Renommer</button>'
-                    + '<button class="btn btn-sm" data-code-user="' + attr(u.id) + '">Changer le code</button>'
-                    + '<button class="btn btn-sm btn-danger" data-suppr-user="' + attr(u.id) + '">Supprimer</button>'
-                    + '</div></div>';
+        const limite = new Date(Date.now() - 30 * JOUR_MS).toISOString();
+        return enteteGestion('Utilisateurs', 'Les comptes qui pointent à l\x27atelier. Chacun se connecte avec son nom et son mot de passe.')
+            + '<div class="gx-users">' + utilisateursAtelier().map((u, i) => {
+                const saisies = etat.entries.filter(e => String(e.enteredBy || '').toLowerCase() === u.name.toLowerCase());
+                const derniere = saisies.reduce((m, e) => String(e.date) > m ? String(e.date) : m, '');
+                const h30 = saisies.filter(e => String(e.date) >= limite).reduce((s2, e) => s2 + (parseFloat(e.hours) || 0), 0);
+                const actifU = joursDepuis(derniere || null) <= 14;
+                return '<div class="gx-carte gx-user"><div class="gx-user-haut">'
+                    + '<span class="gx-avatar" style="background:' + TEINTES_USERS[i % TEINTES_USERS.length] + '">' + esc(initiales(u.name)) + '</span>'
+                    + '<span class="gx-user-nom"><b>' + esc(u.name) + '</b><span>' + (derniere ? 'Dernière saisie ' + depuisQuand(derniere) : 'Aucune saisie') + '</span></span>'
+                    + '<div class="gx-menu-zone"><button type="button" class="gx-menu-btn" data-umenu aria-label="Actions pour ' + attr(u.name) + '" aria-expanded="false">' + SVG_G.dots + '</button>'
+                    + '<div class="gx-menu" hidden><button type="button" data-ren-user="' + attr(u.id) + '">Renommer</button>'
+                    + '<button type="button" data-code-user="' + attr(u.id) + '">Changer le mot de passe</button>'
+                    + '<button type="button" class="rouge" data-suppr-user="' + attr(u.id) + '">Supprimer le compte…</button></div></div></div>'
+                    + '<div class="gx-user-stats"><div><b>' + h1(h30) + ' h</b><span>sur 30 jours</span></div><div><b>' + saisies.length + '</b><span>saisies au total</span></div></div>'
+                    + '<div>' + (actifU ? '<span class="gx-pastille ok">Actif</span>' : '<span class="gx-pastille neutre">' + (derniere ? 'Inactif' : 'Jamais pointé') + '</span>') + '</div>'
+                    + '<div class="gx-confirm" data-uconfirm="' + attr(u.id) + '" hidden><span>Supprimer ' + esc(u.name) + ' ? Ses ' + saisies.length
+                    + ' saisies restent enregistrées à son nom.</span><div><button type="button" class="btn btn-sm" data-uannule>Annuler</button>'
+                    + '<button type="button" class="btn btn-sm btn-danger" data-uconfirme="' + attr(u.id) + '">Supprimer</button></div></div></div>';
             }).join('')
-            + '<div class="ajout"><input type="text" id="ajUserNom" placeholder="Nom">'
-            + '<input type="password" id="ajUserCode" placeholder="Mot de passe">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjUser">Ajouter</button></div>';
+            + '<form class="gx-carte gx-user gx-user-ajout" id="formUser">'
+            + '<b>' + SVG_G.plus + 'Ajouter un utilisateur</b>'
+            + '<input type="text" id="ajUserNom" placeholder="Nom" aria-label="Nom" autocomplete="off">'
+            + '<input type="password" id="ajUserCode" placeholder="Mot de passe" aria-label="Mot de passe" autocomplete="new-password">'
+            + '<button type="submit" class="btn btn-arc btn-sm">Ajouter</button></form></div>';
     }
     function brancherUtilisateurs() {
-        $('#btnAjUser').addEventListener('click', async () => {
+        $$('#gestionContenu [data-umenu]').forEach(b => b.addEventListener('click', ev => {
+            ev.stopPropagation();
+            const m = b.nextElementSibling, ouvrirMenu = m.hidden;
+            $$('#gestionContenu .gx-menu').forEach(x => { x.hidden = true; });
+            m.hidden = !ouvrirMenu; b.setAttribute('aria-expanded', String(ouvrirMenu));
+        }));
+        $('#formUser').addEventListener('submit', async ev => {
+            ev.preventDefault();
             const nom = $('#ajUserNom').value.trim();
             const code = $('#ajUserCode').value.trim();
             if (!nom || !code) { toast('Nom et mot de passe requis', true); return; }
             try {
                 await api('/users', 'POST', { name: nom, password: code });
-                await chargerTout(); rendreGestion(); toast('Utilisateur ajouté');
+                await chargerTout(); rendreGestion(); toast(nom + ' ajouté');
             } catch (err) { toast(err.message, true); }
         });
         $$('#gestionContenu [data-ren-user]').forEach(b => b.addEventListener('click', async () => {
@@ -2340,86 +2609,83 @@
         }));
         $$('#gestionContenu [data-code-user]').forEach(b => b.addEventListener('click', async () => {
             const u = etat.users.find(x => x.id === b.dataset.codeUser);
-            const code = prompt('Nouveau code pour ' + u.name + ' :');
+            const code = prompt('Nouveau mot de passe pour ' + u.name + ' :');
             if (!code || !code.trim()) return;
             try {
                 await api('/users/' + u.id, 'PUT', { password: code.trim() });
-                await chargerTout(); toast('Code modifié');
+                await chargerTout(); toast('Mot de passe de ' + u.name + ' modifié');
             } catch (err) { toast(err.message, true); }
         }));
-        $$('#gestionContenu [data-suppr-user]').forEach(b => b.addEventListener('click', async () => {
-            const u = etat.users.find(x => x.id === b.dataset.supprUser);
-            if (!confirm('Supprimer l\'utilisateur « ' + u.name + ' » ?')) return;
+        $$('#gestionContenu [data-suppr-user]').forEach(b => b.addEventListener('click', () => {
+            b.closest('.gx-menu').hidden = true;
+            $('#gestionContenu [data-uconfirm="' + b.dataset.supprUser + '"]').hidden = false;
+        }));
+        $$('#gestionContenu [data-uannule]').forEach(b => b.addEventListener('click', () => { b.closest('.gx-confirm').hidden = true; }));
+        $$('#gestionContenu [data-uconfirme]').forEach(b => b.addEventListener('click', async () => {
             try {
-                await api('/users/' + u.id, 'DELETE');
+                await api('/users/' + b.dataset.uconfirme, 'DELETE');
                 await chargerTout(); rendreGestion(); toast('Utilisateur supprimé');
             } catch (err) { toast(err.message, true); }
         }));
     }
 
-    /* ── Fournisseurs ── */
-    function panneauFournisseurs() {
-        return '<div class="titre"><h2>Fournisseurs</h2></div>'
-            + (etat.fournisseursBib.length ? etat.fournisseursBib.map((f, i2) =>
-                '<div class="ligne-g"><span class="n">' + esc(f) + '</span>'
-                + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-fourn="' + i2 + '">Supprimer</button></div></div>').join('')
-                : '<p style="color:var(--ink-dim);font-size:13px;">Aucun fournisseur.</p>')
-            + '<div class="ajout"><input type="text" id="ajFourn" placeholder="Nouveau fournisseur">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjFourn">Ajouter</button></div>';
-    }
-    function brancherFournisseurs() {
-        async function sauverFournisseurs() {
-            await api('/fournisseurs', 'POST', { fournisseurs: etat.fournisseursBib });
-        }
-        $('#btnAjFourn').addEventListener('click', async () => {
-            const n = $('#ajFourn').value.trim();
-            if (!n) { $('#ajFourn').focus(); return; }
-            try {
-                etat.fournisseursBib.push(n);
-                await sauverFournisseurs();
-                rendreGestion(); toast('Fournisseur ajouté');
-            } catch (err) { toast(err.message, true); }
+    /* ── Achats & fournisseurs : deux bibliothèques de libellés, avec leur usage ── */
+    function usageBibliotheques() {
+        const achats = {}, fourn = {};
+        Object.keys(etat.devis).forEach(k => {
+            ((etat.devis[k].data || {}).achats || []).forEach(a => {
+                if ((parseFloat(a.prixUnit) || 0) > 0) achats[a.nom] = (achats[a.nom] || 0) + 1;
+                if (a.fournisseur) fourn[a.fournisseur] = (fourn[a.fournisseur] || 0) + 1;
+            });
         });
-        $$('#gestionContenu [data-suppr-fourn]').forEach(b => b.addEventListener('click', async () => {
+        return { achats: achats, fournisseurs: fourn };
+    }
+    function panneauBibliotheques() {
+        const u = usageBibliotheques();
+        const bloc = (k, titre, sous, liste, usage, unite) => '<div class="gx-carte gx-biblio"><div><h3>' + titre + '</h3><p>' + sous + '</p></div>'
+            + '<div class="gx-puces">' + (liste.map((n, i) => '<span class="gx-puce">' + esc(n) + ' <small>'
+                + (usage[n] ? usage[n] + ' ' + unite : 'jamais utilisé') + '</small><button type="button" data-bretire="' + k + ':' + i
+                + '" aria-label="Retirer ' + attr(n) + '">×</button></span>').join('') || '<span class="gx-vide">Aucun libellé.</span>') + '</div>'
+            + '<form class="gx-ajout-ligne" data-bajout="' + k + '"><input id="bib_' + k + '" placeholder="Ajouter un libellé, puis Entrée" aria-label="Ajouter à ' + titre + '">'
+            + '<button type="submit" class="btn btn-sm">Ajouter</button></form></div>';
+        return enteteGestion('Achats & fournisseurs', 'Les libellés proposés quand on remplit les achats d\x27un devis ou d\x27une affaire.')
+            + '<div class="gx-biblios">'
+            + bloc('achats', 'Achats types', 'Lignes pré-remplies dans chaque nouveau devis.', etat.achatsBib, u.achats, 'devis chiffrés')
+            + bloc('fournisseurs', 'Fournisseurs', 'Proposés dans la colonne Fournisseur.', etat.fournisseursBib, u.fournisseurs, 'lignes')
+            + '</div>';
+    }
+    function brancherBibliotheques() {
+        const cle = { achats: 'achatsBib', fournisseurs: 'fournisseursBib' };
+        const sauver = async k => { await api('/' + k, 'POST', { [k]: etat[cle[k]] }); };
+        $$('#gestionContenu [data-bajout]').forEach(f => f.addEventListener('submit', async ev => {
+            ev.preventDefault();
+            const k = f.dataset.bajout, v = $('#bib_' + k).value.trim();
+            if (!v) return;
+            if (etat[cle[k]].some(x => x.toLowerCase() === v.toLowerCase())) { toast('« ' + v + ' » existe déjà', true); return; }
             try {
-                etat.fournisseursBib.splice(parseInt(b.dataset.supprFourn, 10), 1);
-                await sauverFournisseurs();
-                rendreGestion(); toast('Fournisseur supprimé');
-            } catch (err) { toast(err.message, true); }
+                etat[cle[k]].push(v);
+                await sauver(k);
+                rendreGestion(); toast('« ' + v + ' » ajouté');
+                $('#bib_' + k).focus();
+            } catch (err) { etat[cle[k]].pop(); toast(err.message, true); }
+        }));
+        $$('#gestionContenu [data-bretire]').forEach(b => b.addEventListener('click', async () => {
+            const [k, i] = b.dataset.bretire.split(':');
+            const [retire] = etat[cle[k]].splice(parseInt(i, 10), 1);
+            try {
+                await sauver(k);
+                rendreGestion(); toast('« ' + retire + ' » retiré');
+            } catch (err) { etat[cle[k]].splice(parseInt(i, 10), 0, retire); toast(err.message, true); }
         }));
     }
 
-    /* ── Achats types ── */
-    function panneauAchatsTypes() {
-        return '<div class="titre"><h2>Achats types</h2></div>'
-            + (etat.achatsBib.length ? etat.achatsBib.map((n, i2) =>
-                '<div class="ligne-g"><span class="n">' + esc(n) + '</span>'
-                + '<div class="acts"><button class="btn btn-sm btn-danger" data-suppr-achatbib="' + i2 + '">Supprimer</button></div></div>').join('')
-                : '<p style="color:var(--ink-dim);font-size:13px;">Aucun achat type.</p>')
-            + '<div class="ajout"><input type="text" id="ajAchatBib" placeholder="Nouvel achat type">'
-            + '<button class="btn btn-arc btn-sm" id="btnAjAchatBib">Ajouter</button></div>';
-    }
-    function brancherAchatsTypes() {
-        async function sauverAchatsBib() {
-            await api('/achats', 'POST', { achats: etat.achatsBib });
-        }
-        $('#btnAjAchatBib').addEventListener('click', async () => {
-            const n = $('#ajAchatBib').value.trim();
-            if (!n) { $('#ajAchatBib').focus(); return; }
-            try {
-                etat.achatsBib.push(n);
-                await sauverAchatsBib();
-                rendreGestion(); toast('Achat type ajouté');
-            } catch (err) { toast(err.message, true); }
-        });
-        $$('#gestionContenu [data-suppr-achatbib]').forEach(b => b.addEventListener('click', async () => {
-            try {
-                etat.achatsBib.splice(parseInt(b.dataset.supprAchatbib, 10), 1);
-                await sauverAchatsBib();
-                rendreGestion(); toast('Achat type supprimé');
-            } catch (err) { toast(err.message, true); }
-        }));
-    }
+    Object.assign(PANNEAUX_GESTION, {
+        entreprise: [panneauEntreprise, brancherEntreprise],
+        clients: [panneauClients, brancherClients],
+        utilisateurs: [panneauUtilisateurs, brancherUtilisateurs],
+        postes: [panneauPostes, brancherPostes],
+        biblio: [panneauBibliotheques, brancherBibliotheques]
+    });
 
     /* ═══════════════ synchronisation périodique ═══════════════ */
     setInterval(async () => {
