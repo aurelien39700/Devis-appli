@@ -1,139 +1,93 @@
-# 🚀 DÉPLOIEMENT RENDER - ÉTAPES FINALES
+# Déploiement : application sur Render, base gratuite chez Neon
 
-## Situation Actuelle
+L'application tourne sur Render. Les données sont dans une base PostgreSQL
+**gratuite** hébergée chez [Neon](https://neon.tech). Le serveur ne fait plus
+de commit Git : `data.json` reste dans le dépôt comme archive et comme source
+de la migration initiale.
 
-❌ **Serveur Render** : Tourne avec du vieux code (commit `a261d57`)
-✅ **GitHub** : Code corrigé prêt (commit `614fbfc`)
+## 1. Créer la base gratuite chez Neon (une fois)
 
-## Pourquoi Déployer ?
+1. Aller sur https://neon.tech, cliquer **Sign up**. Se connecter avec GitHub
+   ou Google, sans carte bancaire.
+2. Choisir l'offre **Free**.
+3. Créer un projet :
+   - **Project name** : `somepre`
+   - **Postgres version** : la version proposée par défaut
+   - **Region** : la même que le service Render. Elle est indiquée sur la page
+     du service `somepre-suivi` (ex. Frankfurt → *AWS Europe Central 1
+     (Frankfurt)*, Oregon → *AWS US West 2 (Oregon)*).
+4. Une fois le projet créé, cliquer **Connect** et copier la **connection
+   string**. Elle ressemble à :
+   ```
+   postgresql://neondb_owner:xxxx@ep-xxxx-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
+   ```
+   Garder l'option **Connection pooling** activée (l'adresse contient
+   `-pooler`). Si la chaîne se termine par `&channel_binding=require`,
+   supprimer ce morceau.
 
-Le code sur Render a une **duplication de fonction** qui empêche le push vers GitHub.
-Après déploiement, **chaque modification sera automatiquement sauvegardée sur GitHub**.
+> **Limites de l'offre gratuite** (à vérifier sur https://neon.tech/pricing,
+> elles évoluent) : 0,5 Go de stockage (la base SOMEPRE fait moins de 5 Mo),
+> et la base se met en veille après quelques minutes sans activité. La
+> première requête après une pause prend alors environ une seconde de plus.
+> L'historique de restauration est court : faire une sauvegarde régulière
+> (voir § 4).
 
----
+## 2. Bascule depuis data.json (une fois)
 
-## 📋 ÉTAPES DE DÉPLOIEMENT
+À faire à un moment calme : les saisies faites pendant la bascule seraient
+perdues.
 
-### 1. Aller sur Render Dashboard
-🔗 https://dashboard.render.com
+1. **Prévenir l'équipe** de ne plus saisir pendant ~10 minutes.
+2. **Récupérer le dernier `data.json`** (le serveur actuel le pousse sur GitHub
+   à chaque modification) :
+   ```bash
+   git pull origin main
+   ```
+3. **Importer les données** dans Neon, depuis le Codespace :
+   ```bash
+   DATABASE_URL='postgresql://...neon.tech/neondb?sslmode=require' npm run migrate
+   ```
+   Le script affiche un tableau de contrôle (attendu / obtenu par table et
+   total des heures) et annule tout en cas d'écart. Il signale aussi les
+   références orphelines éventuelles (client, poste ou affaire supprimés).
+4. **Brancher Render sur Neon** : Dashboard Render → service `somepre-suivi`
+   → **Environment** :
+   - ajouter `DATABASE_URL` = la connection string Neon
+   - supprimer `GITHUB_TOKEN` et `GITHUB_REPO` (plus utilisés)
+   - **Save Changes**
+5. **Déployer** : **Manual Deploy** → **Deploy latest commit**.
+6. **Vérifier** :
+   ```bash
+   curl https://somepre-suivi.onrender.com/health
+   # {"status":"ok","db":"ok",...}
+   ```
+   puis ouvrir l'application et contrôler quelques affaires.
 
-### 2. Sélectionner le Service
-Cliquer sur : **somepre-suivi** (ou votre nom de service)
+En cas de problème, redéployer le commit précédent remet l'ancienne version
+sur data.json.
 
-### 3. Déclencher le Déploiement
-1. Bouton bleu **"Manual Deploy"** (en haut à droite)
-2. Sélectionner **"Deploy latest commit"**
-3. Confirmer
+## 3. Coût
 
-### 4. Attendre la Fin du Build
-- ⏱️ Durée : **3-5 minutes**
-- Status : "Building" → "Deploying" → "Live"
+| Élément | Offre | Prix |
+|---|---|---|
+| Base PostgreSQL | Neon Free | 0 € |
+| Application | Render (offre actuelle du service) | inchangé |
 
-### 5. Vérifier le Déploiement
+## 4. Sauvegardes
 
-Une fois "Live", tester :
+À faire de temps en temps (par exemple chaque semaine), depuis le Codespace :
 
 ```bash
-curl -s https://somepre-suivi.onrender.com/api/git-status | jq '.diagnostics.lastCommit'
+pg_dump 'postgresql://...neon.tech/neondb?sslmode=require' > sauvegarde-$(date +%F).sql
 ```
 
-**Résultat attendu** : Devrait afficher un commit récent (après `ccfc7c5`)
+Si `pg_dump` est absent : `sudo apt-get install -y postgresql-client`.
 
----
+## Développement local
 
-## ✅ APRÈS LE DÉPLOIEMENT
-
-### Le Système Fonctionnera Comme Ça
-
+```bash
+docker run -d --name devis-pg -e POSTGRES_PASSWORD=devis -e POSTGRES_DB=devis -p 5432:5432 postgres:16
+export DATABASE_URL=postgres://postgres:devis@localhost:5432/devis
+npm run migrate          # importe data.json (ajouter --reset pour réimporter)
+npm start                # http://localhost:10000
 ```
-Utilisateur modifie le site
-         ↓
-Serveur Render reçoit la requête
-         ↓
-Sauvegarde dans data.json (local)
-         ↓
-Commit automatique
-         ↓
-Push vers GitHub ✅ (AUTOMATIQUE)
-```
-
-### Vérification que Ça Marche
-
-1. Ajoutez un poste de test sur le site
-2. Attendez 10-20 secondes
-3. Allez sur GitHub : https://github.com/aurelien39700/Devis-appli/commits/main
-4. ✅ Vous devriez voir un nouveau commit "Auto-save: Données mises à jour"
-
----
-
-## 🔍 Monitoring
-
-### Logs Render (en direct)
-Dashboard → Service → **Logs** (onglet)
-
-Vous verrez :
-```
-📝 Git add data.json...
-💾 Git commit...
-✅ Commit créé
-📤 Git push origin main...
-✅ Push réussi!
-```
-
-### Logs en cas de problème
-Si le push échoue, le système va automatiquement :
-1. Détecter la divergence
-2. Faire un `git rebase origin/main`
-3. Retry le push
-4. ✅ Succès
-
----
-
-## 🛠️ Dépannage
-
-### Si le Push Ne Fonctionne Toujours Pas
-
-1. **Vérifier le Token GitHub**
-   - Dashboard Render → Environment
-   - Variable `GITHUB_TOKEN` existe ?
-   - Longueur : 40 caractères (classic token)
-
-2. **Vérifier les Permissions du Token**
-   - GitHub → Settings → Developer settings → Personal access tokens
-   - Le token doit avoir : `repo` (full control)
-
-3. **Tester Manuellement**
-   Endpoint de diagnostic :
-   ```bash
-   curl https://somepre-suivi.onrender.com/api/git-status
-   ```
-
----
-
-## 📊 Résumé des Corrections Appliquées
-
-1. ✅ Suppression duplication `gitCommitAndPush()`
-2. ✅ Simplification logique Git (suppression opérations dangereuses)
-3. ✅ Gestion automatique des divergences avec rebase
-4. ✅ Rollback automatique en cas d'erreur
-5. ✅ Mutex pour éviter commits concurrents
-6. ✅ Logging détaillé pour diagnostic
-
----
-
-## 🎯 Résultat Final
-
-**SANS déploiement :**
-- ❌ Données uniquement sur Render (risque de perte)
-- ❌ GitHub obsolète
-- ❌ Nécessite scripts VS Code
-
-**AVEC déploiement :**
-- ✅ Données sauvegardées sur GitHub automatiquement
-- ✅ Aucune perte possible
-- ✅ Système 100% autonome
-- ✅ VS Code = simple visualisation (optionnel)
-
----
-
-**DÉPLOYEZ MAINTENANT !** 🚀

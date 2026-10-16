@@ -482,9 +482,10 @@
             // Coût total
             const coutTotal = totalTravail + totalMachine + totalAchats;
 
-            // Prix de vente
+            // Prix de vente : la marge porte sur les heures, les achats sont
+            // refacturés à leur prix
             const coeffMarge = parseFloat(document.getElementById('coeffMarge').value) || 1.3;
-            const prixVente = coutTotal * coeffMarge;
+            const prixVente = (totalTravail + totalMachine) * coeffMarge + totalAchats;
 
             // Marge
             const margeEuro = prixVente - coutTotal;
@@ -1093,7 +1094,7 @@
 
                 const coutTotal = totalTravail + totalMachine + totalAchats;
                 const coeffMarge = parseFloat(document.getElementById('coeffMarge').value) || 1.3;
-                const prixVente = coutTotal * coeffMarge;
+                const prixVente = (totalTravail + totalMachine) * coeffMarge + totalAchats;
                 const margeEuro = prixVente - coutTotal;
                 const margePourcent = coutTotal > 0 ? (margeEuro / coutTotal) * 100 : 0;
 
@@ -1103,7 +1104,7 @@
                 doc.text(coutTotal.toFixed(2) + ' €', 195, yPos, { align: 'right' });
                 yPos += 8;
 
-                doc.text('Coefficient:', 140, yPos, { align: 'right' });
+                doc.text('Coefficient (heures, achats sans marge):', 140, yPos, { align: 'right' });
                 doc.text(coeffMarge.toFixed(2), 195, yPos, { align: 'right' });
                 yPos += 10;
 

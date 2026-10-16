@@ -39,6 +39,9 @@
         entreprise: {},
         fournisseursBib: [],  // bibliothèque des fournisseurs (chaînes)
         achatsBib: [],        // bibliothèque des achats (chaînes)
+        achatsReels: {},      // total des achats réels par affaire
+        histOuverts: {},      // historique : affaires dépliées
+        histTout: {},         // historique : affaires montrant toutes leurs saisies
         recherche: '',
         ongletGestion: 'entreprise',
         editionAffaireId: null,
@@ -124,6 +127,8 @@
         etat.postes = (tout.postes || []).slice()
             .sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
         etat.users = tout.users || [];
+        etat.achatsReels = {};
+        (tout.achatsReels || []).forEach(x => { etat.achatsReels[x.affaireId] = parseFloat(x.total) || 0; });
         etat.devis = {};
         (devisListe.devis || []).forEach(d => { etat.devis[d.affaireId] = d; });
         etat.entreprise = entreprise.entreprise || {};
@@ -131,22 +136,51 @@
         etat.achatsBib = (achatsBib.achats || []).map(a => typeof a === 'string' ? a : (a.nom || ''));
         $('#syncEtat').textContent = 'Synchronisé';
         $('#syncEtat').classList.remove('hors');
+        majBadgeAffaires();
+    }
+
+    // Le badge du menu compte les affaires en cours (pas le total)
+    function majBadgeAffaires() {
+        const b = $('#badgeAffaires');
+        if (!b) return;
+        const n = etat.affaires.filter(a => stadeDe(a) === 'en_cours').length;
+        b.textContent = n;
+        b.title = n + (n > 1 ? ' affaires en cours' : ' affaire en cours');
     }
 
     function heuresAffaire(id) {
         return etat.entries.filter(e => e.affaireId === id)
             .reduce((s, e) => s + (parseFloat(e.hours) || 0), 0);
     }
-    // Prix de vente HT au temps passé : heures pointées valorisées au taux
-    // horaire de leur poste, coefficient de régie compris.
-    function montantRegieAffaire(a) {
-        const coeffR = parseFloat(a.coeffRegie) || 1.2;
+    // Coefficient de marge d'une affaire : celui du devis, sinon celui
+    // retenu sur l'affaire. Il ne s'applique qu'aux heures.
+    function coeffAffaire(a, d) {
+        return d ? (parseFloat(d.coeffMarge) || 1.2) : (parseFloat(a.coeffRegie) || 1.2);
+    }
+    // Prix de vente HT réel : heures pointées au taux (celui du devis pour
+    // les postes chiffrés, sinon celui du poste) x coefficient, plus les
+    // achats réels sans marge.
+    function prixReelAffaire(a) {
+        const d = etat.devis[a.id];
+        const tauxDevis = {};
+        if (d && d.data) {
+            (d.data.travail || []).concat(d.data.machine || []).forEach(l => {
+                if (tauxDevis[l.nom] === undefined) tauxDevis[l.nom] = parseFloat(l.taux) || 0;
+            });
+        }
         let mnt = 0;
         etat.entries.filter(e => e.affaireId === a.id).forEach(e => {
             const p = etat.postes.find(x => x.id === e.posteId);
-            mnt += (parseFloat(e.hours) || 0) * (p ? (parseFloat(p.tauxHoraire) || 0) : 0);
+            const taux = p && tauxDevis[p.name] !== undefined ? tauxDevis[p.name]
+                : (p ? (parseFloat(p.tauxHoraire) || 0) : 0);
+            mnt += (parseFloat(e.hours) || 0) * taux;
         });
-        return mnt * coeffR;
+        return mnt * coeffAffaire(a, d) + (etat.achatsReels[a.id] || 0);
+    }
+    // Prix de vente HT d'un devis : heures x coefficient + achats sans marge
+    function prixDevis(d) {
+        const m = montantsDevis(d);
+        return m.heures * (parseFloat(d.coeffMarge) || 1.2) + m.achats;
     }
     function budgetDevis(d) {
         if (!d || !d.data) return 0;
@@ -356,18 +390,30 @@
             (groupes[e.affaireId] = groupes[e.affaireId] || []).push(e);
         });
 
-        const cles = Object.keys(groupes);
+        // les affaires pointées le plus récemment en premier
+        const derniere = k => groupes[k].reduce((m, e) => String(e.date) > m ? String(e.date) : m, '');
+        const cles = Object.keys(groupes).sort((x, y) => derniere(y).localeCompare(derniere(x)));
         $('#titreHistorique').textContent = admin ? 'Historique' : 'Mon historique';
         if (!cles.length) {
             conteneur.innerHTML = '<p style="color:var(--ink-dim);">Aucune saisie sur les affaires en cours.</p>';
             return;
         }
 
+        // une saisie qui vient d'être faite ouvre son affaire
+        if (etat.saisieNeuve) {
+            const neuve = etat.entries.find(e => e.id === etat.saisieNeuve);
+            if (neuve) etat.histOuverts[neuve.affaireId] = true;
+        }
+
+        const PAR_DEFAUT = 5;
         conteneur.innerHTML = cles.map(k => {
             const a = etat.affaires.find(x => x.id === k);
             const c = etat.clients.find(x => x.id === a.clientId);
             const liste = groupes[k].slice().sort((x, y) => String(y.date).localeCompare(String(x.date)));
             const total = liste.reduce((s, e) => s + (parseFloat(e.hours) || 0), 0);
+            const ouvert = !!etat.histOuverts[k];
+            const tout = !!etat.histTout[k];
+            const visibles = tout ? liste : liste.slice(0, PAR_DEFAUT);
 
             const parPoste = {};
             liste.forEach(e => {
@@ -376,35 +422,57 @@
                 parPoste[nom] = (parPoste[nom] || 0) + (parseFloat(e.hours) || 0);
             });
 
-            return '<div class="hist">'
-                + '<div class="hist-tete">'
+            return '<div class="hist' + (ouvert ? ' ouvert' : '') + '">'
+                + '<button type="button" class="hist-tete" data-h-toggle="' + attr(k) + '" aria-expanded="' + ouvert + '">'
                 + '<span class="hist-client">' + esc(c ? c.name : '') + '</span>'
                 + '<span class="hist-nom">' + esc(a.name) + '</span>'
                 + (a.description ? '<span class="hist-desc">' + esc(a.description) + '</span>' : '')
-                + '<span class="hist-total">' + h1(total) + ' h</span></div>'
+                + '<span class="hist-nb">' + liste.length + (liste.length > 1 ? ' saisies' : ' saisie') + '</span>'
+                + '<span class="hist-total">' + h1(total) + ' h</span>'
+                + '<svg class="hist-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
+                + '</button>'
                 + '<div class="chips">' + Object.keys(parPoste).map(n =>
                     '<span class="chip">' + esc(n) + ' · ' + h1(parPoste[n]) + ' h</span>').join('') + '</div>'
-                + liste.map(e => {
-                    const p = etat.postes.find(x => x.id === e.posteId);
-                    const quand = new Date(e.date).toLocaleDateString('fr-FR',
-                        { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const mienne = admin || e.enteredBy === etat.moi.name;
-                    return '<div class="saisie' + (e.id === etat.saisieNeuve ? ' neuve' : '')
-                        + '"><div class="saisie-info">'
-                        + '<div class="saisie-l1" style="font-size:13.5px;">'
-                        + esc(p ? p.name : 'Poste inconnu') + '</div>'
-                        + '<div class="saisie-l2">' + quand
-                        + (admin && e.enteredBy ? ' · ' + esc(e.enteredBy) : '') + '</div></div>'
-                        + '<span class="saisie-h">' + h1(parseFloat(e.hours) || 0) + ' h</span>'
-                        + (mienne ? '<div class="saisie-acts">'
-                            + '<button class="btn btn-sm" data-h-modif="' + attr(e.id) + '">Modifier</button>'
-                            + '<button class="btn btn-sm btn-danger" data-h-suppr="' + attr(e.id) + '">✕</button>'
-                            + '</div>' : '')
-                        + '</div>';
-                }).join('')
+                + (ouvert
+                    ? '<div class="hist-saisies">' + visibles.map(e => {
+                        const p = etat.postes.find(x => x.id === e.posteId);
+                        const quand = new Date(e.date).toLocaleDateString('fr-FR',
+                            { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        const mienne = admin || e.enteredBy === etat.moi.name;
+                        return '<div class="saisie' + (e.id === etat.saisieNeuve ? ' neuve' : '')
+                            + '"><div class="saisie-info">'
+                            + '<div class="saisie-l1" style="font-size:13.5px;">'
+                            + esc(p ? p.name : 'Poste inconnu') + '</div>'
+                            + '<div class="saisie-l2">' + quand
+                            + (admin && e.enteredBy ? ' · ' + esc(e.enteredBy) : '') + '</div></div>'
+                            + '<span class="saisie-h">' + h1(parseFloat(e.hours) || 0) + ' h</span>'
+                            + (mienne ? '<div class="saisie-acts">'
+                                + '<button class="btn btn-sm" data-h-modif="' + attr(e.id) + '">Modifier</button>'
+                                + '<button class="btn btn-sm btn-danger" data-h-suppr="' + attr(e.id) + '">✕</button>'
+                                + '</div>' : '')
+                            + '</div>';
+                    }).join('')
+                    + (liste.length > PAR_DEFAUT
+                        ? '<button type="button" class="hist-plus" data-h-tout="' + attr(k) + '">'
+                          + (tout ? 'Afficher seulement les ' + PAR_DEFAUT + ' dernières'
+                                  : 'Voir les ' + (liste.length - PAR_DEFAUT) + ' autres saisies')
+                          + '</button>'
+                        : '')
+                    + '</div>'
+                    : '')
                 + '</div>';
         }).join('');
 
+        $$('#listeHistorique [data-h-toggle]').forEach(b => b.addEventListener('click', () => {
+            const k = b.dataset.hToggle;
+            etat.histOuverts[k] = !etat.histOuverts[k];
+            rendreHistorique();
+        }));
+        $$('#listeHistorique [data-h-tout]').forEach(b => b.addEventListener('click', () => {
+            const k = b.dataset.hTout;
+            etat.histTout[k] = !etat.histTout[k];
+            rendreHistorique();
+        }));
         $$('#listeHistorique [data-h-modif]').forEach(b => b.addEventListener('click', () => {
             const e = etat.entries.find(x => x.id === b.dataset.hModif);
             if (e) ouvrirSaisie({ edition: e });
@@ -569,22 +637,20 @@
         let bas;
         if (!d) {
             bas = '<div class="carte-chiffres"><span>pointé <b>' + h1(reel) + ' h</b></span>'
-                + '<span class="e neutre">' + eur(montantRegieAffaire(a)) + ' au temps passé</span></div>';
+                + '<span class="e neutre">' + eur(prixReelAffaire(a)) + ' réel</span></div>';
         } else if (stade === 'brouillon' || stade === 'envoye') {
-            const m = montantsDevis(d);
-            const prix = (m.heures + m.achats) * (parseFloat(d.coeffMarge) || 1.2);
             bas = '<div class="carte-chiffres"><span>devis <b>' + h1(bud) + ' h</b></span>'
-                + '<span class="e neutre">' + eur(prix) + '</span></div>'
+                + '<span class="e neutre">' + eur(prixDevis(d)) + '</span></div>'
                 + '<div class="carte-note">'
                 + (stade === 'brouillon' ? 'chiffrage en cours'
                     : (d.reponseClient && d.reponseClient.action === 'refuse'
                         ? 'refusé par le client' : 'en attente de réponse client'))
                 + '</div>';
         } else if (bud === 0 && montantsDevis(d).achats === 0) {
-            // devis present mais encore vide : l'affaire se vend au temps
-            // passé — le PV estimé remplace une barre 100 % rouge trompeuse
+            // devis present mais encore vide : le prix réel remplace une
+            // barre 100 % rouge trompeuse
             bas = '<div class="carte-chiffres"><span>pointé <b>' + h1(reel) + ' h</b></span>'
-                + '<span class="e neutre">' + eur(montantRegieAffaire(a)) + ' au temps passé</span></div>';
+                + '<span class="e neutre">' + eur(prixReelAffaire(a)) + ' réel</span></div>';
         } else {
             const e = reel - bud, cc = cls(e);
             const ech = Math.max(bud, reel) || 1;
@@ -596,8 +662,8 @@
                 + Math.round(reel / ech * 100) + '%"></div>'
                 + (bud > 0 ? '<div class="cible" style="left:' + Math.round(bud / ech * 100) + '%"></div>' : '')
                 + '</div>'
-                + (a.venteTemps ? '<div class="carte-note">vendue au temps passé — '
-                    + eur(montantRegieAffaire(a)) + '</div>' : '');
+                + '<div class="carte-note">devis ' + eur(prixDevis(d))
+                + ' · réel ' + eur(prixReelAffaire(a)) + '</div>';
         }
         return '<button class="carte" data-fiche="' + attr(a.id) + '">'
             + '<div class="carte-haut"><div style="min-width:0;">'
@@ -619,7 +685,7 @@
             clearTimeout(etat._cascadeT);
             etat._cascadeT = setTimeout(() => hote.classList.remove('entree'), 800);
         }
-        $('#badgeAffaires').textContent = etat.affaires.length;
+        majBadgeAffaires();
 
         const stades = etat.filtre ? STADES.filter(s => s.k === etat.filtre) : STADES;
         let html = stades.map(s => {
@@ -848,6 +914,8 @@
     }
 
     async function ouvrirFiche() {
+        if (achatsReelsEnAttente) await enregistrerAchatsReels();
+        if (devisEnAttente) await enregistrerDevis();
         aller('fiche');
         $('#ficheContenu').innerHTML =
             '<p style="color:var(--ink-dim);padding:30px 0;">Chargement...</p>';
@@ -861,6 +929,7 @@
             ]);
             etat.syntheseLocale = synthese;
             etat.devisLocal = devis;
+            etat.achatsReelsLocal = (synthese.achatsReels || []).map(x => Object.assign({}, x));
             rendreFiche();
             const fc = $('#ficheContenu');
             fc.classList.add('entree');
@@ -921,8 +990,8 @@
         const reel = s.totaux.reelHeures;
         const ecart = reel - bud, cEcart = cls(ecart);
         // Devis absent OU encore vide (aucune heure budgétée, aucun achat) :
-        // hors chiffrage, l'affaire se vend au temps passé — l'admin voit
-        // le prix de vente HT des heures pointées, marge comprise.
+        // hors chiffrage, rien à comparer — la fiche montre seulement le
+        // prix de vente réel (heures pointées et achats réels).
         const mTot = montantsDevis(d);
         const enRegie = !enChiffrage && (!d || (bud === 0 && mTot.achats === 0));
 
@@ -1006,14 +1075,12 @@
         }
 
         const m = d ? montantsDevis(d) : { heures: 0, achats: 0 };
-        const coeff = d ? (parseFloat(d.coeffMarge) || 1.2) : 1.2;
-        const cout = m.heures + m.achats;
-        const prix = cout * coeff;
 
-        /* ── achats ── */
+        /* ── achats prévus au devis ── */
         let achatsHtml = '';
-        if (d) {
-            achatsHtml = '<div class="bloc"><div class="titre"><h2>Achats &amp; fournitures</h2>'
+        if (d && !enRegie) {
+            achatsHtml = '<div class="bloc"><div class="titre"><h2>'
+                + (enChiffrage ? 'Achats &amp; fournitures' : 'Achats &amp; fournitures prévus au devis') + '</h2>'
                 + '<span class="tot" id="fTotAchats">' + eur(m.achats) + '</span></div>'
                 + '<div class="tbl"><table><thead><tr>'
                 + '<th>Désignation</th><th>Fournisseur</th>'
@@ -1046,11 +1113,47 @@
                 + (modifiable
                     ? '<div style="margin-top:11px;"><button class="btn btn-sm" data-ajout-achat>'
                       + 'Ajouter une ligne d\'achat</button></div>' : '')
-                + '<datalist id="dlFournisseurs">'
-                + etat.fournisseursBib.map(f => '<option value="' + attr(f) + '"></option>').join('')
-                + '</datalist>'
                 + '</div>';
         }
+
+        /* ── achats réellement faits (hors chiffrage) ── */
+        let achatsReelsHtml = '';
+        if (!enChiffrage) {
+            const liste = etat.achatsReelsLocal || [];
+            achatsReelsHtml = '<div class="bloc"><div class="titre"><h2>Achats &amp; fournitures réels</h2>'
+                + '<span class="tot" id="fTotAchatsReels">' + eur(totalAchats(liste)) + '</span></div>'
+                + (liste.length
+                    ? '<div class="tbl"><table><thead><tr>'
+                      + '<th>Désignation</th><th>Fournisseur</th>'
+                      + '<th class="c">Quantité</th><th class="c">Prix unitaire</th><th class="c">Montant</th><th></th>'
+                      + '</tr></thead><tbody>'
+                      + liste.map((ac, i) =>
+                          '<tr>'
+                          + '<td class="txt"><input type="text" list="dlAchatsBib" value="' + attr(ac.nom)
+                          + '" placeholder="Désignation" data-areel="nom" data-i="' + i + '"></td>'
+                          + '<td class="txt"><input type="text" list="dlFournisseurs" value="' + attr(ac.fournisseur || '')
+                          + '" placeholder="Fournisseur" data-areel="fournisseur" data-i="' + i + '"></td>'
+                          + '<td class="qte"><input type="number" min="0" step="1" value="'
+                          + (parseFloat(ac.quantite) || '') + '" placeholder="0" data-areel="quantite" data-i="' + i + '"></td>'
+                          + '<td class="qte"><input type="number" min="0" step="0.01" value="'
+                          + (parseFloat(ac.prixUnit) || '') + '" placeholder="0" data-areel="prixUnit" data-i="' + i + '"></td>'
+                          + '<td class="eur" style="color:var(--ink);" data-fareur="' + i + '">'
+                          + eur((parseFloat(ac.quantite) || 0) * (parseFloat(ac.prixUnit) || 0)) + '</td>'
+                          + '<td style="text-align:right;"><button class="btn btn-sm btn-danger" '
+                          + 'data-suppr-areel="' + i + '" aria-label="Supprimer">✕</button></td></tr>').join('')
+                      + '</tbody></table></div>'
+                    : '<p style="margin:0;color:var(--ink-dim);font-size:13px;">'
+                      + 'Aucun achat enregistré sur cette affaire.</p>')
+                + '<div style="margin-top:11px;"><button class="btn btn-sm" data-ajout-areel>'
+                + 'Ajouter un achat</button></div>'
+                + '</div>';
+        }
+
+        const datalists = '<datalist id="dlFournisseurs">'
+            + etat.fournisseursBib.map(f => '<option value="' + attr(f) + '"></option>').join('')
+            + '</datalist><datalist id="dlAchatsBib">'
+            + etat.achatsBib.map(n => '<option value="' + attr(n) + '"></option>').join('')
+            + '</datalist>';
 
         /* ── conditions + note client (brouillon) ── */
         let conditionsHtml = '';
@@ -1202,109 +1305,161 @@
             + '</div>'
 
             + achatsHtml
-
-            + (d && !enRegie
-                ? '<div class="bloc"><div class="titre"><h2>Synthèse financière</h2></div>'
-                  + '<div class="syn">'
-                  + (enChiffrage
-                      /* au chiffrage : la marge PRÉVUE au devis */
-                      ? '<div class="si"><div class="si-lab">Heures</div><div class="si-val" id="fSynHeures">' + eur(m.heures) + '</div></div>'
-                        + '<div class="si"><div class="si-lab">Achats</div><div class="si-val" id="fSynAchats">' + eur(m.achats) + '</div></div>'
-                        + '<div class="si prix"><div class="si-lab">Prix de vente HT</div><div class="si-val" id="fSynPrix">' + eur(prix) + '</div></div>'
-                        + '<div class="si marge"><div class="si-lab">Marge prévue</div><div class="si-val" id="fSynMarge">' + eur(prix - cout) + '</div></div>'
-                      /* au suivi : le coût du POINTÉ face au prix de vente */
-                      : (function () {
-                          if (a.venteTemps) {
-                              // vente au temps passé choisie malgré le devis :
-                              // même lecture que sans devis, le devis en repère
-                              const factM = (s.totaux && s.totaux.reelMontant) || 0;
-                              const coutM = (s.totaux && (s.totaux.reelCout !== undefined
-                                  ? s.totaux.reelCout : s.totaux.reelMontant)) || 0;
-                              const coeffR = parseFloat(a.coeffRegie) || 1.2;
-                              const prixR = factM * coeffR;
-                              const margeR = prixR - coutM;
-                              return '<div class="si pointe"><div class="si-lab">Temps passé au taux</div>'
-                                  + '<div class="si-val" id="fRegieBase">' + eur(factM) + '</div></div>'
-                                  + '<div class="si"><div class="si-lab">Coût des heures</div>'
-                                  + '<div class="si-val">' + eur(coutM) + '</div></div>'
-                                  + '<div class="si prix"><div class="si-lab">Prix de vente HT au temps passé</div>'
-                                  + '<div class="si-val" id="fRegiePrix">' + eur(prixR) + '</div>'
-                                  + '<div class="si-sous">le devis aurait donné ' + eur(prix) + '</div></div>'
-                                  + '<div class="si ' + (margeR >= 0 ? 'marge' : 'negatif') + '" id="fRegieMargeTile">'
-                                  + '<div class="si-lab">Marge réelle</div>'
-                                  + '<div class="si-val" id="fRegieMarge">' + eur(margeR) + '</div>'
-                                  + '<div class="si-sous" id="fRegiePct">'
-                                  + (prixR > 0 ? Math.round(margeR / prixR * 100) + ' % du prix de vente' : '')
-                                  + '</div></div>';
-                          }
-                          const pointeM = (s.totaux && (s.totaux.reelCout !== undefined
-                              ? s.totaux.reelCout : s.totaux.reelMontant)) || 0;
-                          // le face-a-face demande : prix de vente HT
-                          // contre cout des heures pointees, sans les achats
-                          const margeReelle = prix - pointeM;
-                          return '<div class="si pointe"><div class="si-lab">Coût des heures pointées</div>'
-                              + '<div class="si-val" id="fSynPointe">' + eur(pointeM) + '</div></div>'
-                              + '<div class="si"><div class="si-lab">Achats</div><div class="si-val" id="fSynAchats">' + eur(m.achats) + '</div></div>'
-                              + '<div class="si prix"><div class="si-lab">Prix de vente HT</div><div class="si-val" id="fSynPrix">' + eur(prix) + '</div></div>'
-                              + '<div class="si ' + (margeReelle >= 0 ? 'marge' : 'negatif') + '" id="fSynMargeTile">'
-                              + '<div class="si-lab">Marge réelle</div><div class="si-val" id="fSynMarge">' + eur(margeReelle) + '</div>'
-                              + '<div class="si-sous" id="fSynMargePct">'
-                              + (prix > 0 ? Math.round(margeReelle / prix * 100) + ' % du prix de vente' : '')
-                              + '</div></div>';
-                      })())
-                  + '</div>'
-                  + (!enChiffrage && a.venteTemps
-                      ? '<div class="syn-coeff"><span>Coefficient de marge</span>'
-                        + '<input type="number" step="0.05" min="1" value="'
-                        + (parseFloat(a.coeffRegie) || 1.2) + '" data-coeff-regie></div>'
-                      : '<div class="syn-coeff"><span>Coefficient de marge</span>'
-                        + '<input type="number" step="0.05" min="1" value="' + coeff + '" data-devis="coeffMarge"'
-                        + (modifiable ? '' : ' disabled') + '>'
-                        + (modifiable ? '' : '<span>— verrouillé avec le devis</span>') + '</div>')
-                  + (enChiffrage ? ''
-                      : '<label class="syn-vente"><input type="checkbox" data-vente-temps'
-                        + (a.venteTemps ? ' checked' : '')
-                        + '><span>Vendre cette affaire au temps passé plutôt qu\'au devis</span></label>')
-                  + '</div>'
-                : (function () {
-                    // Vente au temps passé : l'affaire n'a pas de devis, on
-                    // facture les heures pointées au taux, coefficient compris.
-                    const factM = (s.totaux && s.totaux.reelMontant) || 0;
-                    const coutM = (s.totaux && (s.totaux.reelCout !== undefined
-                        ? s.totaux.reelCout : s.totaux.reelMontant)) || 0;
-                    const coeffR = parseFloat(a.coeffRegie) || 1.2;
-                    const prixR = factM * coeffR;
-                    const margeR = prixR - coutM;
-                    return '<div class="bloc"><div class="titre"><h2>Vente au temps passé</h2></div>'
-                        + (d ? '<p style="margin:-4px 0 14px;color:var(--ink-dim);font-size:12.5px;">'
-                            + 'Le devis de cette affaire est encore vide : les heures pointées '
-                            + 'sont vendues au taux, coefficient compris. Chiffrez le devis pour '
-                            + 'passer au suivi sur budget.</p>' : '')
-                        + '<div class="syn">'
-                        + '<div class="si pointe"><div class="si-lab">Temps passé au taux</div>'
-                        + '<div class="si-val" id="fRegieBase">' + eur(factM) + '</div></div>'
-                        + '<div class="si"><div class="si-lab">Coût des heures</div>'
-                        + '<div class="si-val">' + eur(coutM) + '</div></div>'
-                        + '<div class="si prix"><div class="si-lab">Prix de vente HT</div>'
-                        + '<div class="si-val" id="fRegiePrix">' + eur(prixR) + '</div></div>'
-                        + '<div class="si ' + (margeR >= 0 ? 'marge' : 'negatif') + '" id="fRegieMargeTile">'
-                        + '<div class="si-lab">Marge réelle</div>'
-                        + '<div class="si-val" id="fRegieMarge">' + eur(margeR) + '</div>'
-                        + '<div class="si-sous" id="fRegiePct">'
-                        + (prixR > 0 ? Math.round(margeR / prixR * 100) + ' % du prix de vente' : '')
-                        + '</div></div>'
-                        + '</div>'
-                        + '<div class="syn-coeff"><span>Coefficient de marge</span>'
-                        + '<input type="number" step="0.05" min="1" value="' + coeffR + '" data-coeff-regie>'
-                        + '</div></div>';
-                })());
+            + achatsReelsHtml
+            + datalists
+            + syntheseHtml(a, d, enChiffrage, enRegie, modifiable);
 
         brancherFiche(a, d, modifiable);
+    }
+
+    function totalAchats(liste) {
+        return (liste || []).reduce((s, x) =>
+            s + (parseFloat(x.quantite) || 0) * (parseFloat(x.prixUnit) || 0), 0);
+    }
+
+    // Montants de la fiche, recalculés côté client à chaque frappe.
+    // La marge (coefficient) ne s'applique qu'aux heures ; les achats et
+    // fournitures sont comptés à leur prix.
+    function calcPrixFiche(a, d) {
+        const coeff = coeffAffaire(a, d);
+        const md = montantsDevis(d);
+        const tauxDevis = {};
+        if (d && d.data) {
+            (d.data.travail || []).concat(d.data.machine || []).forEach(l => {
+                if (tauxDevis[l.nom] === undefined) tauxDevis[l.nom] = parseFloat(l.taux) || 0;
+            });
+        }
+        const s = etat.syntheseLocale;
+        const heuresReel = ((s && s.postes) || []).reduce((t, p) =>
+            t + p.reelHeures * (tauxDevis[p.nom] !== undefined ? tauxDevis[p.nom] : p.reelTaux), 0);
+        const achatsReel = totalAchats(etat.achatsReelsLocal);
+        return {
+            coeff: coeff,
+            devisHeures: md.heures * coeff,
+            devisAchats: md.achats,
+            prixDevis: md.heures * coeff + md.achats,
+            margeDevis: md.heures * (coeff - 1),
+            reelHeures: heuresReel * coeff,
+            reelAchats: achatsReel,
+            prixReel: heuresReel * coeff + achatsReel
+        };
+    }
+
+    function syntheseHtml(a, d, enChiffrage, enRegie, modifiable) {
+        const c = calcPrixFiche(a, d);
+        const tuile = (cls2, lab, id, val, sousId, sous) =>
+            '<div class="si ' + cls2 + '"' + (id ? ' id="' + id + 'Tile"' : '') + '>'
+            + '<div class="si-lab">' + lab + '</div>'
+            + '<div class="si-val" id="' + id + '">' + val + '</div>'
+            + (sousId ? '<div class="si-sous" id="' + sousId + '">' + sous + '</div>' : '')
+            + '</div>';
+        const coeffHtml = d
+            ? '<div class="syn-coeff"><span>Coefficient de marge sur les heures</span>'
+              + '<input type="number" step="0.05" min="1" value="' + c.coeff + '" data-devis="coeffMarge"'
+              + (modifiable ? '' : ' disabled') + '>'
+              + (modifiable ? '' : '<span>— verrouillé avec le devis</span>') + '</div>'
+            : '<div class="syn-coeff"><span>Coefficient de marge sur les heures</span>'
+              + '<input type="number" step="0.05" min="1" value="' + c.coeff + '" data-coeff-regie></div>';
+        const note = '<p class="syn-note">Achats et fournitures comptés à leur prix, sans marge.</p>';
+
+        if (enChiffrage) {
+            return '<div class="bloc"><div class="titre"><h2>Synthèse financière</h2></div><div class="syn">'
+                + tuile('', 'Heures, marge comprise', 'fSynHeures', eur(c.devisHeures))
+                + tuile('', 'Achats &amp; fournitures', 'fSynAchats', eur(c.devisAchats))
+                + tuile('prix', 'Prix de vente HT', 'fSynPrix', eur(c.prixDevis))
+                + tuile('marge', 'Marge sur les heures', 'fSynMarge', eur(c.margeDevis))
+                + '</div>' + coeffHtml + note + '</div>';
+        }
+        if (d && !enRegie) {
+            const ec = ecartPrix(c);
+            return '<div class="bloc"><div class="titre"><h2>Synthèse financière</h2></div><div class="syn">'
+                + tuile('', 'Devis initial HT', 'fPrixDevis', eur(c.prixDevis),
+                    'fPrixDevisDet', detailPrix(c.devisHeures, c.devisAchats))
+                + tuile('pointe', 'Heures pointées, marge comprise', 'fReelHeures', eur(c.reelHeures),
+                    'fReelHeuresDet', h1(etat.syntheseLocale.totaux.reelHeures) + ' h pointées')
+                + tuile('', 'Achats &amp; fournitures réels', 'fReelAchats', eur(c.reelAchats))
+                + tuile('prix', 'Prix de vente réel HT', 'fPrixReel', eur(c.prixReel),
+                    'fEcartPrix', ec.texte)
+                + '</div>' + coeffHtml + note + '</div>';
+        }
+        // affaire sans devis (ou devis vide) : le prix réel seul
+        return '<div class="bloc"><div class="titre"><h2>Prix de vente</h2></div><div class="syn">'
+            + tuile('pointe', 'Heures pointées', 'fReelH', h1(etat.syntheseLocale.totaux.reelHeures) + ' h')
+            + tuile('', 'Heures, marge comprise', 'fReelHeures', eur(c.reelHeures))
+            + tuile('', 'Achats &amp; fournitures réels', 'fReelAchats', eur(c.reelAchats))
+            + tuile('prix', 'Prix de vente réel HT', 'fPrixReel', eur(c.prixReel))
+            + '</div>' + coeffHtml + note + '</div>';
+    }
+
+    function detailPrix(heures, achats) {
+        return 'heures ' + eur(heures) + ' + achats ' + eur(achats);
+    }
+    function ecartPrix(c) {
+        const e = c.prixReel - c.prixDevis;
+        if (Math.abs(e) < 0.005) return { texte: 'identique au devis' };
+        return {
+            texte: (e > 0 ? '+' : '−') + eur(Math.abs(e)) + (e > 0 ? ' au-dessus' : ' en dessous')
+                + ' du devis' + (c.prixDevis > 0 ? ' (' + (e > 0 ? '+' : '−')
+                + Math.round(Math.abs(e) / c.prixDevis * 100) + ' %)' : '')
+        };
+    }
+
+    // Met à jour les tuiles de la synthèse sans reconstruire la fiche
+    function majPrixFiche() {
+        const a = etat.affaires.find(x => x.id === etat.ficheId);
+        if (!a) return;
+        const c = calcPrixFiche(a, etat.devisLocal);
+        const pose = (id2, txt) => { const el = document.getElementById(id2); if (el) el.textContent = txt; };
+        pose('fSynHeures', eur(c.devisHeures));
+        pose('fSynAchats', eur(c.devisAchats));
+        pose('fSynPrix', eur(c.prixDevis));
+        pose('fSynMarge', eur(c.margeDevis));
+        pose('fPrixDevis', eur(c.prixDevis));
+        pose('fPrixDevisDet', detailPrix(c.devisHeures, c.devisAchats));
+        pose('fReelHeures', eur(c.reelHeures));
+        pose('fReelAchats', eur(c.reelAchats));
+        pose('fPrixReel', eur(c.prixReel));
+        pose('fEcartPrix', ecartPrix(c).texte);
+        pose('fTotAchatsReels', eur(c.reelAchats));
+    }
+
+    /* ── enregistrement des achats réels de la fiche ── */
+    // L'affaire visée est retenue au moment de la frappe (pas à l'envoi) et
+    // un compteur de version évite d'écraser une frappe faite pendant l'envoi.
+    let minuteurAchatsReels = null;
+    let achatsReelsEnAttente = false;
+    let achatsCible = null, versionAchats = 0;
+    function programmerAchatsReels() {
+        achatsReelsEnAttente = true;
+        achatsCible = etat.ficheId;
+        versionAchats++;
+        etatSauve('Modifié...', 'encours');
+        clearTimeout(minuteurAchatsReels);
+        minuteurAchatsReels = setTimeout(enregistrerAchatsReels, 800);
+    }
+    async function enregistrerAchatsReels() {
+        clearTimeout(minuteurAchatsReels);
+        if (!achatsReelsEnAttente || !achatsCible) return;
+        const id = achatsCible, version = versionAchats;
+        const liste = (etat.achatsReelsLocal || []).map(x => Object.assign({}, x));
+        try {
+            etatSauve('Enregistrement...', 'encours');
+            const r = await api('/affaires/' + id + '/achats', 'PUT', { achats: liste });
+            etat.achatsReels[id] = totalAchats(r.achats);
+            if (version !== versionAchats) return; // une frappe plus récente partira ensuite
+            if (etat.ficheId === id) etat.achatsReelsLocal = r.achats;
+            achatsReelsEnAttente = false;
+            etatSauve('Enregistré à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+        } catch (err) {
+            etatSauve('Échec de l\'enregistrement', 'erreur');
+            toast(err.message, true);
+        }
     }
 
     /* ── enregistrement du devis de la fiche ── */
     let minuteurDevis = null;
     let devisEnAttente = false; // une modification locale attend son PUT
+    let devisCible = null, versionDevis = 0;
     function etatSauve(texte, classe) {
         const el = $('#etatSauve');
         if (!el) return;
@@ -1313,24 +1468,30 @@
     }
     function programmerEnregistrement() {
         devisEnAttente = true;
+        devisCible = etat.ficheId;
+        versionDevis++;
         etatSauve('Modifié...', 'encours');
         clearTimeout(minuteurDevis);
         minuteurDevis = setTimeout(enregistrerDevis, 800);
     }
     async function enregistrerDevis() {
+        clearTimeout(minuteurDevis);
         const d = etat.devisLocal;
         if (!d) return;
+        const id = devisEnAttente && devisCible ? devisCible : etat.ficheId;
+        const version = versionDevis;
         try {
             etatSauve('Enregistrement...', 'encours');
-            const sauve = await api('/devis/' + etat.ficheId, 'PUT', {
+            const sauve = await api('/devis/' + id, 'PUT', JSON.parse(JSON.stringify({
                 client: d.client, numCommande: d.numCommande, affaire: d.affaire,
                 date: d.date, coeffMarge: d.coeffMarge, data: d.data,
                 noteClient: d.noteClient, delai: d.delai,
                 reglement: d.reglement, echeances: d.echeances,
                 interlocuteurId: d.interlocuteurId || ''
-            });
-            etat.devisLocal = sauve;
-            etat.devis[etat.ficheId] = sauve;
+            })));
+            etat.devis[id] = sauve;
+            if (version !== versionDevis) return; // une frappe plus récente partira ensuite
+            if (etat.ficheId === id) etat.devisLocal = sauve;
             devisEnAttente = false;
             const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             etatSauve('Enregistré à ' + heure);
@@ -1350,11 +1511,22 @@
     // d enregistrement (800 ms), le PUT partirait dans le vide : on l envoie
     // immediatement en keepalive pour ne rien perdre.
     window.addEventListener('pagehide', () => {
-        if (!devisEnAttente || !etat.devisLocal || !etat.ficheId) return;
+        if (achatsReelsEnAttente && achatsCible) {
+            clearTimeout(minuteurAchatsReels);
+            try {
+                fetch(API + '/affaires/' + achatsCible + '/achats', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ achats: etat.achatsReelsLocal || [] }),
+                    keepalive: true
+                });
+            } catch (e) { /* le prochain chargement retombera sur le serveur */ }
+        }
+        if (!devisEnAttente || !etat.devisLocal || !devisCible) return;
         clearTimeout(minuteurDevis);
         const d = etat.devisLocal;
         try {
-            fetch(API + '/devis/' + etat.ficheId, {
+            fetch(API + '/devis/' + devisCible, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1384,13 +1556,14 @@
             ]);
             etat.syntheseLocale = synthese;
             etat.devisLocal = devis;
+            etat.achatsReelsLocal = (synthese.achatsReels || []).map(x => Object.assign({}, x));
             if (devis) etat.devis[etat.ficheId] = devis;
             rendreFiche();
         } catch (e) { /* on garde l affichage actuel */ }
     }
     window.addEventListener('focus', () => {
         if (!etat.moi || etat.vue !== 'fiche' || !etat.ficheId) return;
-        if (devisEnAttente) return; // la saisie locale prime
+        if (devisEnAttente || achatsReelsEnAttente) return; // la saisie locale prime
         if (document.querySelector('.scrim.is-on')) return;
         const actif = document.activeElement;
         if (actif && (actif.tagName === 'INPUT' || actif.tagName === 'SELECT'
@@ -1481,36 +1654,41 @@
             rendreFiche();
         });
 
-        // interrupteur : vendre au temps passé malgré le devis chiffré
-        const venteInp = document.querySelector('#ficheContenu [data-vente-temps]');
-        if (venteInp) venteInp.addEventListener('change', async () => {
-            a.venteTemps = venteInp.checked;
+        // achats réels de l'affaire
+        $$('#ficheContenu [data-areel]').forEach(inp => inp.addEventListener('change', () => {
+            const i = parseInt(inp.dataset.i, 10);
+            const cle = inp.dataset.areel;
+            if (!etat.achatsReelsLocal[i]) return;
+            etat.achatsReelsLocal[i][cle] =
+                (cle === 'quantite' || cle === 'prixUnit') ? (parseFloat(inp.value) || 0) : inp.value;
+            const c2 = document.querySelector('[data-fareur="' + i + '"]');
+            if (c2) c2.textContent = eur((parseFloat(etat.achatsReelsLocal[i].quantite) || 0)
+                * (parseFloat(etat.achatsReelsLocal[i].prixUnit) || 0));
+            programmerAchatsReels();
+            majPrixFiche();
+        }));
+        $$('#ficheContenu [data-suppr-areel]').forEach(b => b.addEventListener('click', () => {
+            etat.achatsReelsLocal.splice(parseInt(b.dataset.supprAreel, 10), 1);
+            programmerAchatsReels();
             rendreFiche();
-            try {
-                await api('/affaires/' + a.id, 'PUT', { venteTemps: a.venteTemps });
-            } catch (err) { toast(err.message, true); }
+        }));
+        const ajAreel = document.querySelector('#ficheContenu [data-ajout-areel]');
+        if (ajAreel) ajAreel.addEventListener('click', () => {
+            etat.achatsReelsLocal = etat.achatsReelsLocal || [];
+            etat.achatsReelsLocal.push({ nom: '', fournisseur: '', quantite: 1, prixUnit: 0 });
+            rendreFiche();
+            const champs = $$('#ficheContenu [data-areel="nom"]');
+            if (champs.length) champs[champs.length - 1].focus();
         });
 
-        // coefficient de la vente au temps passé : recalcul immédiat,
+        // coefficient d'une affaire sans devis : recalcul immédiat,
         // enregistrement sur l'affaire en arrière-plan
         const coeffRegieInp = document.querySelector('#ficheContenu [data-coeff-regie]');
         if (coeffRegieInp) coeffRegieInp.addEventListener('change', async () => {
-            const coeffR = parseFloat(coeffRegieInp.value) || 1.2;
-            a.coeffRegie = coeffR;
-            const factM = (etat.syntheseLocale.totaux && etat.syntheseLocale.totaux.reelMontant) || 0;
-            const coutM = (etat.syntheseLocale.totaux
-                && (etat.syntheseLocale.totaux.reelCout !== undefined
-                    ? etat.syntheseLocale.totaux.reelCout : etat.syntheseLocale.totaux.reelMontant)) || 0;
-            const prixR = factM * coeffR;
-            const margeR = prixR - coutM;
-            const pose2 = (id2, t2) => { const el = document.getElementById(id2); if (el) el.textContent = t2; };
-            pose2('fRegiePrix', eur(prixR));
-            pose2('fRegieMarge', eur(margeR));
-            pose2('fRegiePct', prixR > 0 ? Math.round(margeR / prixR * 100) + ' % du prix de vente' : '');
-            const tuile = document.getElementById('fRegieMargeTile');
-            if (tuile) tuile.className = 'si ' + (margeR >= 0 ? 'marge' : 'negatif');
+            a.coeffRegie = parseFloat(coeffRegieInp.value) || 1.2;
+            majPrixFiche();
             try {
-                await api('/affaires/' + a.id, 'PUT', { coeffRegie: coeffR });
+                await api('/affaires/' + a.id, 'PUT', { coeffRegie: a.coeffRegie });
             } catch (err) { toast(err.message, true); }
         });
 
@@ -1571,10 +1749,9 @@
 
     // Met à jour IMMÉDIATEMENT, côté client, toutes les cellules calculées
     // de la fiche : lignes, bilan, ligne de total, synthèse financière.
-    // On n'attend pas le serveur — son enregistrement passe par un commit
-    // git qui peut prendre plusieurs secondes, et les totaux doivent suivre
-    // la frappe. Les heures pointées, elles, ne bougent pas pendant qu'on
-    // chiffre : on garde celles de la synthèse chargée.
+    // On n'attend pas le serveur : les totaux doivent suivre la frappe.
+    // Les heures pointées, elles, ne bougent pas pendant qu'on chiffre :
+    // on garde celles de la synthèse chargée.
     function rafraichirSyntheseFiche() {
         const d = etat.devisLocal;
         if (!d || !etat.syntheseLocale) return;
@@ -1633,32 +1810,13 @@
             : ecart > 0 ? 'de dépassement' : 'de marge restante');
 
         const m2 = montantsDevis(d);
-        const coeff2 = parseFloat(d.coeffMarge) || 1.2;
-        const cout2 = m2.heures + m2.achats;
         pose('fTotHeures', eur(m2.heures));
         pose('fTotAchats', eur(m2.achats));
         pose('fTotB', h1(bud));
         pose('fTotEur', eur(m2.heures));
         const totEc = document.getElementById('fTotEc');
         if (totEc) { totEc.textContent = sgn(ecart, h1); totEc.className = 'ec ' + cE; }
-        pose('fSynHeures', eur(m2.heures));
-        pose('fSynAchats', eur(m2.achats));
-        pose('fSynPrix', eur(cout2 * coeff2));
-        if (document.getElementById('fSynPointe')) {
-            // mode suivi : la marge reelle bouge avec le prix et les achats,
-            // le pointe vient de la synthese chargee
-            const pointeM = (etat.syntheseLocale && (etat.syntheseLocale.totaux.reelCout !== undefined
-                ? etat.syntheseLocale.totaux.reelCout : etat.syntheseLocale.totaux.reelMontant)) || 0;
-            const prixVente = cout2 * coeff2;
-            const margeReelle = prixVente - pointeM;
-            pose('fSynMarge', eur(margeReelle));
-            pose('fSynMargePct', prixVente > 0
-                ? Math.round(margeReelle / prixVente * 100) + ' % du prix de vente' : '');
-            const tuile = document.getElementById('fSynMargeTile');
-            if (tuile) tuile.className = 'si ' + (margeReelle >= 0 ? 'marge' : 'negatif');
-        } else {
-            pose('fSynMarge', eur(cout2 * coeff2 - cout2));
-        }
+        majPrixFiche();
     }
 
     function montrerLienClient() {
@@ -2077,11 +2235,6 @@
                 + '<span class="m">taux</span>'
                 + '<input type="number" min="0" step="1" class="taux-inline" value="'
                 + (p.tauxHoraire || 0) + '" data-taux="' + attr(p.id) + '" title="Taux facturé €/h">'
-                + '<span class="m">coût</span>'
-                + '<input type="number" min="0" step="1" class="taux-inline" value="'
-                + (p.coutHoraire !== undefined && p.coutHoraire !== '' ? p.coutHoraire : '')
-                + '" placeholder="' + (p.tauxHoraire || 0) + '" data-cout="' + attr(p.id)
-                + '" title="Coût réel €/h — à défaut, le taux est utilisé">'
                 + '<span class="m">€/h</span>'
                 + '<div class="acts">'
                 + '<button class="btn btn-sm" data-ren-poste="' + attr(p.id) + '">Renommer</button>'
@@ -2128,13 +2281,6 @@
                 await api('/postes/' + i2.dataset.taux, 'PUT',
                     { tauxHoraire: parseFloat(i2.value) || 0 });
                 await chargerTout(); toast('Taux mis à jour');
-            } catch (err) { toast(err.message, true); }
-        }));
-        $$('#gestionContenu [data-cout]').forEach(i2 => i2.addEventListener('change', async () => {
-            try {
-                await api('/postes/' + i2.dataset.cout, 'PUT',
-                    { coutHoraire: parseFloat(i2.value) || 0 });
-                await chargerTout(); toast('Coût horaire mis à jour');
             } catch (err) { toast(err.message, true); }
         }));
         $$('#gestionContenu [data-ren-poste]').forEach(b => b.addEventListener('click', async () => {

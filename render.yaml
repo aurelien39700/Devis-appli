@@ -4,6 +4,7 @@ services:
     runtime: node
     buildCommand: npm install
     startCommand: node server.js
+    healthCheckPath: /health
     # DÉSACTIVER les déploiements automatiques
     autoDeploy: false
     envVars:
@@ -11,3 +12,7 @@ services:
         value: 10000
       - key: NODE_ENV
         value: production
+      # Base PostgreSQL gratuite chez Neon : l'URL se saisit à la main
+      # dans le tableau de bord Render (voir DEPLOIEMENT-RENDER.md)
+      - key: DATABASE_URL
+        sync: false

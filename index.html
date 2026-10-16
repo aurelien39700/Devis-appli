@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#04070A">
 <title>Somepre Atelier</title>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="img/favicon-64.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -82,6 +84,10 @@ h1,h2,h3{margin:0;font-family:var(--f-display);letter-spacing:-.03em;text-wrap:b
 .hidden{display:none !important;}
 @keyframes rise{from{opacity:0;transform:translateY(13px);}to{opacity:1;transform:none;}}
 @keyframes pulse{0%,100%{opacity:1;transform:rotate(45deg) scale(1);}50%{opacity:.6;transform:rotate(45deg) scale(.85);}}
+/* Logo Somépré : l'image sert de masque, la couleur suit le thème */
+.logo-somepre{display:block;aspect-ratio:1842/356;background:var(--ink);
+  -webkit-mask:url(img/logo-mot.png) center/contain no-repeat;mask:url(img/logo-mot.png) center/contain no-repeat;}
+.topbar-logo{display:none;width:92px;flex:none;}
 .mark{flex:none;width:34px;height:34px;border:1.5px solid var(--arc);border-radius:var(--r-sm);display:grid;place-items:center;}
 .mark::before{content:'';width:12px;height:12px;background:var(--arc);border-radius:2px;transform:rotate(45deg);box-shadow:0 0 14px var(--arc-line);animation:pulse 3.4s ease-in-out infinite;}
 
@@ -90,6 +96,8 @@ h1,h2,h3{margin:0;font-family:var(--f-display);letter-spacing:-.03em;text-wrap:b
 .connexion{width:min(400px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:30px;box-shadow:var(--shadow);}
 .connexion-marque{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:26px;text-align:center;}
 .connexion-marque h1{font-size:22px;font-weight:800;}
+.connexion-marque .logo-somepre{width:min(250px,80%);}
+.connexion-slogan{font-size:12px;color:var(--ink-dim);line-height:1.4;max-width:260px;}
 .types{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:20px;}
 .types button{padding:13px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--panel-2);color:var(--ink-mid);font-size:13.5px;font-weight:600;transition:background .18s,color .18s,border-color .18s;}
 .types button.is-on{background:var(--arc-soft);border-color:var(--arc);color:var(--arc);}
@@ -105,7 +113,7 @@ h1,h2,h3{margin:0;font-family:var(--f-display);letter-spacing:-.03em;text-wrap:b
 /* ============================================================ ossature */
 #ecranApp{display:grid;grid-template-columns:var(--rail-w) minmax(0,1fr);min-height:100vh;}
 .rail{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--line);}
-.brand{display:flex;align-items:center;gap:12px;padding:19px 17px;border-bottom:1px solid var(--line-soft);min-height:74px;}
+.brand{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;padding:19px 20px;border-bottom:1px solid var(--line-soft);min-height:74px;}
 .brand-nom{font-family:var(--f-display);font-weight:800;font-size:16px;letter-spacing:-.02em;line-height:1.1;white-space:nowrap;}
 .brand-sous{font-family:var(--f-data);font-size:9.5px;letter-spacing:.19em;text-transform:uppercase;color:var(--ink-dim);}
 .nav{flex:1;padding:16px 0;}
@@ -342,6 +350,7 @@ td.qte input:focus{border-color:var(--arc);background:var(--panel);outline:none;
 .syn-coeff input{width:76px;padding:6px 9px;border-radius:var(--r-sm);border:1px solid var(--arc);background:var(--panel);color:var(--arc);font-family:var(--f-data);font-size:14px;font-weight:700;text-align:center;}
 .syn-coeff input:focus{outline:none;box-shadow:0 0 0 3px var(--arc-soft);}
 .syn-coeff input:disabled{opacity:.7;border-style:dashed;}
+.syn-note{margin:8px 0 0;font-size:12px;color:var(--ink-dim);}
 
 /* ============================================================ pointage */
 .qa{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px;}
@@ -530,7 +539,16 @@ html.theme-fondu,html.theme-fondu *,html.theme-fondu *::before,html.theme-fondu 
 /* historique groupé par affaire */
 .hist{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;margin-bottom:11px;}
 .hist:last-child{margin-bottom:0;}
-.hist-tete{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;margin-bottom:8px;}
+.hist-tete{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;margin-bottom:8px;width:100%;padding:0;border:none;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;}
+.hist-tete:focus-visible{outline:2px solid var(--arc);outline-offset:4px;border-radius:var(--r-sm);}
+.hist-nb{margin-left:auto;font-family:var(--f-data);font-size:11px;color:var(--ink-dim);}
+.hist-nb + .hist-total{margin-left:0;}
+.hist-chevron{flex:none;width:18px;height:18px;align-self:center;fill:none;stroke:var(--ink-mid);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s ease;}
+.hist.ouvert .hist-chevron{transform:rotate(180deg);}
+.hist:not(.ouvert) .chips{margin-bottom:0;}
+.hist-saisies{animation:rise .25s ease;}
+.hist-plus{display:block;width:100%;margin-top:2px;padding:9px;border:1px dashed var(--line);border-radius:var(--r-md);background:none;color:var(--arc);font-family:var(--f-ui);font-size:13px;font-weight:600;cursor:pointer;}
+.hist-plus:hover{border-color:var(--arc);background:var(--arc-soft);}
 .hist-client{font-family:var(--f-data);font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-dim);}
 .hist-nom{font-family:var(--f-display);font-size:18px;font-weight:800;letter-spacing:-.03em;}
 .hist-total{margin-left:auto;font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:14px;font-weight:700;background:var(--arc);color:var(--on-arc);border-radius:20px;padding:3px 12px;}
@@ -575,7 +593,9 @@ html.theme-fondu,html.theme-fondu *,html.theme-fondu *::before,html.theme-fondu 
   .nav-item{flex:1;flex-direction:column;gap:4px;padding:10px 6px;border-left:none;border-top:3px solid transparent;justify-content:center;align-items:center;}
   .nav-item.is-on{border-left:none;border-top-color:var(--arc);}
   .nav-item span{font-size:11px;}
-  .nav-badge{display:none;}
+  .topbar-logo{display:block;}
+  .nav-item{position:relative;}
+  .nav-badge{position:absolute;top:5px;left:calc(50% + 7px);margin:0;font-size:9.5px;padding:0 5px;}
   .views{padding:16px 13px 92px;}
   .topbar{padding:0 14px;min-height:62px;}
   .fiche-nom{font-size:24px;}
@@ -593,16 +613,283 @@ html.theme-fondu,html.theme-fondu *,html.theme-fondu *::before,html.theme-fondu 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;}
 }
+
+/* ══════════════ CINÉMATIQUE D'OUVERTURE : la lame Somépré ══════════════
+   Le O du logo (lame de scie + engrenage) démarre et projette des
+   étincelles, le mot s'ouvre de part et d'autre, la lame s'arrête pile en
+   place, puis le logo rejoint sa place dans l'application pendant que
+   l'écran se referme dessus. Une fois par lancement ; touche/clic pour passer.
+   Géométrie (en % de la toile des calques img/intro-*.png, 933 x 240) :
+   centre de la lame 21.5627% 48.5375%, centre de l'engrenage 22.5959% 43.4042%. */
+html.intro-active,html.intro-active body{overflow:hidden;}
+#intro{position:fixed;inset:0;z-index:9999;background:#04070A;color:#fff;display:grid;place-items:center;overflow:hidden;
+  --cx:50%;--cy:50%;--rfin:0px;clip-path:circle(150% at var(--cx) var(--cy));
+  transition:clip-path .8s cubic-bezier(.75,0,.2,1),opacity .25s ease;-webkit-tap-highlight-color:transparent;cursor:pointer;}
+#intro.sortie{clip-path:circle(var(--rfin) at var(--cx) var(--cy));}
+#intro.fondu{opacity:0;}
+#intro canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.intro-grille{position:absolute;inset:-2px;opacity:0;pointer-events:none;
+  background-image:linear-gradient(rgba(77,166,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(77,166,255,.07) 1px,transparent 1px);
+  background-size:44px 44px;background-position:center;
+  -webkit-mask-image:radial-gradient(circle at 50% 48%,#000 0,transparent 62%);mask-image:radial-gradient(circle at 50% 48%,#000 0,transparent 62%);
+  animation:introApparait 1.4s .1s ease forwards;}
+@keyframes introApparait{to{opacity:1;}}
+.intro-flash{position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at var(--fx,50%) var(--fy,50%),rgba(215,236,255,.8) 0,rgba(77,166,255,.28) 16%,transparent 46%);}
+#intro.allume .intro-flash{animation:introFlash .8s ease-out forwards;}
+@keyframes introFlash{0%{opacity:0;}12%{opacity:1;}100%{opacity:0;}}
+.intro-scene{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(14px,3vh,26px);}
+.il-logo{position:relative;width:min(88vw,760px);aspect-ratio:933/240;opacity:0;transform:scale(.55);
+  transform-origin:21.5627% 48.5375%;filter:blur(6px);
+  transition:opacity .5s ease,transform .7s cubic-bezier(.2,1.25,.35,1),filter .5s ease;}
+/* le O d'abord seul, au centre de l'écran ; il glisse à sa place quand le mot s'ouvre */
+#intro.apparait .il-logo{opacity:1;transform:translateX(28.44%) scale(1.6);filter:none;}
+#intro.texte .il-logo{transform:none;transition:transform 1s cubic-bezier(.16,.9,.2,1);}
+#intro.sortie .il-logo{transition:transform .8s cubic-bezier(.75,0,.2,1);}
+.il-couche{position:absolute;inset:0;background:#fff;
+  -webkit-mask:var(--m) 0 0/100% 100% no-repeat;mask:var(--m) 0 0/100% 100% no-repeat;}
+.il-mot{--m:url(img/intro-mot.png);clip-path:inset(-2% 71.5% -2% 14.6%);
+  transition:clip-path 1s cubic-bezier(.16,.9,.2,1);}
+#intro.texte .il-mot{clip-path:inset(-2% -1% -2% -1%);}
+.il-o{position:absolute;inset:0;filter:drop-shadow(0 0 0 rgba(77,166,255,0));transition:filter .6s ease;}
+#intro.chaud .il-o{filter:drop-shadow(0 0 12px rgba(77,166,255,.8));}
+.il-disque{--m:url(img/intro-disque.png);transform-origin:21.5627% 48.5375%;will-change:transform;transition:opacity .9s ease;
+  background:conic-gradient(from var(--a,0deg) at 21.5627% 48.5375%,#2F7DD6,#BFE0FF 10%,#4DA6FF 22%,#1F5FA8 36%,#9CCBFF 52%,#3B8EEA 66%,#E2F1FF 78%,#2F7DD6);}
+#intro.refroidi .il-disque{opacity:0;}
+.il-dents{--m:url(img/intro-dents.png);transform-origin:21.5627% 48.5375%;will-change:transform;}
+.il-engrenage{--m:url(img/intro-engrenage.png);transform-origin:22.5959% 43.4042%;will-change:transform;}
+.il-slogan{--m:url(img/intro-slogan.png);background:#8FA2AF;clip-path:inset(0 100% 0 0);
+  transition:clip-path 1.1s cubic-bezier(.4,0,.2,1),opacity .3s ease;}
+#intro.slogan .il-slogan{clip-path:inset(0 0 0 0);}
+.intro-onde{position:absolute;left:21.5627%;top:48.5375%;width:13.9%;aspect-ratio:1;translate:-50% -50%;
+  border:2px solid #4DA6FF;border-radius:50%;opacity:0;pointer-events:none;}
+#intro.allume .intro-onde{animation:introOnde 1.1s cubic-bezier(.1,.6,.3,1) forwards;}
+#intro.allume .intro-onde.deux{animation-delay:.15s;border-width:1px;}
+@keyframes introOnde{0%{opacity:.95;transform:scale(1);}100%{opacity:0;transform:scale(4.2);}}
+.intro-sous{font-family:var(--f-data);font-weight:500;font-size:clamp(11px,2.9vw,14px);color:#4DA6FF;letter-spacing:.62em;margin-right:-.62em;opacity:0;}
+#intro.atelier .intro-sous{animation:introSous 1s cubic-bezier(.2,.8,.2,1) forwards;}
+@keyframes introSous{from{opacity:0;letter-spacing:1.5em;margin-right:-1.5em;filter:blur(4px);}to{opacity:1;letter-spacing:.62em;margin-right:-.62em;filter:none;}}
+.intro-fin{transition:opacity .3s ease;}
+#intro.sortie .intro-fin{opacity:0;}
+.intro-passer{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  font-family:var(--f-data);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8FA2AF;
+  background:none;border:1px solid #22303A;border-radius:999px;padding:8px 14px;cursor:pointer;opacity:0;animation:introApparait .5s .8s forwards;}
+.intro-passer:hover,.intro-passer:focus-visible{color:#fff;border-color:#4DA6FF;outline:none;}
+#intro.sortie .intro-passer{visibility:hidden;}
+@media (prefers-reduced-motion: reduce){
+  #intro{transition:opacity .4s ease;clip-path:none !important;}
+  #intro.sortie{opacity:0;}
+  .il-logo{opacity:1;transform:none;filter:none;}
+  .il-mot,.il-slogan{clip-path:none;}
+  .il-disque{opacity:0;}
+  .intro-sous{opacity:1;animation:none !important;}
+}
 </style>
 </head>
 <body>
+
+<!-- ══════════════════════ CINÉMATIQUE D'OUVERTURE ══════════════════════ -->
+<div id="intro" aria-hidden="true">
+  <div class="intro-grille"></div>
+  <canvas id="introEtincelles"></canvas>
+  <div class="intro-flash"></div>
+  <div class="intro-scene">
+    <div class="il-logo">
+      <div class="il-couche il-mot"></div>
+      <div class="il-o">
+        <div class="il-couche il-disque"></div>
+        <div class="il-couche il-dents"></div>
+        <div class="il-couche il-engrenage"></div>
+      </div>
+      <div class="intro-onde"></div><div class="intro-onde deux"></div>
+      <div class="il-couche il-slogan intro-fin"></div>
+    </div>
+    <div class="intro-fin"><div class="intro-sous">ATELIER</div></div>
+  </div>
+  <button type="button" class="intro-passer">Passer</button>
+</div>
+<script>
+(function () {
+    var intro = document.getElementById('intro');
+    var root = document.documentElement;
+    // une fois par lancement de l'application
+    try {
+        if (sessionStorage.getItem('intro_vue')) { intro.remove(); return; }
+        sessionStorage.setItem('intro_vue', '1');
+    } catch (e) { /* stockage indisponible : on joue la cinématique */ }
+    root.classList.add('intro-active');
+
+    var reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var logo = intro.querySelector('.il-logo');
+    var disque = intro.querySelector('.il-disque');
+    var dents = intro.querySelector('.il-dents');
+    var engrenage = intro.querySelector('.il-engrenage');
+    var canvas = document.getElementById('introEtincelles');
+    var ctx = canvas.getContext('2d');
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = 0, H = 0, fini = false, sortieLancee = false;
+    var etincelles = [], timers = [];
+
+    // géométrie de la toile des calques (933 x 240)
+    var LAME = { x: 0.215627, y: 0.485375 }, R_O = 64.5 / 933;
+    var MOT = { x: 6 / 933, y: 6 / 240, w: 921 / 933, h: 178 / 240 };
+
+    function centreLame() {
+        var r = logo.getBoundingClientRect();
+        return { x: r.left + LAME.x * r.width, y: r.top + LAME.y * r.height, r: R_O * r.width };
+    }
+    function dimensionner() {
+        W = window.innerWidth; H = window.innerHeight;
+        canvas.width = W * dpr; canvas.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        var c = centreLame();
+        intro.style.setProperty('--fx', c.x + 'px');
+        intro.style.setProperty('--fy', c.y + 'px');
+        if (!sortieLancee) {
+            intro.style.setProperty('--cx', c.x + 'px');
+            intro.style.setProperty('--cy', c.y + 'px');
+        }
+    }
+    dimensionner();
+    window.addEventListener('resize', dimensionner);
+
+    function projeter(x, y, n, force, dir, ecart) {
+        for (var i = 0; i < n; i++) {
+            var a = dir === undefined ? Math.random() * Math.PI * 2 : dir + (Math.random() - .5) * (ecart || 0.9);
+            var v = force * (.45 + Math.random() * .8);
+            etincelles.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+                vie: 1, duree: 0.35 + Math.random() * 0.8, large: .7 + Math.random() * 1.5 });
+        }
+    }
+    function dessinerEtincelles(dt) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.clearRect(0, 0, W, H);
+        ctx.globalCompositeOperation = 'lighter';
+        for (var i = etincelles.length - 1; i >= 0; i--) {
+            var e = etincelles[i];
+            e.vy += 1100 * dt;                 // gravité
+            e.vx *= 0.986; e.vy *= 0.986;
+            e.x += e.vx * dt; e.y += e.vy * dt;
+            e.vie -= dt / e.duree;
+            if (e.vie <= 0 || e.y > H + 20) { etincelles.splice(i, 1); continue; }
+            // blanc-jaune au départ, orange en refroidissant
+            var l = 55 + 40 * e.vie, h = 22 + 30 * e.vie;
+            ctx.strokeStyle = 'hsla(' + h + ',100%,' + l + '%,' + Math.min(1, e.vie * 1.4) + ')';
+            ctx.lineWidth = e.large * (0.4 + e.vie);
+            ctx.beginPath();
+            ctx.moveTo(e.x - e.vx * dt * 2, e.y - e.vy * dt * 2);
+            ctx.lineTo(e.x, e.y);
+            ctx.stroke();
+        }
+    }
+
+    // Rotation : montée en régime puis arrêt pile sur un nombre entier de
+    // tours, pour que la lame et l'engrenage retrouvent la position du logo.
+    var T_DEBUT = 200, T_ARRET = 2750, TOURS_LAME = 7, TOURS_ENGRENAGE = -11;
+    var lisse = function (p) { return p * p * (3 - 2 * p); };
+    var vitesse = function (p) { return 6 * p * (1 - p); };   // dérivée de lisse
+    var T_ALLUME = 1350, T_SLOGAN = 2150, T_REFROIDI = 2250, T_ATELIER = 2500,
+        T_SORTIE = 3400, T_FIN = 4600;
+
+    function cibleLogo() {
+        var cands = document.querySelectorAll('#ecranConnexion .logo-somepre, #ecranApp .logo-somepre');
+        for (var i = 0; i < cands.length; i++) {
+            var r = cands[i].getBoundingClientRect();
+            if (cands[i].offsetParent !== null && r.width > 0 && r.bottom > 0 && r.top < H && r.right > 0 && r.left < W) return r;
+        }
+        return null;
+    }
+    function sortir() {
+        if (sortieLancee) return;
+        sortieLancee = true;
+        intro.classList.add('apparait', 'texte', 'refroidi');
+        var depart = logo.getBoundingClientRect();
+        var cible = reduit ? null : cibleLogo();
+        if (cible) {
+            // le mot de l'intro vient se poser exactement sur le logo de l'appli
+            var s = cible.width / (MOT.w * depart.width);
+            logo.style.transformOrigin = '0 0';
+            logo.style.transform = 'translate(' + (cible.left - depart.left - s * MOT.x * depart.width) + 'px,'
+                + (cible.top - depart.top - s * MOT.y * depart.height) + 'px) scale(' + s + ')';
+            intro.style.setProperty('--cx', (cible.left + cible.width / 2) + 'px');
+            intro.style.setProperty('--cy', (cible.top + cible.height / 2) + 'px');
+            intro.style.setProperty('--rfin', (cible.width * 0.62) + 'px');
+        }
+        intro.classList.add('sortie');
+        timers.push(setTimeout(function () { intro.classList.add('fondu'); }, reduit ? 0 : 780));
+        timers.push(setTimeout(terminer, reduit ? 450 : 1080));
+    }
+    function terminer() {
+        if (fini) return;
+        fini = true;
+        timers.forEach(clearTimeout);
+        window.removeEventListener('resize', dimensionner);
+        root.classList.remove('intro-active');
+        intro.remove();
+    }
+    intro.addEventListener('click', sortir);
+    window.addEventListener('keydown', function k() { window.removeEventListener('keydown', k); sortir(); });
+
+    if (reduit) {
+        intro.classList.add('apparait', 'texte', 'slogan', 'atelier');
+        timers.push(setTimeout(sortir, 1200));
+        return;
+    }
+
+    var etapes = [
+        [120, 'apparait'], [T_ALLUME, 'allume'], [T_ALLUME, 'texte'], [T_ALLUME - 300, 'chaud'],
+        [T_SLOGAN, 'slogan'], [T_ATELIER, 'atelier']
+    ];
+    etapes.forEach(function (e) { timers.push(setTimeout(function () { intro.classList.add(e[1]); }, e[0])); });
+    timers.push(setTimeout(function () {
+        var c = centreLame();
+        intro.style.setProperty('--fx', c.x + 'px');
+        intro.style.setProperty('--fy', c.y + 'px');
+        projeter(c.x, c.y, Math.min(150, W / 4), 700);
+        if (navigator.vibrate) { try { navigator.vibrate(18); } catch (e) {} }
+    }, T_ALLUME));
+    timers.push(setTimeout(function () { intro.classList.add('refroidi'); intro.classList.remove('chaud'); }, T_REFROIDI));
+    timers.push(setTimeout(sortir, T_SORTIE));
+    timers.push(setTimeout(terminer, T_FIN)); // filet de sécurité
+
+    var t0 = performance.now(), avant = t0, reliquat = 0;
+    function image(now) {
+        if (fini) return;
+        var t = now - t0, dt = Math.min(0.05, (now - avant) / 1000);
+        avant = now;
+        var p = Math.max(0, Math.min(1, (t - T_DEBUT) / (T_ARRET - T_DEBUT)));
+        if (sortieLancee) p = 1;
+        var aLame = 360 * TOURS_LAME * lisse(p);
+        dents.style.transform = disque.style.transform = 'rotate(' + aLame + 'deg)';
+        // reflets fixes : le dégradé tourne en sens inverse de la lame
+        disque.style.setProperty('--a', (-aLame) + 'deg');
+        engrenage.style.transform = 'rotate(' + (360 * TOURS_ENGRENAGE * lisse(p)) + 'deg)';
+
+        // étincelles de découpe, au bas du O, projetées dans le sens de rotation
+        var v = vitesse(p);
+        if (v > 0.25 && !sortieLancee) {
+            var c = centreLame();
+            reliquat += v * 420 * dt;
+            var n = Math.floor(reliquat); reliquat -= n;
+            for (var i = 0; i < n; i++) {
+                var phi = Math.PI * (0.48 + Math.random() * 0.16);   // bas du disque
+                projeter(c.x + Math.cos(phi) * c.r, c.y + Math.sin(phi) * c.r, 1,
+                         (260 + 520 * v) * Math.max(0.6, c.r / 45), phi + Math.PI / 2, 0.7);
+            }
+        }
+        dessinerEtincelles(dt);
+        requestAnimationFrame(image);
+    }
+    requestAnimationFrame(image);
+})();
+</script>
 
 <!-- ══════════════════════ CONNEXION ══════════════════════ -->
 <div id="ecranConnexion">
   <div class="connexion">
     <div class="connexion-marque">
-      <div class="mark"></div>
-      <h1>Somepre</h1>
+      <h1 class="logo-somepre" role="img" aria-label="Somépré"></h1>
+      <div class="connexion-slogan">Étude et réalisation d'outillage de découpage et d'injection</div>
       <div class="eyebrow">Atelier</div>
     </div>
     <div class="types">
@@ -628,11 +915,8 @@ html.theme-fondu,html.theme-fondu *,html.theme-fondu *::before,html.theme-fondu 
 <div id="ecranApp" class="hidden">
   <aside class="rail">
     <div class="brand">
-      <div class="mark"></div>
-      <div>
-        <div class="brand-nom">Somepre</div>
-        <div class="brand-sous">Atelier</div>
-      </div>
+      <div class="logo-somepre" role="img" aria-label="Somépré" style="width:150px;"></div>
+      <div class="brand-sous">Atelier</div>
     </div>
     <nav class="nav">
       <button class="nav-item is-on" data-vue="pointage">
@@ -672,6 +956,7 @@ html.theme-fondu,html.theme-fondu *,html.theme-fondu *::before,html.theme-fondu 
         <h1 id="crumbMain">Pointage</h1>
       </div>
       <div class="topbar-right">
+        <div class="logo-somepre topbar-logo" role="img" aria-label="Somépré"></div>
         <button class="btn btn-arc btn-sm hidden" id="btnNouvelle">Nouvelle affaire</button>
         <button class="icon-btn" id="btnTheme" title="Basculer le thème" aria-label="Basculer le thème">
           <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
