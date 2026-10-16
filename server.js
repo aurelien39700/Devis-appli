@@ -650,10 +650,12 @@ app.post('/api/users', route('Erreur de création', async (req, res) => {
 
 app.put('/api/users/:id', route('Erreur de mise à jour', async (req, res) => {
     const { rows } = await db.query(
-        `UPDATE users SET name = COALESCE($2, name), password = COALESCE($3, password)
+        `UPDATE users SET name = COALESCE($2, name), password = COALESCE($3, password),
+                          is_admin = COALESCE($4, is_admin)
          WHERE id = $1 RETURNING *`,
         [req.params.id, req.body.name === undefined ? null : req.body.name,
-         req.body.password === undefined ? null : String(req.body.password)]);
+         req.body.password === undefined ? null : String(req.body.password),
+         req.body.isAdmin === undefined ? null : !!req.body.isAdmin]);
     if (!rows[0]) return res.status(404).json({ error: 'Utilisateur non trouvé' });
     res.json(repo.userApi(rows[0]));
 }));

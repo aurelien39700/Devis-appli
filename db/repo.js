@@ -10,7 +10,7 @@ function sansNull(obj) {
 
 // ===== Mappers ligne SQL -> objet API =====
 
-const userApi = r => ({ id: r.id, name: r.name, password: r.password });
+const userApi = r => ({ id: r.id, name: r.name, password: r.password, isAdmin: !!r.is_admin });
 
 const posteApi = r => sansNull({
     id: r.id,

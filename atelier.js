@@ -143,6 +143,7 @@
         $('#syncEtat').textContent = 'Synchronisé';
         $('#syncEtat').classList.remove('hors');
         majBadgeAffaires();
+        synchroniserDroits();
     }
 
     // Le badge du menu compte les affaires en cours (pas le total)
@@ -244,7 +245,8 @@
             if (!u || u.password !== code) {
                 err.textContent = 'Mot de passe incorrect'; err.classList.add('show'); return;
             }
-            etat.moi = { type: 'user', name: u.name, userId: u.id };
+            // un compte promu admin a l'accès complet, sous son propre nom
+            etat.moi = { type: u.isAdmin ? 'admin' : 'user', name: u.name, userId: u.id };
         }
         localStorage.setItem('atelier_utilisateur', JSON.stringify(etat.moi));
         $('#codeAcces').value = '';
@@ -2567,10 +2569,12 @@
                     + '<span class="gx-user-nom"><b>' + esc(u.name) + '</b><span>' + (derniere ? 'Dernière saisie ' + depuisQuand(derniere) : 'Aucune saisie') + '</span></span>'
                     + '<div class="gx-menu-zone"><button type="button" class="gx-menu-btn" data-umenu aria-label="Actions pour ' + attr(u.name) + '" aria-expanded="false">' + SVG_G.dots + '</button>'
                     + '<div class="gx-menu" hidden><button type="button" data-ren-user="' + attr(u.id) + '">Renommer</button>'
+                    + '<button type="button" data-admin-user="' + attr(u.id) + '">' + (u.isAdmin ? 'Retirer les droits admin' : 'Donner les droits admin') + '</button>'
                     + '<button type="button" data-code-user="' + attr(u.id) + '">Changer le mot de passe</button>'
                     + '<button type="button" class="rouge" data-suppr-user="' + attr(u.id) + '">Supprimer le compte…</button></div></div></div>'
                     + '<div class="gx-user-stats"><div><b>' + h1(h30) + ' h</b><span>sur 30 jours</span></div><div><b>' + saisies.length + '</b><span>saisies au total</span></div></div>'
-                    + '<div>' + (actifU ? '<span class="gx-pastille ok">Actif</span>' : '<span class="gx-pastille neutre">' + (derniere ? 'Inactif' : 'Jamais pointé') + '</span>') + '</div>'
+                    + '<div class="gx-user-pastilles">' + (u.isAdmin ? '<span class="gx-pastille arc" title="Accès complet : affaires, devis, gestion">Admin</span>' : '')
+                    + (actifU ? '<span class="gx-pastille ok">Actif</span>' : '<span class="gx-pastille neutre">' + (derniere ? 'Inactif' : 'Jamais pointé') + '</span>') + '</div>'
                     + '<div class="gx-confirm" data-uconfirm="' + attr(u.id) + '" hidden><span>Supprimer ' + esc(u.name) + ' ? Ses ' + saisies.length
                     + ' saisies restent enregistrées à son nom.</span><div><button type="button" class="btn btn-sm" data-uannule>Annuler</button>'
                     + '<button type="button" class="btn btn-sm btn-danger" data-uconfirme="' + attr(u.id) + '">Supprimer</button></div></div></div>';
@@ -2605,6 +2609,18 @@
             try {
                 await api('/users/' + u.id, 'PUT', { name: nom.trim() });
                 await chargerTout(); rendreGestion(); toast('Utilisateur renommé');
+            } catch (err) { toast(err.message, true); }
+        }));
+        $$('#gestionContenu [data-admin-user]').forEach(b => b.addEventListener('click', async () => {
+            const u = etat.users.find(x => x.id === b.dataset.adminUser);
+            const donner = !u.isAdmin;
+            if (!donner && etat.moi && etat.moi.userId === u.id
+                && !confirm('Vous retirer vos propres droits admin ? Vous n\x27aurez plus accès à la Gestion.')) return;
+            try {
+                await api('/users/' + u.id, 'PUT', { isAdmin: donner });
+                await chargerTout();
+                if (etat.vue === 'gestion') rendreGestion();
+                toast(donner ? u.name + ' a maintenant les droits admin' : 'Droits admin retirés à ' + u.name);
             } catch (err) { toast(err.message, true); }
         }));
         $$('#gestionContenu [data-code-user]').forEach(b => b.addEventListener('click', async () => {
@@ -2724,16 +2740,36 @@
     } catch (e) { /* stockage indisponible */ }
 
     /* ═══════════════ démarrage ═══════════════ */
+    // Menus réservés, avatar et rôle selon les droits de la personne connectée
+    function appliquerDroits() {
+        const admin = estAdmin();
+        $$('[data-admin]').forEach(el => el.classList.toggle('hidden', !admin));
+        $('#avatar').textContent = etat.moi.name === 'Administrateur' ? 'AD'
+            : etat.moi.name.slice(0, 2).toUpperCase();
+        $('#opNom').textContent = etat.moi.name;
+        $('#opRole').textContent = admin ? 'Admin' : 'Utilisateur';
+    }
+    // Droits donnés ou retirés pendant la session : appliqués au chargement suivant
+    function synchroniserDroits() {
+        if (!etat.moi || !etat.moi.userId) return;
+        const u = etat.users.find(x => x.id === etat.moi.userId);
+        if (!u) return;
+        const type = u.isAdmin ? 'admin' : 'user';
+        if (type === etat.moi.type && u.name === etat.moi.name) return;
+        const perdu = etat.moi.type === 'admin' && type !== 'admin';
+        etat.moi = { type: type, name: u.name, userId: u.id };
+        try { localStorage.setItem('atelier_utilisateur', JSON.stringify(etat.moi)); } catch (e) { /* sans stockage */ }
+        appliquerDroits();
+        if (perdu && etat.vue !== 'pointage') { aller('pointage'); rendrePointage(); }
+        toast(type === 'admin' ? 'Vous avez maintenant les droits admin' : 'Vos droits admin ont été retirés');
+    }
+
     async function demarrerApp() {
         $('#ecranConnexion').classList.add('hidden');
         $('#ecranApp').classList.remove('hidden');
 
+        appliquerDroits();
         const admin = estAdmin();
-        $$('[data-admin]').forEach(el => el.classList.toggle('hidden', !admin));
-        $('#avatar').textContent = admin ? 'AD'
-            : etat.moi.name.slice(0, 2).toUpperCase();
-        $('#opNom').textContent = etat.moi.name;
-        $('#opRole').textContent = admin ? 'Admin' : 'Utilisateur';
 
         try {
             await chargerTout();
